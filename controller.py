@@ -111,9 +111,9 @@ class Controller:
             lvehicle._position = self.map_types.index(TrackPieceTypes.START) # Assumes every vehicle is on the same track piece at the start
             pass
 
-        print([vehicle._position for vehicle in self.vehicles])
+        # print([vehicle._position for vehicle in self.vehicles])
 
-        # vehicle._position -= 1
+        for v in self.vehicles: v._position = 0
 
         return self.map
         pass
