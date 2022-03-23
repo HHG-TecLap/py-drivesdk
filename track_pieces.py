@@ -5,7 +5,7 @@ class TrackPiece():
     def __init__(self, loc : int, piece_val : int, clockwise : int) -> None:
         object.__setattr__(self,"type",TrackPieceTypes.try_type(piece_val))
         object.__setattr__(self,"loc",loc)
-        object.__setattr__(self,"clockwise",clockwise)
+        object.__setattr__(self,"clockwise",clockwise > 30)
         pass
 
     def __setattr__(self, name: str, value) -> None:
