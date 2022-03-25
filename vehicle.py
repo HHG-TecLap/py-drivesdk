@@ -8,7 +8,7 @@ from .track_pieces import TrackPiece
 from . import const, util
 
 def interpretLocalName(name : str):
-    if len(name) < 1:
+    if name is None or len(name) < 1: # Fix some issues that might occur
         raise ValueError("Name was empty")
         pass
     nameBytes = name.encode("utf-8")
