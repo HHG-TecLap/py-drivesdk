@@ -10,7 +10,7 @@ class _Lane:
 
     @classmethod
     def get_closest_lane(cls, position : float):
-        delta, lane_val = min({abs(k-position) : k for k, v in cls.__LANE_EQUIVS__.items()}.items(),key=lambda v: v[0])
+        _, lane_val = min({abs(k-position) : k for k, v in cls.__LANE_EQUIVS__.items()}.items(),key=lambda v: v[0])
         
         return cls(cls.__LANE_EQUIVS__[lane_val],lane_val)
         pass
