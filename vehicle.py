@@ -3,9 +3,11 @@ import bleak, asyncio
 from bleak.backends.device import BLEDevice
 import dataclasses
 
+from .utility import util
+
 from .msgs import *
-from .track_pieces import TrackPiece
-from . import const, util
+from .utility.track_pieces import TrackPiece
+from .utility import const
 
 def interpretLocalName(name : str):
     if name is None or len(name) < 1: # Fix some issues that might occur
