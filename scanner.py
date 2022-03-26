@@ -1,3 +1,5 @@
+"""TODO: Fix vehicle finishing too early when starting from different piece than start"""
+
 from .track_pieces import TrackPiece
 from .vehicle import Vehicle
 from .const import TrackPieceTypes
@@ -34,7 +36,7 @@ class Scanner:
         
         await self.vehicle.setSpeed(300)
         while not completed[0]:
-            await asyncio.sleep(0)
+            await asyncio.sleep(0.5)
             pass
 
         self.vehicle.on_track_piece_change = lambda: None

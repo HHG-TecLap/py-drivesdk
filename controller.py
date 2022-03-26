@@ -77,11 +77,26 @@ class Controller:
             raise errors.DuplicateScanWarning("The map has already been scanned. Check your code for any mistakes like that.")
             pass
 
-        vehicle = self.vehicles.pop()
-        self.vehicles.add(vehicle)
+        temp_vehicles = self.vehicles.copy()
+        scan_vehicle = temp_vehicles.pop()
 
-        scanner = Scanner(vehicle)
+        async def simul_align(vehicle : Vehicle):
+            await asyncio.sleep(1)
+            await vehicle.setSpeed(250)
+            while vehicle._current_track_piece is None or vehicle._current_track_piece.type != TrackPieceTypes.FINISH:
+                print(vehicle._current_track_piece)
+                await asyncio.sleep(0.1)
+                pass
+
+            await vehicle.stop()
+            pass
+
+        scanner = Scanner(scan_vehicle)
+        
+        tasks = [asyncio.create_task(simul_align(v)) for v in temp_vehicles]
         self.map = await scanner.scan()
+
+        for task in tasks: await task
 
         completed_tasks  = {}
         async def align(vehicle : Vehicle):
@@ -98,22 +113,18 @@ class Controller:
             completed_tasks[vehicle] = True
             pass
 
-        for lvehicle in self.vehicles: 
-            asyncio.create_task(align(lvehicle))
-            await lvehicle.setSpeed(300)
-            completed_tasks[lvehicle] = False
+        # for v in self.vehicles: 
+        #     asyncio.create_task(align(v))
+        #     await v.setSpeed(300)
+        #     completed_tasks[v] = False
+        #     pass
+
+        # while not all(completed_tasks.values()): await asyncio.sleep(0) # Wait until all tasks are done
+
+        for v in self.vehicles:
+            v._map = self.map
+            v._position = -1 if v in temp_vehicles else 0 # Scanner is always one piece ahead
             pass
-
-        while not all(completed_tasks.values()): await asyncio.sleep(0) # Wait until all tasks are done
-
-        for lvehicle in self.vehicles:
-            lvehicle._map = self.map
-            lvehicle._position = self.map_types.index(TrackPieceTypes.START) # Assumes every vehicle is on the same track piece at the start
-            pass
-
-        # print([vehicle._position for vehicle in self.vehicles])
-
-        for v in self.vehicles: v._position = 0
 
         return self.map
         pass
