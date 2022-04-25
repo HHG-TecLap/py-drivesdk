@@ -60,6 +60,7 @@ class RawTrackPieces:
     pass
 
 class TrackPieceTypes:
+
     START        = object()
     FINISH       = object()
     STRAIGHT     = object()

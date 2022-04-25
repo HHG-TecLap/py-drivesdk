@@ -1,4 +1,5 @@
 from asyncio.windows_events import NULL
+from hashlib import new
 import anki, asyncio, shiftRegister, pygame
 from anki.const import TrackPieceTypes
 from anki import track_pieces
@@ -11,7 +12,7 @@ async def ankiMain():
     auto1 = await control.connect_one()
     await control.scan()
     map = control.map
-asyncio.run(ankiMain())
+#asyncio.run(ankiMain())
 
 def expand_map_to_size(map, width, height):
     current_width = len(map[0])
@@ -59,13 +60,15 @@ def main():
     Gerade = pygame.image.load("Gerade.png")
     Kurve = pygame.image.load("Kurve.png")
     Kreuzung = pygame.image.load("Kreuzung.png")
-    
+    mapsurface = pygame.Surface((1000, 600)) 
+    mapsurface.fill((193, 60, 60))
+    mapsurface.blit(Gerade, (0,0))
     #gen_vismap()
 
     while run:
         clock.tick(30)
         Ui.fill((81, 255, 174))
-        
+        Ui.blit(mapsurface,(0,0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
