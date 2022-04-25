@@ -146,13 +146,17 @@ class Vehicle:
         pass
 
     async def setLights(self,light : int):
-        """NOTE: Does not seem to work correctly"""
+        """NOTE: Does not seem to work correctly. Likely an issue with the vehicles"""
+        raise DeprecationWarning("This function is deprecated and does not work due to a bug in the vehicle computer.")
+
         await self.__send_package__(setLightPkg(light))
         pass
 
     async def setLightPattern(self, r : int, g : int, b : int):
         """NOTE: Does not seem to work correctly\n
         NOTE: Needs further investigation (might not have all arguments covered)"""
+        raise DeprecationWarning("This function is deprecated and does not work due to a bug in the vehicle computer.")
+
         await self.__send_package__(lightPatternPkg(r,g,b))
         pass
 
