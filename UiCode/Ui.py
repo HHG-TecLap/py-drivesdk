@@ -1,17 +1,16 @@
-from asyncio.windows_events import NULL
+"""
 import anki, asyncio, shiftRegister, pygame
 from anki.const import TrackPieceTypes
 from anki import track_pieces
 
-vismap = [[]]
-control = anki.Controller()
+control = anki.Controller()"""
 map = []
-async def ankiMain(): 
+"""async def ankiMain(): 
     global map
     auto1 = await control.connect_one()
     await control.scan()
     map = control.map
-asyncio.run(ankiMain())
+asyncio.run(ankiMain())"""
 
 def expand_map_to_size(map, width, height):
     current_width = len(map[0])
@@ -26,6 +25,7 @@ def expand_map_to_size(map, width, height):
         pass
     pass
 
+vismap = [[]]
 def gen_vismap():
     h_orientation = 1
     v_orientation = 0
@@ -49,7 +49,7 @@ def gen_vismap():
         y_position += v_orientation
 
 
-def main():
+"""def main():
     pygame.init()
     Ui = pygame.display.set_mode((1000,600),pygame.RESIZABLE)
     pygame.display.set_caption("Test")
@@ -71,4 +71,4 @@ def main():
                 run = False
         pygame.display.update()
 
-main()
+main()"""
