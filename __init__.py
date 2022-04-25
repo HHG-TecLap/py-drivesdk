@@ -1,3 +1,4 @@
 from .vehicle import Vehicle, Lights
-from .track_pieces import TrackPiece, TrackPieceTypes
-from .controller import Controller
+from .utility.track_pieces import TrackPiece, TrackPieceTypes
+from .control.controller import Controller
+from .utility.lanes import Lane3, Lane4

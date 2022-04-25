@@ -1,6 +1,6 @@
 from typing import Union
 from . import const
-from .errors import * 
+from ..errors import * 
 
 def assemblePacket(msgType : Union[bytes,bytearray],payload : Union[str,bytes,bytearray]) -> bytes:
     if isinstance(msgType, bytearray): # Convert bytearray to bytes

@@ -1,5 +1,5 @@
-from .util import *
-from . import const
+from .utility.util import *
+from .utility import const
 import struct
 
 def setSpeedPkg(speed : int, accel : int = 500):

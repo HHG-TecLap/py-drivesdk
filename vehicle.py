@@ -3,9 +3,12 @@ import bleak, asyncio
 from bleak.backends.device import BLEDevice
 import dataclasses
 
+from .utility import util
+
 from .msgs import *
-from .track_pieces import TrackPiece
-from . import const, util
+from .utility.track_pieces import TrackPiece
+from .utility import const
+from .utility.lanes import _Lane
 
 def interpretLocalName(name : str):
     if name is None or len(name) < 1: # Fix some issues that might occur
@@ -129,6 +132,10 @@ class Vehicle:
         await self.setSpeed(0,1000)
         pass
 
+    async def change_lane(self, lane : _Lane, horizontalSpeed : int = 300, horizontalAcceleration : int = 300, *, _hopIntent : int = 0x0, _tag : int = 0x0):
+        await self.change_position(lane.lane_position,horizontalSpeed,horizontalAcceleration,_hopIntent=_hopIntent,_tag=_tag)
+        pass
+
     async def change_position(self, roadCenterOffset : float, horizontalSpeed : int = 300, horizontalAcceleration : int = 300, *, _hopIntent : int = 0x0, _tag : int = 0x0):
         await self.__send_package__(changeLanePkg(roadCenterOffset,horizontalSpeed,horizontalAcceleration,_hopIntent,_tag))
         pass
@@ -139,16 +146,23 @@ class Vehicle:
         pass
 
     async def setLights(self,light : int):
-        """NOTE: Does not seem to work correctly"""
+        """NOTE: Does not seem to work correctly. Likely an issue with the vehicles"""
+        raise DeprecationWarning("This function is deprecated and does not work due to a bug in the vehicle computer.")
+
         await self.__send_package__(setLightPkg(light))
         pass
 
     async def setLightPattern(self, r : int, g : int, b : int):
         """NOTE: Does not seem to work correctly\n
         NOTE: Needs further investigation (might not have all arguments covered)"""
+        raise DeprecationWarning("This function is deprecated and does not work due to a bug in the vehicle computer.")
+
         await self.__send_package__(lightPatternPkg(r,g,b))
         pass
 
+    def get_lane(self, mode : type[_Lane]) -> _Lane:
+        return mode.get_closest_lane(self._road_offset)
+        pass
 
     @property
     def is_connected(self) -> bool:

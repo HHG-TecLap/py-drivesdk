@@ -1,8 +1,8 @@
 """TODO: Fix vehicle finishing too early when starting from different piece than start"""
 
-from .track_pieces import TrackPiece
-from .vehicle import Vehicle
-from .const import TrackPieceTypes
+from ..utility.track_pieces import TrackPiece
+from ..vehicle import Vehicle
+from ..utility.const import TrackPieceTypes
 import asyncio
 
 def reorder_map(map : list[TrackPiece]):

@@ -2,10 +2,10 @@ import bleak, asyncio
 from bleak.backends.device import BLEDevice
 from bleak.backends.scanner import AdvertisementData
 
-from .const import *
-from . import errors
-from .vehicle import Vehicle, interpretLocalName
-from .track_pieces import TrackPiece
+from ..utility.const import *
+from .. import errors
+from ..vehicle import Vehicle, interpretLocalName
+from ..utility.track_pieces import TrackPiece
 from .scanner import Scanner
 
 from typing import Optional
