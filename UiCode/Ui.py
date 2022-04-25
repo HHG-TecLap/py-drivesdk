@@ -1,9 +1,11 @@
+from asyncio.windows_events import NULL
 import anki, asyncio, shiftRegister, pygame
 from anki.const import TrackPieceTypes
 from anki import track_pieces
 
 vismap = [[]]
 control = anki.Controller()
+map = NULL
 async def ankiMain(): 
     auto1 = await control.connect_one()
     await control.scan()
