@@ -1,9 +1,7 @@
-from asyncio.windows_events import NULL
 import anki, asyncio, shiftRegister, pygame
 from anki.const import TrackPieceTypes
 from anki import track_pieces
 
-vismap = [[]]
 control = anki.Controller()
 map = []
 async def ankiMain(): 
@@ -11,6 +9,7 @@ async def ankiMain():
     auto1 = await control.connect_one()
     await control.scan()
     map = control.map
+    
 asyncio.run(ankiMain())
 
 def expand_map_to_size(map, width, height):
@@ -26,30 +25,59 @@ def expand_map_to_size(map, width, height):
         pass
     pass
 
+vismap = [[]]
 def gen_vismap():
+    def insert_at(x_position, y_position, piece) -> tuple[int,int]:
+        vis_width = len(vismap)
+        vis_height = len(vismap[0])
+
+        if x_position >= vis_width:
+            vismap.append([None]*vis_height)
+        elif x_position < 0:
+            vismap.insert(0,[None]*vis_height)
+            x_position += 1
+
+        elif y_position >= vis_height:
+            for column in vismap: column.append(None)
+        elif y_position < 0:
+            for column in vismap: column.insert(0,None)
+            y_position += 1
+        
+        vismap[x_position][y_position] = piece
+        
+        return x_position, y_position
+        pass
+
     h_orientation = 1
     v_orientation = 0
+    ORIENTATION_LOOKUP = (
+        (0, 1),
+        (1, 0),
+        (0,-1),
+        (-1,0)
+    )
 
     x_position = 0
     y_position = 0
 
-    for i in range(len(map)):
-        for s in range(len(vismap)):
-            if(len(vismap[s]) <= y_position):
-                expand_map_to_size(vismap, len(vismap[s])+1, len(vismap)+1)
-        if (map[i].type in (TrackPieceTypes.STRAIGHT,TrackPieceTypes.INTERSECTION)):
-            vismap[x_position][y_position] = map[i]
-        elif ( map[i].type == TrackPieceTypes.CURVE):
-            if map[i].clockwise:
-                h_orientation = (h_orientation + 1) % 2
-                v_orientation = (v_orientation + 1) % 2
-        vismap[x_position][y_position] = map[i]
+    for i, piece in enumerate(map):
+        x_position, y_position = insert_at(x_position, y_position, piece)
+
+        if piece.type == TrackPieceTypes.CURVE:
+            inc = 1 if piece.clockwise else -1
+            current_oindex = ORIENTATION_LOOKUP.index((h_orientation,v_orientation))
+            current_oindex = (current_oindex + inc) % 4
+            h_orientation, v_orientation = ORIENTATION_LOOKUP[current_oindex]
+            pass
 
         x_position += h_orientation
         y_position += v_orientation
+        pass
 
+gen_vismap()
+print(vismap)
 
-def main():
+"""def main():
     pygame.init()
     Ui = pygame.display.set_mode((1000,600),pygame.RESIZABLE)
     pygame.display.set_caption("Test")
@@ -71,4 +99,4 @@ def main():
                 run = False
         pygame.display.update()
 
-main()
+main()"""
