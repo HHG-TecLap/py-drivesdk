@@ -84,7 +84,6 @@ class Controller:
             await asyncio.sleep(1)
             await vehicle.setSpeed(250)
             while vehicle._current_track_piece is None or vehicle._current_track_piece.type != TrackPieceTypes.FINISH:
-                print(vehicle._current_track_piece)
                 await asyncio.sleep(0.1)
                 pass
 
