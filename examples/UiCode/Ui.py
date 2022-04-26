@@ -1,6 +1,4 @@
-import anki, asyncio, shiftRegister, pygame
-from anki.const import TrackPieceTypes
-from anki import track_pieces
+import lib, asyncio, shiftRegister, pygame
 
 control = anki.Controller()
 map = []
