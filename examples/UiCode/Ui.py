@@ -1,4 +1,4 @@
-import lib, asyncio, shiftRegister, pygame
+import anki, asyncio, shiftRegister, pygame
 
 control = anki.Controller()
 map = []
