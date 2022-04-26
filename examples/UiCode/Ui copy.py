@@ -1,18 +1,13 @@
 from asyncio.windows_events import NULL
 from hashlib import new
 import anki, asyncio, shiftRegister, pygame
-from anki.const import TrackPieceTypes
-from anki import track_pieces
+from anki import TrackPieceTypes
+import threading
 
 vismap = [[]]
 control = anki.Controller()
 map = []
-async def ankiMain(): 
-    global map
-    auto1 = await control.connect_one()
-    await control.scan()
-    map = control.map
-#asyncio.run(ankiMain())
+
 
 def expand_map_to_size(map, width, height):
     current_width = len(map[0])
@@ -60,18 +55,49 @@ def main():
     Gerade = pygame.image.load("Gerade.png")
     Kurve = pygame.image.load("Kurve.png")
     Kreuzung = pygame.image.load("Kreuzung.png")
+    font = pygame.font.SysFont("Arial",20)
     mapsurface = pygame.Surface((1000, 600)) 
     mapsurface.fill((193, 60, 60))
     mapsurface.blit(Gerade, (0,0))
+    autoData = [[pygame.Surface((200,300))],[auto1]]
+    
     #gen_vismap()
 
     while run:
         clock.tick(30)
         Ui.fill((81, 255, 174))
         Ui.blit(mapsurface,(0,0))
+        for i in range(len(autoData[0])):
+            autoData[0][i].fill((81, 255, 174))
+            autodate = font.render("auto1", True, (0,0,0),(255,255,255))
+            autoData[0][i].blit(autodate, (0,0))
+            autodate = font.render(str(auto1.map_position), True, (0,0,0),(255,255,255))
+            autoData[0][i].blit(autodate, (0,50))
+            autodate = font.render(str( auto1.current_track_piece), True, (0,0,0),(255,255,255))
+            autoData[0][i].blit(autodate, (0,100))
+        Ui.blit(autoData[0][0], (1000, 0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
         pygame.display.update()
 
-main()
+async def ankiMain(): 
+    global auto1
+    global map
+    auto1 = await control.connect_one()
+    await control.scan()
+    map = control.map
+    await auto1.setSpeed(200)
+
+async def setup():
+    asyncio.create_task(ankiMain())
+    await asyncio.sleep(10)
+    frontend = threading.Thread(target = main)
+    frontend.start()
+    while True:
+        await asyncio.sleep(1000)
+        pass
+    pass
+
+asyncio.run(setup())
+

@@ -1,9 +1,7 @@
-
-import anki, asyncio, pygame
-from anki import TrackPieceTypes
+import anki, asyncio, shiftRegister, pygame
 
 control = anki.Controller()
-map : list[anki.TrackPiece] = []
+map = []
 async def ankiMain(): 
     global map
     auto1 = await control.connect_one()
