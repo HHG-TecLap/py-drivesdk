@@ -1,3 +1,6 @@
+from dataclasses import dataclass
+from warnings import warn
+
 SERVICE_UUID    = 'be15beef-6186-407e-8381-0bd89c4d8df4'
 READ_CHAR_UUID   = 'be15bee0-6186-407e-8381-0bd89c4d8df4'
 WRITE_CHAR_UUID = 'be15bee1-6186-407e-8381-0bd89c4d8df4'
@@ -59,13 +62,18 @@ class RawTrackPieces:
     INTERSECTION = [10]
     pass
 
+@dataclass(frozen=True,slots=True)
+class TrackPieceType:
+    name : str
+    pass
+
 class TrackPieceTypes:
 
-    START        = object()
-    FINISH       = object()
-    STRAIGHT     = object()
-    CURVE        = object()
-    INTERSECTION = object()
+    START        = TrackPieceType("START")
+    FINISH       = TrackPieceType("FINISH")
+    STRAIGHT     = TrackPieceType("STRAIGHT")
+    CURVE        = TrackPieceType("CURVE")
+    INTERSECTION = TrackPieceType("INTERSECTION")
 
     @classmethod
     def try_type(cls,piece_value : int) -> object:
@@ -78,12 +86,9 @@ class TrackPieceTypes:
         pass
     
     @classmethod
-    def as_str(cls,piece : object) -> str:
-        if   piece is cls.START:        return "START"
-        elif piece is cls.FINISH:       return "FINISH"
-        elif piece is cls.STRAIGHT:     return "STRAIGHT"
-        elif piece is cls.CURVE:        return "CURVE"
-        elif piece is cls.INTERSECTION: return "INTERSECTION"
-        else: raise ValueError("This is not a valid piece")
+    def as_str(cls, piece : TrackPieceType) -> str:
+        warn("TrackPieceTypes.as_str is deprecated. Use TrackPiece.name instead",DeprecationWarning)
+
+        return piece.name
         pass
     pass
