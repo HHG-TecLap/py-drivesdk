@@ -50,7 +50,6 @@ class _Lane:
 
 @__add_constants__
 class Lane3(_Lane):
-    """TODO: Change these values to more accurate ones"""
     __LANE_EQUIVS__ = {
         -60: "LEFT",
         0  : "MIDDLE",
@@ -60,7 +59,6 @@ class Lane3(_Lane):
 
 @__add_constants__
 class Lane4(_Lane):
-    """TODO: Change these values as well"""
     __LANE_EQUIVS__ = {
         -60: "LEFT_2",
         -30: "LEFT_1",
