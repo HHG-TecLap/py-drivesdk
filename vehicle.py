@@ -8,7 +8,7 @@ from .utility import util
 from .msgs import *
 from .utility.track_pieces import TrackPiece
 from .utility import const
-from .utility.lanes import _Lane
+from .utility.lanes import Lane3, Lane4, _Lane
 
 def interpretLocalName(name : str):
     if name is None or len(name) < 1: # Fix some issues that might occur
@@ -190,5 +190,15 @@ class Vehicle:
     @property
     def road_offset(self) -> float:
         return self._road_offset
+        pass
+
+    @property
+    def current_lane3(self) -> Lane3:
+        return self.get_lane(Lane3)
+        pass
+
+    @property
+    def current_lane4(self) -> Lane4:
+        return self.get_lane(Lane4)
         pass
     pass
