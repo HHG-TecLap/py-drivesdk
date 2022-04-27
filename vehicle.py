@@ -1,3 +1,5 @@
+from warnings import warn
+
 from typing import Callable, Optional
 import bleak, asyncio
 from bleak.backends.device import BLEDevice
@@ -101,7 +103,7 @@ class Vehicle:
         """Connect to the Supercar\n
         Don't forget to call Vehicle.disconnect() on program exit!"""
         try:
-            await self.__client__.connect()
+            print(await self.__client__.connect())
             pass
         except BleakDBusError: 
             raise errors.ConnectionDatabusException(
