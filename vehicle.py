@@ -135,7 +135,7 @@ class Vehicle:
         """Disconnect from the Supercar\nNOTE: Always do this on program exit!"""
         self._is_connected = not await self.__client__.disconnect()
         if self._is_connected:
-            raise errors.Di
+            raise errors.DisconnectFailedException("The attempt to disconnect the vehicle failed.")
         
         return self._is_connected
         pass
