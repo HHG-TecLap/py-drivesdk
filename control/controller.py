@@ -71,9 +71,9 @@ class Controller:
         return vehicle
         pass
 
-    async def connect_many(self, amount : int) -> set[Vehicle]: # This does not have ID assignments because it uses sets and therefore assignments would be unreliable
+    async def connect_many(self, amount : int) -> tuple[Vehicle]: # This does not have ID assignments because it uses sets and therefore assignments would be unreliable
         """Connect to <amount> non-charging Supercars"""
-        return {await self.connect_one() for i in range(amount)} # Done in series because the documentation said that would be more stable
+        return tuple([await self.connect_one() for i in range(amount)]) # Done in series because the documentation said that would be more stable
         pass
 
     
