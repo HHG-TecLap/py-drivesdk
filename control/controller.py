@@ -8,7 +8,7 @@ from ..vehicle import Vehicle, interpretLocalName
 from ..utility.track_pieces import TrackPiece
 from .scanner import Scanner
 
-from typing import Optional
+from typing import Iterable, Optional
 
 def isAnki(device : BLEDevice, advertisement : AdvertisementData):
     try:
@@ -71,9 +71,13 @@ class Controller:
         return vehicle
         pass
 
-    async def connect_many(self, amount : int) -> tuple[Vehicle]: # This does not have ID assignments because it uses sets and therefore assignments would be unreliable
+    async def connect_many(self, amount : int, vehicle_ids : Iterable[int] = None) -> tuple[Vehicle]:
         """Connect to <amount> non-charging Supercars"""
-        return tuple([await self.connect_one() for i in range(amount)]) # Done in series because the documentation said that would be more stable
+
+        if vehicle_ids is None: vehicle_ids = [None]*amount
+        if amount != len(vehicle_ids): raise ValueError("Amount of passed vehicle ids is different to amount of requested connections")
+
+        return tuple([await self.connect_one(vehicle_id) for vehicle_id in vehicle_ids]) # Done in series because the documentation said that would be more stable
         pass
 
     
