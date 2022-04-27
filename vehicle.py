@@ -9,6 +9,7 @@ from .msgs import *
 from .utility.track_pieces import TrackPiece
 from .utility import const
 from .utility.lanes import Lane3, Lane4, _Lane
+from . import errors
 
 def interpretLocalName(name : str):
     if name is None or len(name) < 1: # Fix some issues that might occur
@@ -114,11 +115,13 @@ class Vehicle:
         self._is_connected = True
         pass
 
-    async def disconnect(self):
+    async def disconnect(self) -> bool:
         """Disconnect from the Supercar\nNOTE: Always do this on program exit!"""
-        await self.__client__.disconnect()
+        self._is_connected = not await self.__client__.disconnect()
+        if self._is_connected:
+            raise errors.Di
         
-        self._is_connected = False
+        return self._is_connected
         pass
 
 
