@@ -37,8 +37,9 @@ class Controller:
         self.map : Optional[list[TrackPiece]] = None
         pass
 
-    async def _get_vehicle(self, address : str = None) -> Vehicle:
+    async def _get_vehicle(self,vehicle_id : Optional[int] = None, address : str = None) -> Vehicle:
         """Finds a Supercar and creates a Vehicle instance around it"""
+
         device = await self._scanner.find_device_by_filter(lambda device, advertisement: isAnki(device,advertisement) and (address is None or device.address == address))
         if device is None:
             raise errors.VehicleNotFound("Could not find a supercar within the given timeout")
@@ -46,27 +47,31 @@ class Controller:
 
         client = bleak.BleakClient(device)
 
-        vehicle = Vehicle(id(client), device,client)
+        if vehicle_id is None:
+            vehicle_id = id(client)
+            pass
+
+        vehicle = Vehicle(vehicle_id, device,client)
         self.vehicles.add(vehicle)
         return vehicle
         pass
 
 
-    async def connect_one(self) -> Vehicle:
+    async def connect_one(self, vehicle_id : Optional[int] = None) -> Vehicle:
         """Connect to one non-charging Supercar and return the Vehicle instance"""
-        vehicle = await self._get_vehicle()
+        vehicle = await self._get_vehicle(vehicle_id)
         await vehicle.connect()
         return vehicle
         pass
 
-    async def connect_specific(self, address : str) -> Vehicle:
+    async def connect_specific(self, address : str, vehicle_id : Optional[int] = None) -> Vehicle:
         """Connect to a supercar with a specified MAC address"""
-        vehicle = await self._get_vehicle(address)
+        vehicle = await self._get_vehicle(vehicle_id,address)
         await vehicle.connect()
         return vehicle
         pass
 
-    async def connect_many(self, amount : int) -> set[Vehicle]:
+    async def connect_many(self, amount : int) -> set[Vehicle]: # This does not have ID assignments because it uses sets and therefore assignments would be unreliable
         """Connect to <amount> non-charging Supercars"""
         return {await self.connect_one() for i in range(amount)} # Done in series because the documentation said that would be more stable
         pass
