@@ -131,11 +131,13 @@ class Vehicle:
         self._is_connected = True
         pass
 
-    async def disconnect(self):
+    async def disconnect(self) -> bool:
         """Disconnect from the Supercar\nNOTE: Always do this on program exit!"""
-        print(await self.__client__.disconnect())
+        self._is_connected = not await self.__client__.disconnect()
+        if self._is_connected:
+            raise errors.Di
         
-        self._is_connected = False
+        return self._is_connected
         pass
 
 
