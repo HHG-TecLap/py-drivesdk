@@ -2,6 +2,7 @@ from typing import Callable, Optional
 import bleak, asyncio
 from bleak.backends.device import BLEDevice
 import dataclasses
+from bleak.exc import BleakDBusError
 
 from .utility import util
 
@@ -9,6 +10,7 @@ from .msgs import *
 from .utility.track_pieces import TrackPiece
 from .utility import const
 from .utility.lanes import Lane3, Lane4, _Lane
+from . import errors
 
 def interpretLocalName(name : str):
     if name is None or len(name) < 1: # Fix some issues that might occur
@@ -98,7 +100,22 @@ class Vehicle:
     async def connect(self):
         """Connect to the Supercar\n
         Don't forget to call Vehicle.disconnect() on program exit!"""
-        await self.__client__.connect()
+        try:
+            await self.__client__.connect()
+            pass
+        except BleakDBusError: 
+            raise errors.ConnectionDatabusException(
+                "An attempt to connect to the vehicle failed. This can occur sometimes and is usually not an error in your code."
+            )
+        except bleak.BleakError: 
+            raise errors.ConnectionFailedException(
+                "An attempt to connect to the vehicle failed. This is usually not associated with your code."
+            )
+        except asyncio.TimeoutError: 
+            raise errors.ConnectionTimedoutException(
+                "An attempt to connect to the vehicle timed out. Make sure the car is actually disconnected."
+            )
+        
         # Get service and characteristics
         services = await self.__client__.get_services()
         anki_service = services.get_service(const.SERVICE_UUID)
@@ -116,7 +133,7 @@ class Vehicle:
 
     async def disconnect(self):
         """Disconnect from the Supercar\nNOTE: Always do this on program exit!"""
-        await self.__client__.disconnect()
+        print(await self.__client__.disconnect())
         
         self._is_connected = False
         pass
