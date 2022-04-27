@@ -75,6 +75,7 @@ class Vehicle:
                 piece_obj = TrackPiece(loc,piece,clockwise)
             except ValueError:
                 warn(f"A TrackPiece value received from the vehicle could not be decoded. If you are running a scan, this will break it. Received: {piece}",errors.TrackPieceDecodeWarning)
+                return
                 pass
 
             self._current_track_piece = piece_obj
