@@ -46,7 +46,7 @@ class Controller:
 
         client = bleak.BleakClient(device)
 
-        vehicle = Vehicle(device,client)
+        vehicle = Vehicle(id(client), device,client)
         self.vehicles.add(vehicle)
         return vehicle
         pass
