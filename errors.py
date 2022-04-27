@@ -7,6 +7,10 @@ class DuplicateScanWarning(Warning):
     """The map has already been scanned, but scan has been called anyway. This is not dangerous, but unneccessary"""
     pass
 
+class TrackPieceDecodeWarning(Warning):
+    """The TrackPiece received from the vehicle was invalid"""
+    pass
+
 # Exceptions
 class AnkiException(Exception): 
     """Base class for all errors raised by this library"""
