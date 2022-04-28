@@ -110,7 +110,7 @@ class Vehicle:
         """Connect to the Supercar\n
         Don't forget to call Vehicle.disconnect() on program exit!"""
         try:
-            print(await self.__client__.connect())
+            if not (await self.__client__.connect()): raise bleak.BleakError
             pass
         except BleakDBusError:
             raise errors.ConnectionDatabusException(
@@ -157,7 +157,7 @@ class Vehicle:
 
     async def stop(self):
         """Stops the Supercar"""
-        await self.setSpeed(0,1000)
+        await self.setSpeed(0)
         pass
 
     async def changeLane(self, lane : _Lane, horizontalSpeed : int = 300, horizontalAcceleration : int = 300, *, _hopIntent : int = 0x0, _tag : int = 0x0):
@@ -191,7 +191,6 @@ class Vehicle:
     def getLane(self, mode : type[_Lane]) -> _Lane:
         return mode.getClosestLane(self._road_offset)
         pass
-
     async def align(self, speed : int = 300):
         await self.setSpeed(speed)
         track_piece = None
