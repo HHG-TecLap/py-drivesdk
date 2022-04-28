@@ -157,7 +157,7 @@ class Vehicle:
 
     async def stop(self):
         """Stops the Supercar"""
-        await self.setSpeed(0,1000)
+        await self.setSpeed(0)
         pass
 
     async def change_lane(self, lane : _Lane, horizontalSpeed : int = 300, horizontalAcceleration : int = 300, *, _hopIntent : int = 0x0, _tag : int = 0x0):

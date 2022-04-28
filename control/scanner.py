@@ -43,7 +43,6 @@ class Scanner:
         await self.vehicle.stop()
 
         reorder_map(self.map)
-        print(self.map)
 
         return self.map
         pass

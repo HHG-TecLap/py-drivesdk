@@ -96,7 +96,7 @@ class Controller:
             pass
 
         if align_pre_scan:
-            await asyncio.gather(*[no_scan_align(v,TrackPieceTypes.START) for v in self.vehicles])
+            await asyncio.gather(*[no_scan_align(v,TrackPieceTypes.FINISH) for v in self.vehicles])
             await asyncio.sleep(1)
             pass
 
@@ -110,10 +110,13 @@ class Controller:
 
         scanner = Scanner(scan_vehicle)
         
+        await scan_vehicle.setSpeed(150)
+        await asyncio.sleep(1)
+        await scan_vehicle.stop()
+
         if not align_pre_scan:
             tasks = [asyncio.create_task(simul_align(v)) for v in temp_vehicles]
             pass
-
         self.map = await scanner.scan()
 
         if not align_pre_scan: 
