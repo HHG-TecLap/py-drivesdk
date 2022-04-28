@@ -89,7 +89,6 @@ class Controller:
         async def no_scan_align(vehicle : Vehicle, align_target = TrackPieceTypes.FINISH):
             await vehicle.setSpeed(250)
             while vehicle._current_track_piece is None or vehicle._current_track_piece.type != align_target:
-                print("Aligning",vehicle._current_track_piece)
                 await asyncio.sleep(0.1)
                 pass
 

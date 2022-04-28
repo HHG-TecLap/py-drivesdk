@@ -110,7 +110,7 @@ class Vehicle:
         """Connect to the Supercar\n
         Don't forget to call Vehicle.disconnect() on program exit!"""
         try:
-            print(await self.__client__.connect())
+            if not (await self.__client__.connect()): raise bleak.BleakError
             pass
         except BleakDBusError:
             raise errors.ConnectionDatabusException(
