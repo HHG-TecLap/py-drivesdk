@@ -49,7 +49,7 @@ class Lights:
     ENGINELIGHTS = 3
 
 class Vehicle:
-    __slots__ = ["__client__","_current_track_piece","_is_connected","_road_offset","_speed","on_track_piece_change","_track_piece_future","_position","_map","__read_chara__","__write_chara__", "_id"]
+    __slots__ = ("__client__","_current_track_piece","_is_connected","_road_offset","_speed","on_track_piece_change","_track_piece_future","_position","_map","__read_chara__","__write_chara__", "_id")
     def __init__(self, id : int, device : BLEDevice, client : bleak.BleakClient = None):
         self.__client__ = client if client is not None else bleak.BleakClient(device)
 
