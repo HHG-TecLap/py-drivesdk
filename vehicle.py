@@ -192,6 +192,16 @@ class Vehicle:
         return mode.getClosestLane(self._road_offset)
         pass
 
+    async def align(self, speed : int = 300):
+        await self.setSpeed(speed)
+        track_piece = None
+        while track_piece == const.TrackPieceTypes.START:
+            track_piece = await self.wait_for_track_change()
+            pass
+
+        await self.stop()
+        pass
+
     @property
     def is_connected(self) -> bool:
         return self._is_connected
