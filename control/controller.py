@@ -72,9 +72,24 @@ class Controller:
         pass
 
     
-    async def scan(self) -> list[TrackPiece]:
+    async def scan(self, align_pre_scan : bool = True) -> list[TrackPiece]:
         if self.map is not None:
             raise errors.DuplicateScanWarning("The map has already been scanned. Check your code for any mistakes like that.")
+            pass
+
+        async def no_scan_align(vehicle : Vehicle, align_target = TrackPieceTypes.FINISH):
+            await vehicle.setSpeed(250)
+            while vehicle._current_track_piece is None or vehicle._current_track_piece.type != align_target:
+                print("Aligning",vehicle._current_track_piece)
+                await asyncio.sleep(0.1)
+                pass
+
+            await vehicle.stop()
+            pass
+
+        if align_pre_scan:
+            await asyncio.gather(*[no_scan_align(v,TrackPieceTypes.START) for v in self.vehicles])
+            await asyncio.sleep(1)
             pass
 
         temp_vehicles = self.vehicles.copy()
@@ -82,20 +97,19 @@ class Controller:
 
         async def simul_align(vehicle : Vehicle):
             await asyncio.sleep(1)
-            await vehicle.setSpeed(250)
-            while vehicle._current_track_piece is None or vehicle._current_track_piece.type != TrackPieceTypes.FINISH:
-                await asyncio.sleep(0.1)
-                pass
-
-            await vehicle.stop()
+            await no_scan_align(vehicle)
             pass
 
         scanner = Scanner(scan_vehicle)
         
-        tasks = [asyncio.create_task(simul_align(v)) for v in temp_vehicles]
+        if not align_pre_scan:
+            tasks = [asyncio.create_task(simul_align(v)) for v in temp_vehicles]
+            pass
+
         self.map = await scanner.scan()
 
-        for task in tasks: await task
+        if not align_pre_scan: 
+            for task in tasks: await task
 
         completed_tasks  = {}
         async def align(vehicle : Vehicle):

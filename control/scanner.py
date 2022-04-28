@@ -23,6 +23,7 @@ class Scanner:
         track_types = []
         def watcher():
             track = self.vehicle._current_track_piece
+            print("Scan encountered",track.type)
             if track is not None:
                 self.map.append(track)
                 track_types.append(track.type)
@@ -43,6 +44,7 @@ class Scanner:
         await self.vehicle.stop()
 
         reorder_map(self.map)
+        print(self.map)
 
         return self.map
         pass

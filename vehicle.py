@@ -187,6 +187,16 @@ class Vehicle:
         await self.__send_package__(lightPatternPkg(r,g,b))
         pass
 
+    async def align(self, speed : int = 300):
+        await self.setSpeed(speed)
+        track_piece = None
+        while track_piece == const.TrackPieceTypes.START:
+            track_piece = await self.wait_for_track_change()
+            pass
+
+        await self.stop()
+        pass
+
     def get_lane(self, mode : type[_Lane]) -> _Lane:
         return mode.get_closest_lane(self._road_offset)
         pass
