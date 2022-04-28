@@ -1,3 +1,4 @@
 # Todo-List
 
-+ Fix vehicle finishing too early when starting from different piece than start
++ Fix map_position breaking when turning around
+    (i.e. add smart position detection)
