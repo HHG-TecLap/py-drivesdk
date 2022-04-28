@@ -49,10 +49,11 @@ class Lights:
     ENGINELIGHTS = 3
 
 class Vehicle:
-    __slots__ = ["__client__","_current_track_piece","_is_connected","_road_offset","on_track_piece_change","_track_piece_future","_position","_map","__read_chara__","__write_chara__"]
-    def __init__(self, device : BLEDevice, client : bleak.BleakClient = None):
+    __slots__ = ["__client__","_current_track_piece","_is_connected","_road_offset","on_track_piece_change","_track_piece_future","_position","_map","__read_chara__","__write_chara__", "_id"]
+    def __init__(self, id : int, device : BLEDevice, client : bleak.BleakClient = None):
         self.__client__ = client if client is not None else bleak.BleakClient(device)
 
+        self._id : int = id
         self._current_track_piece : TrackPiece = None
         """Do not use! This can only show the last position for... reasons"""
         self._is_connected = False
@@ -111,15 +112,15 @@ class Vehicle:
         try:
             print(await self.__client__.connect())
             pass
-        except BleakDBusError: 
+        except BleakDBusError:
             raise errors.ConnectionDatabusException(
                 "An attempt to connect to the vehicle failed. This can occur sometimes and is usually not an error in your code."
             )
-        except bleak.BleakError: 
+        except bleak.BleakError:
             raise errors.ConnectionFailedException(
                 "An attempt to connect to the vehicle failed. This is usually not associated with your code."
             )
-        except asyncio.TimeoutError: 
+        except asyncio.TimeoutError:
             raise errors.ConnectionTimedoutException(
                 "An attempt to connect to the vehicle timed out. Make sure the car is actually disconnected."
             )
@@ -227,5 +228,10 @@ class Vehicle:
     @property
     def current_lane4(self) -> Lane4:
         return self.get_lane(Lane4)
+        pass
+
+    @property
+    def id(self) -> int:
+        return self._id
         pass
     pass
