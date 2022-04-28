@@ -49,7 +49,7 @@ class Lights:
     ENGINELIGHTS = 3
 
 class Vehicle:
-    __slots__ = ["__client__","_current_track_piece","_is_connected","_road_offset","on_track_piece_change","_track_piece_future","_position","_map","__read_chara__","__write_chara__", "_id"]
+    __slots__ = ["__client__","_current_track_piece","_is_connected","_road_offset","_speed","on_track_piece_change","_track_piece_future","_position","_map","__read_chara__","__write_chara__", "_id"]
     def __init__(self, id : int, device : BLEDevice, client : bleak.BleakClient = None):
         self.__client__ = client if client is not None else bleak.BleakClient(device)
 
@@ -58,6 +58,7 @@ class Vehicle:
         """Do not use! This can only show the last position for... reasons"""
         self._is_connected = False
         self._road_offset : float = ...
+        self._speed : int = ...
         self._map : Optional[list[TrackPiece]] = None
         self._position : Optional[int] = None
 
@@ -71,6 +72,7 @@ class Vehicle:
             loc, piece, offset, speed, clockwise = disassembleTrackUpdate(payload)
 
             self._road_offset = offset
+            self._speed = speed
 
             try:
                 piece_obj = TrackPiece(loc,piece,clockwise)
@@ -153,6 +155,7 @@ class Vehicle:
     async def setSpeed(self, speed : int, acceleration : int = 500):
         """Set the speed of the Supercar in mm/s"""
         await self.__send_package__(setSpeedPkg(speed,acceleration))
+        self._speed = speed
         pass
 
     async def stop(self):
@@ -227,6 +230,11 @@ class Vehicle:
     @property
     def road_offset(self) -> float:
         return self._road_offset
+        pass
+
+    @property
+    def speed(self) -> int:
+        return self._speed
         pass
 
     @property
