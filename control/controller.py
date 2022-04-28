@@ -37,7 +37,7 @@ class Controller:
         self.map : Optional[list[TrackPiece]] = None
         pass
 
-    async def _get_vehicle(self,vehicle_id : Optional[int] = None, address : str = None) -> Vehicle:
+    async def _getVehicle(self,vehicle_id : Optional[int] = None, address : str = None) -> Vehicle:
         """Finds a Supercar and creates a Vehicle instance around it"""
 
         device = await self._scanner.find_device_by_filter(lambda device, advertisement: isAnki(device,advertisement) and (address is None or device.address == address))
@@ -57,27 +57,27 @@ class Controller:
         pass
 
 
-    async def connect_one(self, vehicle_id : Optional[int] = None) -> Vehicle:
+    async def connectOne(self, vehicle_id : Optional[int] = None) -> Vehicle:
         """Connect to one non-charging Supercar and return the Vehicle instance"""
-        vehicle = await self._get_vehicle(vehicle_id)
+        vehicle = await self._getVehicle(vehicle_id)
         await vehicle.connect()
         return vehicle
         pass
 
-    async def connect_specific(self, address : str, vehicle_id : Optional[int] = None) -> Vehicle:
+    async def connectSpecific(self, address : str, vehicle_id : Optional[int] = None) -> Vehicle:
         """Connect to a supercar with a specified MAC address"""
-        vehicle = await self._get_vehicle(vehicle_id,address)
+        vehicle = await self._getVehicle(vehicle_id,address)
         await vehicle.connect()
         return vehicle
         pass
 
-    async def connect_many(self, amount : int, vehicle_ids : Iterable[int] = None) -> tuple[Vehicle]:
+    async def connectMany(self, amount : int, vehicle_ids : Iterable[int] = None) -> tuple[Vehicle]:
         """Connect to <amount> non-charging Supercars"""
 
         if vehicle_ids is None: vehicle_ids = [None]*amount
         if amount != len(vehicle_ids): raise ValueError("Amount of passed vehicle ids is different to amount of requested connections")
 
-        return tuple([await self.connect_one(vehicle_id) for vehicle_id in vehicle_ids]) # Done in series because the documentation said that would be more stable
+        return tuple([await self.connectOne(vehicle_id) for vehicle_id in vehicle_ids]) # Done in series because the documentation said that would be more stable
         pass
 
     
@@ -89,7 +89,7 @@ class Controller:
         temp_vehicles = self.vehicles.copy()
         scan_vehicle = temp_vehicles.pop()
 
-        async def simul_align(vehicle : Vehicle):
+        async def simulAlign(vehicle : Vehicle):
             await asyncio.sleep(1)
             await vehicle.setSpeed(250)
             while vehicle._current_track_piece is None or vehicle._current_track_piece.type != TrackPieceTypes.FINISH:
@@ -101,7 +101,7 @@ class Controller:
 
         scanner = Scanner(scan_vehicle)
         
-        tasks = [asyncio.create_task(simul_align(v)) for v in temp_vehicles]
+        tasks = [asyncio.create_task(simulAlign(v)) for v in temp_vehicles]
         self.map = await scanner.scan()
 
         for task in tasks: await task
@@ -139,13 +139,13 @@ class Controller:
 
 
 
-    async def disconnect_all(self):
+    async def disconnectAll(self):
         await asyncio.gather(*[vehicle.disconnect() for vehicle in self.vehicles])
         pass
     
-    def handle_shutdown(self):
+    def handleShutdown(self):
         """Handles a shutdown neatly and disconnects the vehicles"""
-        asyncio.run(self.disconnect_all())
+        asyncio.run(self.disconnectAll())
         pass
 
 

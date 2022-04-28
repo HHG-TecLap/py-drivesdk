@@ -5,7 +5,7 @@ from ..vehicle import Vehicle
 from ..utility.const import TrackPieceTypes
 import asyncio
 
-def reorder_map(map : list[TrackPiece]):
+def reorderMap(map : list[TrackPiece]):
     while not (map[0].type is TrackPieceTypes.START and map[-1].type is TrackPieceTypes.FINISH):
         map.insert(0,map.pop(-1))
         pass
@@ -42,7 +42,7 @@ class Scanner:
         self.vehicle.on_track_piece_change = lambda: None
         await self.vehicle.stop()
 
-        reorder_map(self.map)
+        reorderMap(self.map)
 
         return self.map
         pass

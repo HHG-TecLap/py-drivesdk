@@ -1,6 +1,6 @@
 import dataclasses
 
-def __add_constants__(cls : "_Lane"):
+def __addConstants__(cls : "_Lane"):
     for position, name in cls.__LANE_EQUIVS__.items():
         setattr(cls,name,cls(name,position))
         pass
@@ -17,13 +17,13 @@ class _Lane:
 
 
     @classmethod
-    def get_closest_lane(cls, position : float):
+    def getClosestLane(cls, position : float):
         _, lane_val = min({abs(k-position) : k for k, v in cls.__LANE_EQUIVS__.items()}.items(),key=lambda v: v[0])
         
         return cls(cls.__LANE_EQUIVS__[lane_val],lane_val)
         pass
     @classmethod
-    def by_name(cls, name : str):
+    def byName(cls, name : str):
         if not name in cls.__LANE_EQUIVS__.values(): raise ValueError("Lane does not exist for the chosen type")
         rev_equivs = {v:k for k,v in cls.__LANE_EQUIVS__.items()}
 
@@ -31,7 +31,7 @@ class _Lane:
         pass
 
     @classmethod
-    def get_all(cls):
+    def getAll(cls):
         return [cls(name,position) for position, name in cls.__LANE_EQUIVS__.items()]
         pass
 
@@ -48,7 +48,7 @@ class _Lane:
         pass
     pass
 
-@__add_constants__
+@__addConstants__
 class Lane3(_Lane):
     __LANE_EQUIVS__ = {
         -60: "LEFT",
@@ -57,7 +57,7 @@ class Lane3(_Lane):
     }
     pass
 
-@__add_constants__
+@__addConstants__
 class Lane4(_Lane):
     __LANE_EQUIVS__ = {
         -60: "LEFT_2",
