@@ -110,7 +110,7 @@ class Vehicle:
         """Connect to the Supercar\n
         Don't forget to call Vehicle.disconnect() on program exit!"""
         try:
-            print(await self.__client__.connect())
+            if not (await self.__client__.connect()): raise bleak.BleakError
             pass
         except BleakDBusError:
             raise errors.ConnectionDatabusException(
@@ -157,7 +157,7 @@ class Vehicle:
 
     async def stop(self):
         """Stops the Supercar"""
-        await self.setSpeed(0,1000)
+        await self.setSpeed(0)
         pass
 
     async def change_lane(self, lane : _Lane, horizontalSpeed : int = 300, horizontalAcceleration : int = 300, *, _hopIntent : int = 0x0, _tag : int = 0x0):
@@ -186,6 +186,16 @@ class Vehicle:
         raise DeprecationWarning("This function is deprecated and does not work due to a bug in the vehicle computer.")
 
         await self.__send_package__(lightPatternPkg(r,g,b))
+        pass
+
+    async def align(self, speed : int = 300):
+        await self.setSpeed(speed)
+        track_piece = None
+        while track_piece == const.TrackPieceTypes.START:
+            track_piece = await self.wait_for_track_change()
+            pass
+
+        await self.stop()
         pass
 
     def get_lane(self, mode : type[_Lane]) -> _Lane:
