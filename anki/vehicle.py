@@ -58,7 +58,7 @@ class Vehicle:
         """Do not use! This can only show the last position for... reasons"""
         self._is_connected = False
         self._road_offset : float = ...
-        self._speed : int = ...
+        self._speed : int = 0
         self._map : Optional[list[TrackPiece]] = None
         self._position : Optional[int] = None
 
