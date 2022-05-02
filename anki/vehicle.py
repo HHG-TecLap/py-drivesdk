@@ -242,12 +242,12 @@ class Vehicle:
 
     @property
     def current_lane3(self) -> Lane3:
-        return self.get_lane(Lane3)
+        return self.getLane(Lane3)
         pass
 
     @property
     def current_lane4(self) -> Lane4:
-        return self.get_lane(Lane4)
+        return self.getLane(Lane4)
         pass
 
     @property
