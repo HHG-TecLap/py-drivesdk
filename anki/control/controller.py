@@ -44,13 +44,14 @@ class Controller:
         """Finds a Supercar and creates a Vehicle instance around it"""
 
         device = await self._scanner.find_device_by_filter(lambda device, advertisement: isAnki(device,advertisement) and (address is None or device.address == address))
+        # Get a BLEDevice and ensure it is of a required address if address was given
         if device is None:
             raise errors.VehicleNotFound("Could not find a supercar within the given timeout")
             pass
 
-        client = bleak.BleakClient(device)
+        client = bleak.BleakClient(device) # Wrapping the device in a client. This client will be used to send and receive data in the Vehicle class
 
-        if vehicle_id is None:
+        if vehicle_id is None: # Assign the object id of the client as a vehicle id if it wasn't given. This ensures that every vehicle has an id
             vehicle_id = id(client)
             pass
 
@@ -136,44 +137,44 @@ class Controller:
         ## Raises\n
         + `DuplicateScanWarning`: The map was already scanned in. This scan will be skipped.
         """
-        if self.map is not None:
+        if self.map is not None: # The map shouldn't be scanned twice. Exiting the method is a good practice implementation
             raise errors.DuplicateScanWarning("The map has already been scanned. Check your code for any mistakes like that.")
             pass
 
-        async def noScanAlign(vehicle : Vehicle, align_target = TrackPieceTypes.FINISH):
+        async def noScanAlign(vehicle : Vehicle, align_target = TrackPieceTypes.FINISH): # Alignment when the scanner is not currently running
             await vehicle.setSpeed(250)
-            while vehicle._current_track_piece is None or vehicle._current_track_piece.type != align_target:
+            while vehicle._current_track_piece is None or vehicle._current_track_piece.type != align_target: # Don't check when none to prevent AttributeError
                 await asyncio.sleep(0.1)
                 pass
 
             await vehicle.stop()
             pass
 
-        if align_pre_scan:
+        if align_pre_scan: # Aligning before scanning if enabled. This allows the vehicles to be placed anywhere on the map
             await asyncio.gather(*[noScanAlign(v,TrackPieceTypes.FINISH) for v in self.vehicles])
             await asyncio.sleep(1)
             pass
 
         temp_vehicles = self.vehicles.copy()
-        scan_vehicle = temp_vehicles.pop()
+        scan_vehicle = temp_vehicles.pop() # Take a vehicle out of the set. This allows us to use temp_vehicles as a set of all non-scannning vehicles
 
         async def simulAlign(vehicle : Vehicle):
-            await asyncio.sleep(1)
+            await asyncio.sleep(1) # Putting a little delay here so that the other vehicles aren't in front of the scanner which would ruin the alignment
             await noScanAlign(vehicle)
             pass
 
         scanner = Scanner(scan_vehicle)
         
-        await scan_vehicle.setSpeed(150)
+        await scan_vehicle.setSpeed(150) # Drive a little forward so that we don't immediately see START and FINISH and complete the scan
         await asyncio.sleep(1)
         await scan_vehicle.stop()
 
-        if not align_pre_scan:
+        if not align_pre_scan: # Only aligning during scan when not already aligned pre-scan. Without pre-align this is neccessary to ensure that the vehicles are where we think they are
             tasks = [asyncio.create_task(simulAlign(v)) for v in temp_vehicles]
             pass
         self.map = await scanner.scan()
 
-        if not align_pre_scan: 
+        if not align_pre_scan: # Wait until all alignments are completed
             for task in tasks: await task
 
         completed_tasks  = {}
@@ -216,7 +217,7 @@ class Controller:
         + `DisconnectTimedoutException`: A disconnection attempt timed out\n
         + `DisconnectFailedException`: A disconnection attempt failed for unspecific reasons
         """
-        await asyncio.gather(*[vehicle.disconnect() for vehicle in self.vehicles])
+        await asyncio.gather(*[vehicle.disconnect() for vehicle in self.vehicles]) # Disconnect done in parallel as opposed to connect as the clients are already established
         pass
     
     def handleShutdown(self):
@@ -231,6 +232,6 @@ class Controller:
 
     @property
     def map_types(self) -> tuple:
-        return tuple([track_piece.type for track_piece in self.map])
+        return tuple([track_piece.type for track_piece in self.map]) # Converting to a tuple to prevent DAUs thinking they can affect the map
         pass
     pass
