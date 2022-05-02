@@ -125,6 +125,17 @@ class Controller:
 
     
     async def scan(self, align_pre_scan : bool = True) -> list[TrackPiece]:
+        """Assembles a digital copy of the map and adds it to every connected vehicle.
+        
+        ## Parameters\n
+        Optional `align_pre_scan`: When set to True, the supercars can start from any position on the map and align automatically before scanning. Disabling this means your supercars need to start between START and FINISH
+
+        ## Returns\n
+        A list of track pieces representing the scanned in map.
+
+        ## Raises\n
+        + `DuplicateScanWarning`: The map was already scanned in. This scan will be skipped.
+        """
         if self.map is not None:
             raise errors.DuplicateScanWarning("The map has already been scanned. Check your code for any mistakes like that.")
             pass
@@ -199,11 +210,21 @@ class Controller:
 
 
     async def disconnectAll(self):
+        """Disconnects from all the connected supercars
+        
+        ## Raises\n
+        + `DisconnectTimedoutException`: A disconnection attempt timed out\n
+        + `DisconnectFailedException`: A disconnection attempt failed for unspecific reasons
+        """
         await asyncio.gather(*[vehicle.disconnect() for vehicle in self.vehicles])
         pass
     
     def handleShutdown(self):
-        """Handles a shutdown neatly and disconnects the vehicles"""
+        """Handles a shutdown neatly and disconnects the vehicles
+        
+        ## Raises\n
+        + `DisconnectTimedoutException`: A disconnection attempt timed out\n
+        + `DisconnectFailedException`: A disconnection attempt failed for unspecific reasons"""
         asyncio.run(self.disconnectAll())
         pass
 
