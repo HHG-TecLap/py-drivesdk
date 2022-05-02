@@ -38,14 +38,14 @@ def disassemblePacket(packet : Union[bytes,bytearray]) -> tuple[bytes,bytes]:
         pass
 
     ####
-    packageSize = packet[0]
-    actualSize = len(packet[1:])
+    packageSize = packet[0] # First byte is size of packet
+    actualSize = len(packet[1:]) # Check for packet size regardless for security reasons
     if actualSize != packageSize: # Raise MalformedPacketWarning if size does not match
         raise MalformedPacketWarning(f"Package Size did not match the actual size of the packet ({packageSize} != {actualSize})")
         pass
 
-    msgType = packet[1]
-    payload = packet[2:]
+    msgType = packet[1] # Msg type is second byte
+    payload = packet[2:] # Rest is just the payload
     if len(payload) > const.MAX_PACKET_PAYLOAD_SIZE:
         raise MalformedPacketWarning(f"Payload is too large. Has to be <= {const.MAX_PACKET_PAYLOAD_SIZE}, is {len(payload)}")
         pass
