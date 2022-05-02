@@ -85,11 +85,14 @@ class Vehicle:
         """An internal handler function that gets called on a notify receive"""
         msg_type, payload = util.disassemblePacket(data)
         if msg_type == const.VehicleMsg.TRACK_PIECE_UPDATE:
+            # This gets called when part-way along a track piece (sometimes)
             loc, piece, offset, speed, clockwise = disassembleTrackUpdate(payload)
 
+            # Update internal variables when new info available
             self._road_offset = offset
             self._speed = speed
 
+            # Post a warning when TrackPiece creation failed (but not an error)
             try:
                 piece_obj = TrackPiece(loc,piece,clockwise)
             except ValueError:
@@ -97,10 +100,10 @@ class Vehicle:
                 return
                 pass
 
-            self._current_track_piece = piece_obj
+            self._current_track_piece = piece_obj # Update the internal track object
             pass
         elif msg_type == const.VehicleMsg.TRACK_PIECE_CHANGE:
-            if None not in (self._position, self._map):
+            if None not in (self._position, self._map): # If there was a scan & align already
                 self._position += 1
                 self._position %= len(self._map)
                 track_piece = self.current_track_piece # This is very hacky! (And also doesn't ~~quite~~ work)
@@ -109,9 +112,9 @@ class Vehicle:
                 track_piece = self._current_track_piece
                 pass
 
-            self._track_piece_future.set_result(None)
-            self._track_piece_future = asyncio.Future()
-            self.on_track_piece_change()
+            self._track_piece_future.set_result(None) # Complete internal future when on new track piece. This is used in wait_for_track_change
+            self._track_piece_future = asyncio.Future() # Create new future since the old one is now done
+            self.on_track_piece_change() # Call the track piece event handle
             pass
         pass
 
@@ -126,7 +129,7 @@ class Vehicle:
         ## Returns\n
         A `TrackPiece` object denoting the new track piece or None if the scanner is not completed yet.
         """
-        await self._track_piece_future
+        await self._track_piece_future # Wait on a new track piece (See __notify_handler__)
         return self.current_track_piece
         pass
 
@@ -140,8 +143,9 @@ class Vehicle:
         + `ConnectionFailedException`: A generic error occured whilst connection to the supercar
         """
         try:
-            if not (await self.__client__.connect()): raise bleak.BleakError
+            if not (await self.__client__.connect()): raise bleak.BleakError # Handle a failed connect the same way as a BleakError
             pass
+        # Catch a bunch of errors occuring on connection
         except BleakDBusError:
             raise errors.ConnectionDatabusException(
                 "An attempt to connect to the vehicle failed. This can occur sometimes and is usually not an error in your code."
@@ -158,8 +162,8 @@ class Vehicle:
         # Get service and characteristics
         services = await self.__client__.get_services()
         anki_service = services.get_service(const.SERVICE_UUID)
-        read   = anki_service.get_characteristic(const.READ_CHAR_UUID)
-        write  = anki_service.get_characteristic(const.WRITE_CHAR_UUID)
+        read   = anki_service.get_characteristic(const.READ_CHAR_UUID)  
+        write  = anki_service.get_characteristic(const.WRITE_CHAR_UUID) 
 
         await self.__client__.write_gatt_char(write,setSdkPkg(True,0x1)) # Enable SDK mode
         await self.__client__.start_notify(read,self.__notify_handler__) # Start Notifier for data handling
@@ -200,12 +204,12 @@ class Vehicle:
         + Optional acceleration: An integer value denoting the acceleration used to move to the target speed
         """
         await self.__send_package__(setSpeedPkg(speed,acceleration))
-        self._speed = speed
+        self._speed = speed # Update the internal speed as well (even though it technically is an overestimate as we need to accelerate first)
         pass
 
     async def stop(self):
         """Stops the Supercar"""
-        await self.setSpeed(0)
+        await self.setSpeed(0) # stop = 0 speed
         pass
 
     async def changeLane(self, lane : _Lane, horizontalSpeed : int = 300, horizontalAcceleration : int = 300, *, _hopIntent : int = 0x0, _tag : int = 0x0):
@@ -216,7 +220,7 @@ class Vehicle:
         + Optional horizontalSpeed: An integer speed to travel horizontally across the track with
         + Optional horizontalAcceleration: An integer acceleration to accelerate to the horizontalSpeed with
         """
-        await self.changePosition(lane.lane_position,horizontalSpeed,horizontalAcceleration,_hopIntent=_hopIntent,_tag=_tag)
+        await self.changePosition(lane.lane_position,horizontalSpeed,horizontalAcceleration,_hopIntent=_hopIntent,_tag=_tag) # changeLane is just changePosition but user friendly
         pass
 
     async def changePosition(self, roadCenterOffset : float, horizontalSpeed : int = 300, horizontalAcceleration : int = 300, *, _hopIntent : int = 0x0, _tag : int = 0x0):
@@ -230,7 +234,7 @@ class Vehicle:
         await self.__send_package__(changeLanePkg(roadCenterOffset,horizontalSpeed,horizontalAcceleration,_hopIntent,_tag))
         pass
 
-    async def turn(self, type : int = 3, trigger : int = 0):
+    async def turn(self, type : int = 3, trigger : int = 0): # type and trigger don't work correcty
         """NOTE: Does not function properly"""
         await self.__send_package__(turn180Pkg(type,trigger))
         pass
@@ -264,7 +268,7 @@ class Vehicle:
         + Optional speed: The speed the vehicle should travel at during alignment"""
         await self.setSpeed(speed)
         track_piece = None
-        while track_piece == const.TrackPieceTypes.START:
+        while track_piece == const.TrackPieceTypes.START: # Wait until at START
             track_piece = await self.wait_for_track_change()
             pass
 
@@ -278,7 +282,7 @@ class Vehicle:
 
     @property
     def current_track_piece(self) -> TrackPiece:
-        if None in (self.map, self.map_position):
+        if None in (self.map, self.map_position): # If no scan or align not complete, we can't find the track piece
             return None
             pass
         return self.map[self.map_position]
