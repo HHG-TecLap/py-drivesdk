@@ -28,12 +28,19 @@ def interpretLocalName(name : str):
 
 @dataclasses.dataclass(frozen=True)
 class VehicleState:
+    """Represents the state of a supercar"""
     full_battery : bool
     low_battery : bool
     charging : bool
 
     @classmethod
     def from_int(cls, state : int):
+        """Constructs a `VehicleState` from an integer representation\n
+        ## Parameters:
+        + `state`: An integer representation of the state
+        
+        ## Returns:
+        A `VehicleState` instance"""
         full     = bool(state & (1 << const.VehicleBattery.FULL_BATTERY))
         low      = bool(state & (1 << const.VehicleBattery.LOW_BATTERY))
         charging = bool(state & (1 << const.VehicleBattery.ON_CHARGER))
@@ -49,6 +56,14 @@ class Lights:
     ENGINELIGHTS = 3
 
 class Vehicle:
+    """This class represents a supercar. With it you can control all functions of said supercar.\n
+    
+    ## Params\n
+    + id: An integer id to be assigned to the `Vehicle` object\n
+    + device: A `bleak.BLEDevice` representing the supercar\n
+    + Optional client: A `bleak.BleakClient` wrapping the device to send/receive packets with\n
+    """
+
     __slots__ = ("__client__","_current_track_piece","_is_connected","_road_offset","_speed","on_track_piece_change","_track_piece_future","_position","_map","__read_chara__","__write_chara__", "_id")
     def __init__(self, id : int, device : BLEDevice, client : bleak.BleakClient = None):
         self.__client__ = client if client is not None else bleak.BleakClient(device)
@@ -67,6 +82,7 @@ class Vehicle:
         pass
 
     def __notify_handler__(self,handler,data : bytearray):
+        """An internal handler function that gets called on a notify receive"""
         msg_type, payload = util.disassemblePacket(data)
         if msg_type == const.VehicleMsg.TRACK_PIECE_UPDATE:
             loc, piece, offset, speed, clockwise = disassembleTrackUpdate(payload)
@@ -100,17 +116,29 @@ class Vehicle:
         pass
 
     async def __send_package__(self, payload : bytes):
+        """Send a payload to the supercar"""
         await self.__client__.write_gatt_char(self.__write_chara__,payload)
         pass
 
     async def wait_for_track_change(self) -> Optional[TrackPiece]:
+        """Waits until the current track piece changes.
+        
+        ## Returns\n
+        A `TrackPiece` object denoting the new track piece or None if the scanner is not completed yet.
+        """
         await self._track_piece_future
         return self.current_track_piece
         pass
 
     async def connect(self):
         """Connect to the Supercar\n
-        Don't forget to call Vehicle.disconnect() on program exit!"""
+        Don't forget to call Vehicle.disconnect on program exit!
+        
+        ## Raises\n
+        + `ConnectionTimedoutException`: The connection attempt to the supercar did not succeed within the set timeout\n
+        + `ConnectionDatabusException`: A databus error occured whilst connecting to the supercar\n
+        + `ConnectionFailedException`: A generic error occured whilst connection to the supercar
+        """
         try:
             if not (await self.__client__.connect()): raise bleak.BleakError
             pass
@@ -143,7 +171,16 @@ class Vehicle:
         pass
 
     async def disconnect(self) -> bool:
-        """Disconnect from the Supercar\nNOTE: Always do this on program exit!"""
+        """Disconnect from the Supercar\n
+        NOTE: Always do this on program exit!
+
+        ## Returns
+        A boolean representing the connection state of the supercar. This will always be False.
+
+        ## Raises
+        + `DisconnectTimedoutException`: The attempt to disconnect from the supercar timed out
+        + `DisconnectFailedException`: 
+        """
         try:
             self._is_connected = not await self.__client__.disconnect()
         except asyncio.TimeoutError:
