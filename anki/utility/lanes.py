@@ -10,6 +10,13 @@ def __addConstants__(cls : "_Lane"):
 
 @dataclasses.dataclass(frozen=True,unsafe_hash=False,slots=True)
 class _Lane:
+    """The raw base class for lane types. Inherit from this class to create your own lane type.
+    
+    ## Params\n
+    + lane_name: The name of a lane
+    + lane_position: The optimal position for a lane
+    """
+
     __LANE_EQUIVS__ = {}
 
     lane_name : str
@@ -50,6 +57,12 @@ class _Lane:
 
 @__addConstants__
 class Lane3(_Lane):
+    """A lane type for programs using 3 lanes (left, middle, right)
+    This holds three constants (ordered left-to-right):
+    + `Lane3.LEFT`
+    + `Lane3.MIDDLE`
+    + `Lane3.RIGHT`
+    """
     __LANE_EQUIVS__ = {
         -60: "LEFT",
         0  : "MIDDLE",
@@ -59,6 +72,13 @@ class Lane3(_Lane):
 
 @__addConstants__
 class Lane4(_Lane):
+    """A lane type for programs using 4 lanes (leftmost, left-middle, right-middle, rightmost)
+    This holds three constants (ordered left-to-right):
+    + `Lane4.LEFT_2`
+    + `Lane4.LEFT_1`
+    + `Lane4.RIGHT_1`
+    + `Lane4.RIGHT_2`
+    """
     __LANE_EQUIVS__ = {
         -60: "LEFT_2",
         -30: "LEFT_1",
