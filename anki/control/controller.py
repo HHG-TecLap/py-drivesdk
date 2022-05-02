@@ -13,10 +13,10 @@ from typing import Iterable, Optional
 def isAnki(device : BLEDevice, advertisement : AdvertisementData):
     try:
         state, version, name = interpretLocalName(advertisement.local_name)
-    except ValueError:
+    except ValueError: # Catch error if name is not interpretable (not a vehicle then)
         return False
         pass
-    if state.charging: return False
+    if state.charging: return False # We don't want to connect to a charging vehicle, so we'll just pretend it's not a vehicle
 
     return True
     # Service check doesn't work as the Supercars don't seem to advertise their services o.0
@@ -29,6 +29,9 @@ def isAnki(device : BLEDevice, advertisement : AdvertisementData):
     pass
 
 class Controller:
+    """This object controls all vehicle connections. With it you can connect to any number of vehicles and disconnect cleanly.
+    ## Paramaters\n
+    timeout=10: The time until the controller gives up searching for a vehicle."""
     __slots__ = ["_scanner","timeout","vehicles","map"]
     def __init__(self,*,timeout : float = 10):
         self._scanner = bleak.BleakScanner()
@@ -58,21 +61,61 @@ class Controller:
 
 
     async def connectOne(self, vehicle_id : Optional[int] = None) -> Vehicle:
-        """Connect to one non-charging Supercar and return the Vehicle instance"""
+        """Connect to one non-charging Supercar and return the Vehicle instance
+
+        ## Parameters\n
+        + Optional `vehicle_id`: The id given to the `Vehicle` instance on connection
+
+        ## Returns\n
+        A `Vehicle` object representing the connected supercar
+
+        ## Raises\n
+        + `VehicleNotFound`: No supercar was found in the set timeout\n
+        + `ConnectionTimedoutException`: The connection attempt to the supercar did not succeed within the set timeout
+        + `ConnectionDatabusException`: A databus error occured whilst connecting to the supercar\n
+        + `ConnectionFailedException`: A generic error occured whilst connection to the supercar"""
         vehicle = await self._getVehicle(vehicle_id)
         await vehicle.connect()
         return vehicle
         pass
 
     async def connectSpecific(self, address : str, vehicle_id : Optional[int] = None) -> Vehicle:
-        """Connect to a supercar with a specified MAC address"""
+        """Connect to a supercar with a specified MAC address
+        
+        ## Parameters\n
+        + `address`: A string representing the MAC-address of the vehicle to connect to. This needs to be uppercase seperated by colons\n
+        + Optional `vehicle_id`: An integer id given to the vehicle on connection.\n
+
+        ## Returns\n
+        A `Vehicle` object representing the connected supercar
+        
+        ## Raises\n
+        + `VehicleNotFound`: No supercar was found in the set timeout\n
+        + `ConnectionTimedoutException`: The connection attempt to the supercar did not succeed within the set timeout
+        + `ConnectionDatabusException`: A databus error occured whilst connecting to the supercar\n
+        + `ConnectionFailedException`: A generic error occured whilst connection to the supercar"""
         vehicle = await self._getVehicle(vehicle_id,address)
         await vehicle.connect()
         return vehicle
         pass
 
     async def connectMany(self, amount : int, vehicle_ids : Iterable[int] = None) -> tuple[Vehicle]:
-        """Connect to <amount> non-charging Supercars"""
+        """Connect to <amount> non-charging Supercars
+        
+        ## Parameters\n
+        + `amount`: An integer amount representing the number of vehicles to connect to\n
+        + Optional `vehicled_ids`: An iterable with the ids the vehicles will get on connection. These entries may be None.\n
+
+        ## Returns\n
+        A tuple of connected `Vehicle` instances.
+
+        ## Raises\n
+        + `ValueError`: The amount of requested supercars does not match the length of `vehicle_ids`.\n
+        + `VehicleNotFound`: No supercar was found in the set timeout\n
+        + `ConnectionTimedoutException`: The connection attempt to the supercar did not succeed within the set timeout
+        + `ConnectionDatabusException`: A databus error occured whilst connecting to the supercar\n
+        + `ConnectionFailedException`: A generic error occured whilst connection to the supercar
+        """
 
         if vehicle_ids is None: vehicle_ids = [None]*amount
         if amount != len(vehicle_ids): raise ValueError("Amount of passed vehicle ids is different to amount of requested connections")
