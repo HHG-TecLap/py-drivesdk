@@ -193,7 +193,12 @@ class Vehicle:
 
 
     async def setSpeed(self, speed : int, acceleration : int = 500):
-        """Set the speed of the Supercar in mm/s"""
+        """Set the speed of the Supercar in mm/s
+        
+        ## Params\n
+        + speed: An integer value describing the target speed in mm/s\n
+        + Optional acceleration: An integer value denoting the acceleration used to move to the target speed
+        """
         await self.__send_package__(setSpeedPkg(speed,acceleration))
         self._speed = speed
         pass
@@ -204,10 +209,24 @@ class Vehicle:
         pass
 
     async def changeLane(self, lane : _Lane, horizontalSpeed : int = 300, horizontalAcceleration : int = 300, *, _hopIntent : int = 0x0, _tag : int = 0x0):
+        """Change to a desired lane
+        
+        ## Params\n
+        + lane: A `_Lane` lane to move to. The default lane types for this are `Lane3` and `Lane4`\n
+        + Optional horizontalSpeed: An integer speed to travel horizontally across the track with
+        + Optional horizontalAcceleration: An integer acceleration to accelerate to the horizontalSpeed with
+        """
         await self.changePosition(lane.lane_position,horizontalSpeed,horizontalAcceleration,_hopIntent=_hopIntent,_tag=_tag)
         pass
 
     async def changePosition(self, roadCenterOffset : float, horizontalSpeed : int = 300, horizontalAcceleration : int = 300, *, _hopIntent : int = 0x0, _tag : int = 0x0):
+        """Change to a position offset from the track centre
+
+        ## Params
+        + roadCenterOffset: A float offset from the centre of the current track piece in mm
+        + Optional horizontalSpeed: An integer speed to travel horizontally across the track with
+        + Optional horizontalAcceleration: An integer acceleration to accelerate to the horizontalSpeed with
+        """
         await self.__send_package__(changeLanePkg(roadCenterOffset,horizontalSpeed,horizontalAcceleration,_hopIntent,_tag))
         pass
 
@@ -232,9 +251,17 @@ class Vehicle:
         pass
 
     def getLane(self, mode : type[_Lane]) -> _Lane:
+        """Get the current lane given a specific lane type
+        
+        ## Parameters
+        + mode: A `_Lane` child class representing some lane types. By default, these can be `Lane3` or `Lane4`"""
         return mode.getClosestLane(self._road_offset)
         pass
     async def align(self, speed : int = 300):
+        """Align to the start piece
+        
+        ## Parameters
+        + Optional speed: The speed the vehicle should travel at during alignment"""
         await self.setSpeed(speed)
         track_piece = None
         while track_piece == const.TrackPieceTypes.START:
