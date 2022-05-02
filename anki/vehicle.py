@@ -144,7 +144,10 @@ class Vehicle:
 
     async def disconnect(self) -> bool:
         """Disconnect from the Supercar\nNOTE: Always do this on program exit!"""
-        self._is_connected = not await self.__client__.disconnect()
+        try:
+            self._is_connected = not await self.__client__.disconnect()
+        except asyncio.TimeoutError:
+            raise errors.DisconnectTimedoutException("The attempt to disconnect from the vehicle timed out.")
         if self._is_connected:
             raise errors.DisconnectFailedException("The attempt to disconnect the vehicle failed.")
         

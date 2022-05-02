@@ -35,3 +35,7 @@ class ConnectionTimedOutException(ConnectionFailedException):
 class DisconnectFailedException(AnkiException):
     """The attempt to disconnect from the vehicle failed"""
     pass
+
+class DisconnectTimedoutException(DisconnectFailedException):
+    """The disconnect attempt timed out"""
+    pass
