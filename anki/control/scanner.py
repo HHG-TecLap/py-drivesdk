@@ -12,6 +12,11 @@ def reorderMap(map : list[TrackPiece]):
     pass
 
 class Scanner:
+    """A scanner object performs a simple map scan without any alignment.
+    
+    ## Params\n
+    + vehicle: The `Vehicle` object to perform the scan with"""
+
     __slots__ = ["vehicle","map"]
     def __init__(self, vehicle : Vehicle):
         self.vehicle = vehicle
@@ -19,6 +24,7 @@ class Scanner:
         pass
 
     async def scan(self) -> list[TrackPiece]:
+        """Perform the scan"""
         completed = [False] # In a list because of global local issues
         track_types = []
         def watcher():
