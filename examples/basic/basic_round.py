@@ -15,12 +15,12 @@ async def main():
     finished = [False]
     await vehicle.setSpeed(300) # Accelerate the vehicle to 300mm/s
     def watcher(): # Function to check if the vehicle is on the Finish-piece
-        track = vehicle._current_track_piece
+        track = vehicle._current_track_piece # You shouldn't use this property, because it's an internal property
         if track.type == TrackPieceTypes.FINISH:
             finished[0] = True
         else:
             pass
-    vehicle.on_track_piece_change = watcher # Asing the watcher function to the method that jets executed when the track-piece changes
+    vehicle.on_track_piece_change = watcher # Assign the watcher function to the method that gets executed when the track-piece changes
     while not finished[0]:
         await asyncio.sleep(1)
         pass
