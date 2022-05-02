@@ -16,7 +16,6 @@ async def main():
     await vehicle.setSpeed(300) # Accelerate the vehicle to 300mm/s
     def watcher(): # Function to check if the vehicle is on the Finish-piece
         track = vehicle._current_track_piece
-        print(track)
         if track.type == TrackPieceTypes.FINISH:
             finished[0] = True
         else:
