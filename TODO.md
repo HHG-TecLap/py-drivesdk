@@ -1,7 +1,5 @@
 # Todo-List
 
-+ Catch `asyncio.TimeoutError` in `Vehicle.disconnect` on `self.__client__.disconnect`
-
 + Fix map_position breaking when turning around
     (i.e. add smart position detection)
 
