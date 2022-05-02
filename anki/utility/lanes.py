@@ -1,6 +1,7 @@
 import dataclasses
 
 def __addConstants__(cls : "_Lane"):
+    """Add constants equivalent to the entries of LANE_EQUIVS (just as objects)"""
     for position, name in cls.__LANE_EQUIVS__.items():
         setattr(cls,name,cls(name,position))
         pass
@@ -25,9 +26,9 @@ class _Lane:
 
     @classmethod
     def getClosestLane(cls, position : float):
-        _, lane_val = min({abs(k-position) : k for k, v in cls.__LANE_EQUIVS__.items()}.items(),key=lambda v: v[0])
+        _, lane_val = min({abs(k-position) : k for k, v in cls.__LANE_EQUIVS__.items()}.items(),key=lambda v: v[0]) # Find the name, offset pairing with minimal distance to the position
         
-        return cls(cls.__LANE_EQUIVS__[lane_val],lane_val)
+        return cls(cls.__LANE_EQUIVS__[lane_val],lane_val) # Construct _Lane object around raw info
         pass
     @classmethod
     def byName(cls, name : str):
@@ -41,7 +42,8 @@ class _Lane:
     def getAll(cls):
         return [cls(name,position) for position, name in cls.__LANE_EQUIVS__.items()]
         pass
-
+    
+    # Implemented all equalities for better speed
     def __eq__(self, other : "_Lane"): return self.lane_position == other.lane_position
     def __ne__(self, other : "_Lane"): return self.lane_position != other.lane_position
     def __gt__(self, other : "_Lane"): return self.lane_position > other.lane_position
@@ -51,6 +53,7 @@ class _Lane:
 
 
     def __str__(self):
+        # This improves readability over _Lane(lane_name="MIDDLE",lane_position=0)
         return self.lane_name
         pass
     pass
