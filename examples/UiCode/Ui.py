@@ -1,4 +1,6 @@
 import anki, asyncio, shiftRegister, pygame
+import os
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 control = anki.Controller()
 map = []
