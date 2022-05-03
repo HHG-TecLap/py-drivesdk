@@ -281,7 +281,7 @@ class Vehicle:
         await self.stop()
         pass
 
-    def track_piece_watcher(self, func):
+    def trackPieceChange(self, func):
         self.__track_piece_watchers__.append(func)
         return func
         pass
