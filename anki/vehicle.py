@@ -268,11 +268,11 @@ class Vehicle:
         + Optional speed: The speed the vehicle should travel at during alignment"""
         await self.setSpeed(speed)
         track_piece = None
-        while track_piece is None or track_piece.type != const.TrackPieceTypes.START: # Wait until at START
+        while track_piece is None or track_piece.type != const.TrackPieceTypes.FINISH: # Wait until at START
             track_piece = await self.wait_for_track_change()
             pass
 
-        self._position = 0 # Update position to be at START
+        self._position = len(self.map)-1 # Update position to be at FINISH
 
         await self.stop()
         pass
