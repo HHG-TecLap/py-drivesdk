@@ -282,8 +282,20 @@ class Vehicle:
         pass
 
     def trackPieceChange(self, func):
+        """A decorator marking a function to be executed when the supercar drives onto a new track piece"""
         self.__track_piece_watchers__.append(func)
         return func
+        pass
+
+    def removeTrackPieceWatcher(self, func):
+        """Remove an track piece event handler added by `Vehicle.trackPieceChange`
+        
+        ## Parameters\n
+        + A function to remove as an event listener
+        
+        ## Raises\n
+        + ValueError: The function passed is not an event handler"""
+        self.__track_piece_watchers__.remove(func)
         pass
 
     @property
