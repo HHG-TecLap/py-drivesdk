@@ -76,6 +76,7 @@ class Controller:
         + `ConnectionDatabusException`: A databus error occured whilst connecting to the supercar\n
         + `ConnectionFailedException`: A generic error occured whilst connection to the supercar"""
         vehicle = await self._getVehicle(vehicle_id)
+        vehicle._map = self.map # Add an existing map to the vehicle. If there is no map it sets None which is the default for Vehicle._map anyway
         await vehicle.connect()
         return vehicle
         pass
