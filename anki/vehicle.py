@@ -28,12 +28,19 @@ def interpretLocalName(name : str):
 
 @dataclasses.dataclass(frozen=True)
 class VehicleState:
+    """Represents the state of a supercar"""
     full_battery : bool
     low_battery : bool
     charging : bool
 
     @classmethod
     def from_int(cls, state : int):
+        """Constructs a `VehicleState` from an integer representation\n
+        ## Parameters:
+        + `state`: An integer representation of the state
+        
+        ## Returns:
+        A `VehicleState` instance"""
         full     = bool(state & (1 << const.VehicleBattery.FULL_BATTERY))
         low      = bool(state & (1 << const.VehicleBattery.LOW_BATTERY))
         charging = bool(state & (1 << const.VehicleBattery.ON_CHARGER))
@@ -49,6 +56,14 @@ class Lights:
     ENGINELIGHTS = 3
 
 class Vehicle:
+    """This class represents a supercar. With it you can control all functions of said supercar.\n
+    
+    ## Params\n
+    + id: An integer id to be assigned to the `Vehicle` object\n
+    + device: A `bleak.BLEDevice` representing the supercar\n
+    + Optional client: A `bleak.BleakClient` wrapping the device to send/receive packets with\n
+    """
+
     __slots__ = ("__client__","_current_track_piece","_is_connected","_road_offset","_speed","on_track_piece_change","_track_piece_future","_position","_map","__read_chara__","__write_chara__", "_id")
     def __init__(self, id : int, device : BLEDevice, client : bleak.BleakClient = None):
         self.__client__ = client if client is not None else bleak.BleakClient(device)
@@ -67,13 +82,17 @@ class Vehicle:
         pass
 
     def __notify_handler__(self,handler,data : bytearray):
+        """An internal handler function that gets called on a notify receive"""
         msg_type, payload = util.disassemblePacket(data)
         if msg_type == const.VehicleMsg.TRACK_PIECE_UPDATE:
+            # This gets called when part-way along a track piece (sometimes)
             loc, piece, offset, speed, clockwise = disassembleTrackUpdate(payload)
 
+            # Update internal variables when new info available
             self._road_offset = offset
             self._speed = speed
 
+            # Post a warning when TrackPiece creation failed (but not an error)
             try:
                 piece_obj = TrackPiece(loc,piece,clockwise)
             except ValueError:
@@ -81,10 +100,10 @@ class Vehicle:
                 return
                 pass
 
-            self._current_track_piece = piece_obj
+            self._current_track_piece = piece_obj # Update the internal track object
             pass
         elif msg_type == const.VehicleMsg.TRACK_PIECE_CHANGE:
-            if None not in (self._position, self._map):
+            if None not in (self._position, self._map): # If there was a scan & align already
                 self._position += 1
                 self._position %= len(self._map)
                 track_piece = self.current_track_piece # This is very hacky! (And also doesn't ~~quite~~ work)
@@ -93,27 +112,40 @@ class Vehicle:
                 track_piece = self._current_track_piece
                 pass
 
-            self._track_piece_future.set_result(None)
-            self._track_piece_future = asyncio.Future()
-            self.on_track_piece_change()
+            self._track_piece_future.set_result(None) # Complete internal future when on new track piece. This is used in wait_for_track_change
+            self._track_piece_future = asyncio.Future() # Create new future since the old one is now done
+            self.on_track_piece_change() # Call the track piece event handle
             pass
         pass
 
     async def __send_package__(self, payload : bytes):
+        """Send a payload to the supercar"""
         await self.__client__.write_gatt_char(self.__write_chara__,payload)
         pass
 
     async def wait_for_track_change(self) -> Optional[TrackPiece]:
-        await self._track_piece_future
+        """Waits until the current track piece changes.
+        
+        ## Returns\n
+        A `TrackPiece` object denoting the new track piece or None if the scanner is not completed yet.
+        """
+        await self._track_piece_future # Wait on a new track piece (See __notify_handler__)
         return self.current_track_piece
         pass
 
     async def connect(self):
         """Connect to the Supercar\n
-        Don't forget to call Vehicle.disconnect() on program exit!"""
+        Don't forget to call Vehicle.disconnect on program exit!
+        
+        ## Raises\n
+        + `ConnectionTimedoutException`: The connection attempt to the supercar did not succeed within the set timeout\n
+        + `ConnectionDatabusException`: A databus error occured whilst connecting to the supercar\n
+        + `ConnectionFailedException`: A generic error occured whilst connection to the supercar
+        """
         try:
-            if not (await self.__client__.connect()): raise bleak.BleakError
+            if not (await self.__client__.connect()): raise bleak.BleakError # Handle a failed connect the same way as a BleakError
             pass
+        # Catch a bunch of errors occuring on connection
         except BleakDBusError:
             raise errors.ConnectionDatabusException(
                 "An attempt to connect to the vehicle failed. This can occur sometimes and is usually not an error in your code."
@@ -130,8 +162,8 @@ class Vehicle:
         # Get service and characteristics
         services = await self.__client__.get_services()
         anki_service = services.get_service(const.SERVICE_UUID)
-        read   = anki_service.get_characteristic(const.READ_CHAR_UUID)
-        write  = anki_service.get_characteristic(const.WRITE_CHAR_UUID)
+        read   = anki_service.get_characteristic(const.READ_CHAR_UUID)  
+        write  = anki_service.get_characteristic(const.WRITE_CHAR_UUID) 
 
         await self.__client__.write_gatt_char(write,setSdkPkg(True,0x1)) # Enable SDK mode
         await self.__client__.start_notify(read,self.__notify_handler__) # Start Notifier for data handling
@@ -143,7 +175,16 @@ class Vehicle:
         pass
 
     async def disconnect(self) -> bool:
-        """Disconnect from the Supercar\nNOTE: Always do this on program exit!"""
+        """Disconnect from the Supercar\n
+        NOTE: Always do this on program exit!
+
+        ## Returns
+        A boolean representing the connection state of the supercar. This will always be False.
+
+        ## Raises
+        + `DisconnectTimedoutException`: The attempt to disconnect from the supercar timed out
+        + `DisconnectFailedException`: 
+        """
         try:
             self._is_connected = not await self.__client__.disconnect()
         except asyncio.TimeoutError:
@@ -156,25 +197,44 @@ class Vehicle:
 
 
     async def setSpeed(self, speed : int, acceleration : int = 500):
-        """Set the speed of the Supercar in mm/s"""
+        """Set the speed of the Supercar in mm/s
+        
+        ## Params\n
+        + speed: An integer value describing the target speed in mm/s\n
+        + Optional acceleration: An integer value denoting the acceleration used to move to the target speed
+        """
         await self.__send_package__(setSpeedPkg(speed,acceleration))
-        self._speed = speed
+        self._speed = speed # Update the internal speed as well (even though it technically is an overestimate as we need to accelerate first)
         pass
 
     async def stop(self):
         """Stops the Supercar"""
-        await self.setSpeed(0)
+        await self.setSpeed(0) # stop = 0 speed
         pass
 
     async def changeLane(self, lane : _Lane, horizontalSpeed : int = 300, horizontalAcceleration : int = 300, *, _hopIntent : int = 0x0, _tag : int = 0x0):
-        await self.changePosition(lane.lane_position,horizontalSpeed,horizontalAcceleration,_hopIntent=_hopIntent,_tag=_tag)
+        """Change to a desired lane
+        
+        ## Params\n
+        + lane: A `_Lane` lane to move to. The default lane types for this are `Lane3` and `Lane4`\n
+        + Optional horizontalSpeed: An integer speed to travel horizontally across the track with
+        + Optional horizontalAcceleration: An integer acceleration to accelerate to the horizontalSpeed with
+        """
+        await self.changePosition(lane.lane_position,horizontalSpeed,horizontalAcceleration,_hopIntent=_hopIntent,_tag=_tag) # changeLane is just changePosition but user friendly
         pass
 
     async def changePosition(self, roadCenterOffset : float, horizontalSpeed : int = 300, horizontalAcceleration : int = 300, *, _hopIntent : int = 0x0, _tag : int = 0x0):
+        """Change to a position offset from the track centre
+
+        ## Params
+        + roadCenterOffset: A float offset from the centre of the current track piece in mm
+        + Optional horizontalSpeed: An integer speed to travel horizontally across the track with
+        + Optional horizontalAcceleration: An integer acceleration to accelerate to the horizontalSpeed with
+        """
         await self.__send_package__(changeLanePkg(roadCenterOffset,horizontalSpeed,horizontalAcceleration,_hopIntent,_tag))
         pass
 
-    async def turn(self, type : int = 3, trigger : int = 0):
+    async def turn(self, type : int = 3, trigger : int = 0): # type and trigger don't work correcty
         """NOTE: Does not function properly"""
         await self.__send_package__(turn180Pkg(type,trigger))
         pass
@@ -195,12 +255,20 @@ class Vehicle:
         pass
 
     def getLane(self, mode : type[_Lane]) -> _Lane:
+        """Get the current lane given a specific lane type
+        
+        ## Parameters
+        + mode: A `_Lane` child class representing some lane types. By default, these can be `Lane3` or `Lane4`"""
         return mode.getClosestLane(self._road_offset)
         pass
     async def align(self, speed : int = 300):
+        """Align to the start piece
+        
+        ## Parameters
+        + Optional speed: The speed the vehicle should travel at during alignment"""
         await self.setSpeed(speed)
         track_piece = None
-        while track_piece == const.TrackPieceTypes.START:
+        while track_piece == const.TrackPieceTypes.START: # Wait until at START
             track_piece = await self.wait_for_track_change()
             pass
 
@@ -214,7 +282,7 @@ class Vehicle:
 
     @property
     def current_track_piece(self) -> TrackPiece:
-        if None in (self.map, self.map_position):
+        if None in (self.map, self.map_position): # If no scan or align not complete, we can't find the track piece
             return None
             pass
         return self.map[self.map_position]
