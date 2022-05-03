@@ -152,7 +152,7 @@ class Controller:
             pass
 
         if align_pre_scan: # Aligning before scanning if enabled. This allows the vehicles to be placed anywhere on the map
-            await asyncio.gather(*[noScanAlign(v,TrackPieceTypes.FINISH) for v in self.vehicles])
+            await asyncio.gather(*[noScanAlign(v,TrackPieceTypes.START) for v in self.vehicles])
             await asyncio.sleep(1)
             pass
 

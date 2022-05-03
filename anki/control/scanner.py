@@ -28,6 +28,7 @@ class Scanner:
         track_types = [] # This keeps track of the types we've visited (could also be a set, but TrackPieceType didn't have hashes back then)
         def watcher():
             track = self.vehicle._current_track_piece
+            print(track)
             if track is not None: # track might be None for the first time this event is called
                 self.map.append(track)
                 track_types.append(track.type)
