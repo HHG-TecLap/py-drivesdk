@@ -43,7 +43,7 @@ class Controller:
     async def _getVehicle(self,vehicle_id : Optional[int] = None, address : str = None) -> Vehicle:
         """Finds a Supercar and creates a Vehicle instance around it"""
 
-        device = await self._scanner.find_device_by_filter(lambda device, advertisement: isAnki(device,advertisement) and (address is None or device.address == address))
+        device = await self._scanner.find_device_by_filter(lambda device, advertisement: isAnki(device,advertisement) and (address is None or device.address == address), timeout=self.timeout)
         # Get a BLEDevice and ensure it is of a required address if address was given
         if device is None:
             raise errors.VehicleNotFound("Could not find a supercar within the given timeout")
