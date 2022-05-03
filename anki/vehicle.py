@@ -262,15 +262,17 @@ class Vehicle:
         return mode.getClosestLane(self._road_offset)
         pass
     async def align(self, speed : int = 300):
-        """Align to the start piece
+        """Align to the start piece. This only works if the map is already scanned in
         
         ## Parameters
         + Optional speed: The speed the vehicle should travel at during alignment"""
         await self.setSpeed(speed)
         track_piece = None
-        while track_piece == const.TrackPieceTypes.START: # Wait until at START
+        while track_piece is None or track_piece.type != const.TrackPieceTypes.START: # Wait until at START
             track_piece = await self.wait_for_track_change()
             pass
+
+        self._position = 0 # Update position to be at START
 
         await self.stop()
         pass
