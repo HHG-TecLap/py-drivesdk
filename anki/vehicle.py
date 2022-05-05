@@ -1,4 +1,3 @@
-from socket import MSG_CMSG_CLOEXEC
 from warnings import warn
 
 from typing import Callable, Optional
@@ -123,7 +122,9 @@ class Vehicle:
                 pass
             pass
         elif msg_type == const.VehicleMsg.PONG:
-            for func in self.__pong_watchers__: func()
+            for func in self.__pong_watchers__:
+                func()
+                pass
             pass
         pass
 
@@ -306,8 +307,8 @@ class Vehicle:
         self.__track_piece_watchers__.remove(func)
         pass
 
-    def ping(self):
-        self.__send_package__(util.const.ControllerMsg.PING)
+    async def ping(self):
+        await self.__send_package__(util.const.ControllerMsg.PING)
         pass
 
     def pong(self, func):
