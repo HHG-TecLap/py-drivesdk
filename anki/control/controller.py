@@ -126,7 +126,7 @@ class Controller:
         pass
 
     
-    async def scan(self, scan_vehicle : Vehicle = None, align_pre_scan : bool = True) -> list[TrackPiece]:
+    async def scan(self, align_pre_scan : bool = True) -> list[TrackPiece]:
         """Assembles a digital copy of the map and adds it to every connected vehicle.
         
         ## Parameters\n
