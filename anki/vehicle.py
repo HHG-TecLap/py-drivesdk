@@ -64,7 +64,7 @@ class Vehicle:
     + Optional client: A `bleak.BleakClient` wrapping the device to send/receive packets with\n
     """
 
-    __slots__ = ("__client__","_current_track_piece","_is_connected","_road_offset","_speed","on_track_piece_change","_track_piece_future","_position","_map","__read_chara__","__write_chara__", "_id")
+    __slots__ = ("__client__","_current_track_piece","_is_connected","_road_offset","_speed","on_track_piece_change","_track_piece_future","_position","_map","__read_chara__","__write_chara__", "_id","__track_piece_watchers__")
     def __init__(self, id : int, device : BLEDevice, client : bleak.BleakClient = None):
         self.__client__ = client if client is not None else bleak.BleakClient(device)
 
@@ -79,6 +79,7 @@ class Vehicle:
 
         self.on_track_piece_change : Callable = lambda: None # Set a dummy function by default
         self._track_piece_future = asyncio.Future()
+        self.__track_piece_watchers__ = []
         pass
 
     def __notify_handler__(self,handler,data : bytearray):
@@ -115,6 +116,9 @@ class Vehicle:
             self._track_piece_future.set_result(None) # Complete internal future when on new track piece. This is used in wait_for_track_change
             self._track_piece_future = asyncio.Future() # Create new future since the old one is now done
             self.on_track_piece_change() # Call the track piece event handle
+            for func in self.__track_piece_watchers__:
+                func()
+                pass
             pass
         pass
 
@@ -275,6 +279,23 @@ class Vehicle:
         self._position = len(self.map)-1 # Update position to be at FINISH
 
         await self.stop()
+        pass
+
+    def trackPieceChange(self, func):
+        """A decorator marking a function to be executed when the supercar drives onto a new track piece"""
+        self.__track_piece_watchers__.append(func)
+        return func
+        pass
+
+    def removeTrackPieceWatcher(self, func):
+        """Remove an track piece event handler added by `Vehicle.trackPieceChange`
+        
+        ## Parameters\n
+        + A function to remove as an event listener
+        
+        ## Raises\n
+        + ValueError: The function passed is not an event handler"""
+        self.__track_piece_watchers__.remove(func)
         pass
 
     @property
