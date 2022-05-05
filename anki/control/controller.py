@@ -126,7 +126,7 @@ class Controller:
         pass
 
     
-    async def scan(self, align_pre_scan : bool = True) -> list[TrackPiece]:
+    async def scan(self, scan_vehicle : Vehicle = None, align_pre_scan : bool = True) -> list[TrackPiece]:
         """Assembles a digital copy of the map and adds it to every connected vehicle.
         
         ## Parameters\n
@@ -152,7 +152,10 @@ class Controller:
             pass
 
         temp_vehicles = self.vehicles.copy()
-        scan_vehicle = temp_vehicles.pop() # Take a vehicle out of the set. This allows us to use temp_vehicles as a set of all non-scannning vehicles
+        if scan_vehicle is None:
+            scan_vehicle = temp_vehicles.pop() # Take a vehicle out of the set. This allows us to use temp_vehicles as a set of all non-scannning vehicles
+        else:
+            temp_vehicles.remove(scan_vehicle) # Remove the scanning vehicle from the set if it is already passed as an argument
 
         if align_pre_scan: # Aligning before scanning if enabled. This allows the vehicles to be placed anywhere on the map
             await asyncio.gather(*[noScanAlign(v,TrackPieceTypes.FINISH) for v in self.vehicles]) # Since we're aligning BEFORE scan, we need the piece before the one we want to align in front of
