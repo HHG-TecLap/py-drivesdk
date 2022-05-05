@@ -92,4 +92,5 @@ async def Main():
     pass
 
 try: asyncio.run(Main()) 
-except KeyboardInterrupt: pass
+finally:
+        asyncio.run(asyncio.gather(*[v.disconnect() for v in control.vehicles]))
