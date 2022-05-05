@@ -1,3 +1,4 @@
+from socket import MSG_CMSG_CLOEXEC
 from warnings import warn
 
 from typing import Callable, Optional
@@ -64,7 +65,7 @@ class Vehicle:
     + Optional client: A `bleak.BleakClient` wrapping the device to send/receive packets with\n
     """
 
-    __slots__ = ("__client__","_current_track_piece","_is_connected","_road_offset","_speed","on_track_piece_change","_track_piece_future","_position","_map","__read_chara__","__write_chara__", "_id","__track_piece_watchers__")
+    __slots__ = ("__client__","_current_track_piece","_is_connected","_road_offset","_speed","on_track_piece_change","_track_piece_future","_position","_map","__read_chara__","__write_chara__", "_id","__track_piece_watchers__","__pong_watchers__")
     def __init__(self, id : int, device : BLEDevice, client : bleak.BleakClient = None):
         self.__client__ = client if client is not None else bleak.BleakClient(device)
 
@@ -80,6 +81,7 @@ class Vehicle:
         self.on_track_piece_change : Callable = lambda: None # Set a dummy function by default
         self._track_piece_future = asyncio.Future()
         self.__track_piece_watchers__ = []
+        self.__pong_watchers__ = []
         pass
 
     def __notify_handler__(self,handler,data : bytearray):
@@ -119,6 +121,9 @@ class Vehicle:
             for func in self.__track_piece_watchers__:
                 func()
                 pass
+            pass
+        elif msg_type == const.VehicleMsg.PONG:
+            for func in self.__pong_watchers__: func()
             pass
         pass
 
@@ -301,6 +306,15 @@ class Vehicle:
         self.__track_piece_watchers__.remove(func)
         pass
 
+    def ping(self):
+        self.__send_package__(util.const.ControllerMsg.PING)
+        pass
+
+    def pong(self, func):
+        """A decorator marking an function to be executed when the supercar responds to a Ping"""
+        self.__pong_watchers__.append(func)
+        return func
+        pass
     @property
     def is_connected(self) -> bool:
         return self._is_connected
