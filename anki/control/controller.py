@@ -130,7 +130,8 @@ class Controller:
         """Assembles a digital copy of the map and adds it to every connected vehicle.
         
         ## Parameters\n
-        Optional `align_pre_scan`: When set to True, the supercars can start from any position on the map and align automatically before scanning. Disabling this means your supercars need to start between START and FINISH
+        + Optional `scan_vehicle`: When passed a Vehicle object, this Vehicle will be used as a scanner. Otherwise it will be selected automatically.
+        + Optional `align_pre_scan`: When set to True, the supercars can start from any position on the map and align automatically before scanning. Disabling this means your supercars need to start between START and FINISH
 
         ## Returns\n
         A list of track pieces representing the scanned in map.
