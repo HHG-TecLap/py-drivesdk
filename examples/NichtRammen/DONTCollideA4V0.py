@@ -10,10 +10,10 @@ control = anki.Controller()
 
 
 async def Main():
-    auto1 = await control.connect_one()
-    auto2 = await control.connect_one()
-    auto3 = await control.connect_one()
-    # auto4 = await control.connect_one()
+    auto1 = await control.connectOne()
+    auto2 = await control.connectOne()
+    auto3 = await control.connectOne()
+    #auto4 = await control.connectOne()
 
     await control.scan()
 
@@ -44,12 +44,12 @@ async def Main():
     auto1.on_track_piece_change = registering(auto1,1)
     auto2.on_track_piece_change = registering(auto2,2)
     auto3.on_track_piece_change = registering(auto3,3)
-    # auto4.on_track_piece_change = registering(auto4,4)
+    #auto4.on_track_piece_change = registering(auto4,4)
 
     await auto1.setSpeed(300)
     await auto2.setSpeed(300)
     await auto3.setSpeed(300)
-    # await auto4.setSpeed(300)
+    #await auto4.setSpeed(300)
 
 
     async def carControl(vehicle, id, speed):
@@ -72,7 +72,7 @@ async def Main():
             await asyncio.sleep(0)
 
 
-    # asyncio.create_task(carControl(auto4, 4, 400))
+    #asyncio.create_task(carControl(auto4, 4, 400))
     asyncio.create_task(carControl(auto3, 3, 300))
     asyncio.create_task(carControl(auto2, 2, 350))
     asyncio.create_task(carControl(auto1, 1, 300))
@@ -83,10 +83,11 @@ async def Main():
     try:
         while True:
             await asyncio.sleep(1)
-            print(carOnMap[15].out(), carOnMap[16].out(), carOnMap[0].out(), carOnMap[1].out(), carOnMap[2].out())
+            #print(carOnMap[15].out(), carOnMap[16].out(), carOnMap[0].out(), carOnMap[1].out(), carOnMap[2].out())
+            #print (auto1.map_position, auto2.map_position, auto3.map_position)
             pass
     finally:
-        await asyncio.gather([v.disconnect() for v in control.vehicles])
+        await asyncio.gather(*[v.disconnect() for v in control.vehicles])
         pass
     pass
 
