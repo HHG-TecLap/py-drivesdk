@@ -258,12 +258,15 @@ class Vehicle:
         await self.__send_package__(lightPatternPkg(r,g,b))
         pass
 
-    def getLane(self, mode : type[_Lane]) -> _Lane:
+    def getLane(self, mode : type[_Lane]) -> Optional[_Lane]:
         """Get the current lane given a specific lane type
         
         ## Parameters
         + mode: A `_Lane` child class representing some lane types. By default, these can be `Lane3` or `Lane4`"""
-        return mode.getClosestLane(self._road_offset)
+        if self._road_offset is ...:
+            return None
+        else:
+            return mode.getClosestLane(self._road_offset)
         pass
     async def align(self, speed : int = 300):
         """Align to the start piece. This only works if the map is already scanned in
