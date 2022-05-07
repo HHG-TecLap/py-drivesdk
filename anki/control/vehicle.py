@@ -6,13 +6,13 @@ from bleak.backends.device import BLEDevice
 import dataclasses
 from bleak.exc import BleakDBusError
 
-from .utility import util
+from ..utility import util
 
-from .msgs import *
-from .utility.track_pieces import TrackPiece
-from .utility import const
-from .utility.lanes import Lane3, Lane4, _Lane
-from . import errors
+from ..msgs import *
+from ..utility.track_pieces import TrackPiece
+from ..utility import const
+from ..utility.lanes import Lane3, Lane4, _Lane
+from .. import errors
 
 def interpretLocalName(name : str):
     if name is None or len(name) < 1: # Fix some issues that might occur
