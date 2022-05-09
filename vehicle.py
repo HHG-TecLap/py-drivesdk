@@ -75,7 +75,7 @@ class Vehicle:
             self._speed = speed
 
             try:
-                piece_obj = TrackPiece(loc,piece,clockwise)
+                piece_obj = TrackPiece.from_raw(loc,piece,clockwise)
             except ValueError:
                 warn(f"A TrackPiece value received from the vehicle could not be decoded. If you are running a scan, this will break it. Received: {piece}",errors.TrackPieceDecodeWarning)
                 return
