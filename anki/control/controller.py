@@ -4,7 +4,7 @@ from bleak.backends.scanner import AdvertisementData
 
 from ..utility.const import *
 from .. import errors
-from ..vehicle import Vehicle, interpretLocalName
+from .vehicle import Vehicle, interpretLocalName
 from ..utility.track_pieces import TrackPiece
 from .scanner import Scanner
 

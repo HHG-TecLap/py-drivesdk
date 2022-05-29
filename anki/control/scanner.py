@@ -1,5 +1,5 @@
 from ..utility.track_pieces import TrackPiece
-from ..vehicle import Vehicle
+from .vehicle import Vehicle
 from ..utility.const import TrackPieceTypes
 import asyncio
 
