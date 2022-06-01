@@ -130,7 +130,11 @@ class Vehicle:
 
     async def __send_package__(self, payload : bytes):
         """Send a payload to the supercar"""
-        await self.__client__.write_gatt_char(self.__write_chara__,payload)
+        try:
+            await self.__client__.write_gatt_char(self.__write_chara__,payload)
+        except OSError:
+            raise DisconnectedVehiclePackage("A command was sent to a vehicle that is already disconnected")
+            pass
         pass
 
     async def wait_for_track_change(self) -> Optional[TrackPiece]:
