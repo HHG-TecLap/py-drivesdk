@@ -224,6 +224,14 @@ class Controller:
         """
         await asyncio.gather(*[vehicle.disconnect() for vehicle in self.vehicles]) # Disconnect done in parallel as opposed to connect as the clients are already established
         pass
+
+    async def __aenter__(self):
+        return self
+        pass
+
+    async def __aexit__(self,*args):
+        await self.disconnectAll()
+        pass
     
     def handleShutdown(self):
         """Handles a shutdown neatly and disconnects the vehicles
