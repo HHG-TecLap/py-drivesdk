@@ -14,6 +14,12 @@ from ..utility import const
 from ..utility.lanes import Lane3, Lane4, _Lane
 from .. import errors
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .controller import Controller
+    pass
+
+
 def interpretLocalName(name : str):
     if name is None or len(name) < 1: # Fix some issues that might occur
         raise ValueError("Name was empty")
@@ -64,8 +70,8 @@ class Vehicle:
     + Optional client: A `bleak.BleakClient` wrapping the device to send/receive packets with\n
     """
 
-    __slots__ = ("__client__","_current_track_piece","_is_connected","_road_offset","_speed","on_track_piece_change","_track_piece_future","_position","_map","__read_chara__","__write_chara__", "_id","__track_piece_watchers__","__pong_watchers__")
-    def __init__(self, id : int, device : BLEDevice, client : bleak.BleakClient = None):
+    __slots__ = ("__client__","_current_track_piece","_is_connected","_road_offset","_speed","on_track_piece_change","_track_piece_future","_position","_map","__read_chara__","__write_chara__", "_id","__track_piece_watchers__","__pong_watchers__","__controller__")
+    def __init__(self, id : int, device : BLEDevice, client : bleak.BleakClient = None, controller : "Controller" = None):
         self.__client__ = client if client is not None else bleak.BleakClient(device)
 
         self._id : int = id
@@ -81,6 +87,7 @@ class Vehicle:
         self._track_piece_future = asyncio.Future()
         self.__track_piece_watchers__ = []
         self.__pong_watchers__ = []
+        self.__controller__ = controller
         pass
 
     def __notify_handler__(self,handler,data : bytearray):
@@ -206,6 +213,10 @@ class Vehicle:
         if self._is_connected:
             raise errors.DisconnectFailedException("The attempt to disconnect the vehicle failed.")
         
+        if not self._is_connected and self.__controller__ is not None:
+            self.__controller__.vehicles.remove(self)
+            pass
+
         return self._is_connected
         pass
 

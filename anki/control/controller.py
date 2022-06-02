@@ -55,7 +55,7 @@ class Controller:
             vehicle_id = id(client)
             pass
 
-        vehicle = Vehicle(vehicle_id, device,client)
+        vehicle = Vehicle(vehicle_id, device,client, self)
         self.vehicles.add(vehicle)
         return vehicle
         pass
