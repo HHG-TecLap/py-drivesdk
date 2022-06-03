@@ -60,18 +60,20 @@ async def Main():
         while True:
             if (intersect1.read() not in (0,id)) & (vehicle.map_position in(2,8)):
                 if (carOnMap[vehicle.map_position].read() not in (0,id)):
-                    await vehicle.setSpeed(CarDict[carOnMap[vehicle.map_position].read()].speed, 100 )
+                    if (speed > CarDict[carOnMap[vehicle.map_position].read()].speed):
+                        await vehicle.setSpeed(CarDict[carOnMap[vehicle.map_position].read()].speed, 200 )
                     while carOnMap[vehicle.map_position].read() not in (0,id):
                         await asyncio.sleep(0)
-                else:
                     await vehicle.setSpeed(speed)
+                else:
                     await vehicle.stop()
                     while intersect1.read() not in (0,id):
                         await asyncio.sleep(0)
                     await vehicle.setSpeed(speed)
             if (intersect2.read() not in (0,id)) & (vehicle.map_position in(3,11)):
                 if (carOnMap[vehicle.map_position].read() not in (0,id)):
-                    await vehicle.setSpeed(CarDict[carOnMap[vehicle.map_position].read()].speed, 100 )
+                    if (speed > CarDict[carOnMap[vehicle.map_position].read()].speed):
+                        await vehicle.setSpeed(CarDict[carOnMap[vehicle.map_position].read()].speed, 200 )
                     while carOnMap[vehicle.map_position].read() not in (0,id):
                         await asyncio.sleep(0)
                     await vehicle.setSpeed(speed)
