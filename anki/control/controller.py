@@ -55,7 +55,7 @@ class Controller:
             vehicle_id = id(client)
             pass
 
-        vehicle = Vehicle(vehicle_id, device,client)
+        vehicle = Vehicle(vehicle_id, device,client, self)
         self.vehicles.add(vehicle)
         return vehicle
         pass
@@ -126,11 +126,12 @@ class Controller:
         pass
 
     
-    async def scan(self, align_pre_scan : bool = True) -> list[TrackPiece]:
+    async def scan(self, scan_vehicle : Vehicle = None, align_pre_scan : bool = True) -> list[TrackPiece]:
         """Assembles a digital copy of the map and adds it to every connected vehicle.
         
         ## Parameters\n
-        Optional `align_pre_scan`: When set to True, the supercars can start from any position on the map and align automatically before scanning. Disabling this means your supercars need to start between START and FINISH
+        + Optional `scan_vehicle`: When passed a Vehicle object, this Vehicle will be used as a scanner. Otherwise it will be selected automatically.
+        + Optional `align_pre_scan`: When set to True, the supercars can start from any position on the map and align automatically before scanning. Disabling this means your supercars need to start between START and FINISH
 
         ## Returns\n
         A list of track pieces representing the scanned in map.
@@ -151,13 +152,16 @@ class Controller:
             await vehicle.stop()
             pass
 
+        temp_vehicles = self.vehicles.copy()
+        if scan_vehicle is None:
+            scan_vehicle = temp_vehicles.pop() # Take a vehicle out of the set. This allows us to use temp_vehicles as a set of all non-scannning vehicles
+        else:
+            temp_vehicles.remove(scan_vehicle) # Remove the scanning vehicle from the set if it is already passed as an argument
+
         if align_pre_scan: # Aligning before scanning if enabled. This allows the vehicles to be placed anywhere on the map
-            await asyncio.gather(*[noScanAlign(v,TrackPieceTypes.FINISH) for v in self.vehicles])
+            await asyncio.gather(*[noScanAlign(v,TrackPieceTypes.FINISH) for v in self.vehicles]) # Since we're aligning BEFORE scan, we need the piece before the one we want to align in front of
             await asyncio.sleep(1)
             pass
-
-        temp_vehicles = self.vehicles.copy()
-        scan_vehicle = temp_vehicles.pop() # Take a vehicle out of the set. This allows us to use temp_vehicles as a set of all non-scannning vehicles
 
         async def simulAlign(vehicle : Vehicle):
             await asyncio.sleep(1) # Putting a little delay here so that the other vehicles aren't in front of the scanner which would ruin the alignment
@@ -219,6 +223,14 @@ class Controller:
         + `DisconnectFailedException`: A disconnection attempt failed for unspecific reasons
         """
         await asyncio.gather(*[vehicle.disconnect() for vehicle in self.vehicles]) # Disconnect done in parallel as opposed to connect as the clients are already established
+        pass
+
+    async def __aenter__(self):
+        return self
+        pass
+
+    async def __aexit__(self,*args):
+        await self.disconnectAll()
         pass
     
     def handleShutdown(self):
