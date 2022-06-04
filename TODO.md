@@ -1,6 +1,6 @@
 # Todo-List
 
-~~+ Achieve 150 commits~~
++ ~~Achieve 150 commits~~
 + Fix map_position breaking when turning around
     (i.e. add smart position detection)
 
