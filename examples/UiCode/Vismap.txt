@@ -1,0 +1,4 @@
+[[None, (<TrackPiece type=CURVE; loc=14; clockwise=True>, 3), (<TrackPiece type=STRAIGHT; loc=26; clockwise=False>, 0), (<TrackPiece type=CURVE; loc=14; clockwise=True>, 0)], 
+[(<TrackPiece type=CURVE; loc=14; clockwise=True>, 3), ((<TrackPiece type=STRAIGHT; loc=21; clockwise=True>, <object object at 0x0000023187525280>), (3, 0)), (<TrackPiece type=CURVE; loc=14; clockwise=True>, 0), ((<TrackPiece type=FINISH; loc=17; clockwise=False>, <object object at 0x0000023187525260>), (1, 1))], 
+[(<TrackPiece type=CURVE; loc=14; clockwise=True>, 2), ((<TrackPiece type=INTERSECTION; loc=6; clockwise=False>, <object object at 0x00000231875252A0>), (3, 2)), ((<TrackPiece type=INTERSECTION; loc=14; clockwise=False>, <object object at 0x00000231875252A0>), (1, 2)), (<TrackPiece type=CURVE; loc=14; clockwise=True>, 1)], 
+[None, (<TrackPiece type=CURVE; loc=14; clockwise=True>, 2), (<TrackPiece type=CURVE; loc=14; clockwise=True>, 1), None]]
