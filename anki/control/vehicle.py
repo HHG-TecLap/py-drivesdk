@@ -14,6 +14,12 @@ from ..utility import const
 from ..utility.lanes import Lane3, Lane4, _Lane
 from .. import errors
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .controller import Controller
+    pass
+
+
 def interpretLocalName(name : str):
     if name is None or len(name) < 1: # Fix some issues that might occur
         raise ValueError("Name was empty")
@@ -64,9 +70,9 @@ class Vehicle:
     + Optional client: A `bleak.BleakClient` wrapping the device to send/receive packets with\n
     """
 
-    __slots__ = ("__client__","_current_track_piece","_is_connected","_road_offset","_speed","on_track_piece_change","_track_piece_future","_position","_map","__read_chara__","__write_chara__", "_id")
-    def __init__(self, id : int, device : BLEDevice, client : bleak.BleakClient = None):
-        self.__client__ = client if client is not None else bleak.BleakClient(device)
+    __slots__ = ("_client","_current_track_piece","_is_connected","_road_offset","_speed","on_track_piece_change","_track_piece_future","_position","_map","_read_chara","_write_chara", "_id","_track_piece_watchers","_pong_watchers","_controller")
+    def __init__(self, id : int, device : BLEDevice, client : bleak.BleakClient = None, controller : "Controller" = None):
+        self._client = client if client is not None else bleak.BleakClient(device)
 
         self._id : int = id
         self._current_track_piece : TrackPiece = None
@@ -79,6 +85,9 @@ class Vehicle:
 
         self.on_track_piece_change : Callable = lambda: None # Set a dummy function by default
         self._track_piece_future = asyncio.Future()
+        self._track_piece_watchers = []
+        self._pong_watchers = []
+        self._controller = controller
         pass
 
     def __notify_handler__(self,handler,data : bytearray):
@@ -94,7 +103,7 @@ class Vehicle:
 
             # Post a warning when TrackPiece creation failed (but not an error)
             try:
-                piece_obj = TrackPiece(loc,piece,clockwise)
+                piece_obj = TrackPiece.from_raw(loc,piece,clockwise)
             except ValueError:
                 warn(f"A TrackPiece value received from the vehicle could not be decoded. If you are running a scan, this will break it. Received: {piece}",errors.TrackPieceDecodeWarning)
                 return
@@ -115,12 +124,24 @@ class Vehicle:
             self._track_piece_future.set_result(None) # Complete internal future when on new track piece. This is used in wait_for_track_change
             self._track_piece_future = asyncio.Future() # Create new future since the old one is now done
             self.on_track_piece_change() # Call the track piece event handle
+            for func in self._track_piece_watchers:
+                func()
+                pass
+            pass
+        elif msg_type == const.VehicleMsg.PONG:
+            for func in self._pong_watchers:
+                func()
+                pass
             pass
         pass
 
     async def __send_package__(self, payload : bytes):
         """Send a payload to the supercar"""
-        await self.__client__.write_gatt_char(self.__write_chara__,payload)
+        try:
+            await self._client.write_gatt_char(self._write_chara,payload)
+        except OSError:
+            raise DisconnectedVehiclePackage("A command was sent to a vehicle that is already disconnected")
+            pass
         pass
 
     async def wait_for_track_change(self) -> Optional[TrackPiece]:
@@ -143,7 +164,7 @@ class Vehicle:
         + `ConnectionFailedException`: A generic error occured whilst connection to the supercar
         """
         try:
-            if not (await self.__client__.connect()): raise bleak.BleakError # Handle a failed connect the same way as a BleakError
+            if not (await self._client.connect()): raise bleak.BleakError # Handle a failed connect the same way as a BleakError
             pass
         # Catch a bunch of errors occuring on connection
         except BleakDBusError:
@@ -160,16 +181,16 @@ class Vehicle:
             )
         
         # Get service and characteristics
-        services = await self.__client__.get_services()
+        services = await self._client.get_services()
         anki_service = services.get_service(const.SERVICE_UUID)
         read   = anki_service.get_characteristic(const.READ_CHAR_UUID)  
         write  = anki_service.get_characteristic(const.WRITE_CHAR_UUID) 
 
-        await self.__client__.write_gatt_char(write,setSdkPkg(True,0x1)) # Enable SDK mode
-        await self.__client__.start_notify(read,self.__notify_handler__) # Start Notifier for data handling
+        await self._client.write_gatt_char(write,setSdkPkg(True,0x1)) # Enable SDK mode
+        await self._client.start_notify(read,self.__notify_handler__) # Start Notifier for data handling
 
-        self.__read_chara__ = read
-        self.__write_chara__= write
+        self._read_chara = read
+        self._write_chara= write
 
         self._is_connected = True
         pass
@@ -186,12 +207,16 @@ class Vehicle:
         + `DisconnectFailedException`: 
         """
         try:
-            self._is_connected = not await self.__client__.disconnect()
+            self._is_connected = not await self._client.disconnect()
         except asyncio.TimeoutError:
             raise errors.DisconnectTimedoutException("The attempt to disconnect from the vehicle timed out.")
         if self._is_connected:
             raise errors.DisconnectFailedException("The attempt to disconnect the vehicle failed.")
         
+        if not self._is_connected and self._controller is not None:
+            self._controller.vehicles.remove(self)
+            pass
+
         return self._is_connected
         pass
 
@@ -254,27 +279,58 @@ class Vehicle:
         await self.__send_package__(lightPatternPkg(r,g,b))
         pass
 
-    def getLane(self, mode : type[_Lane]) -> _Lane:
+    def getLane(self, mode : type[_Lane]) -> Optional[_Lane]:
         """Get the current lane given a specific lane type
         
         ## Parameters
         + mode: A `_Lane` child class representing some lane types. By default, these can be `Lane3` or `Lane4`"""
-        return mode.getClosestLane(self._road_offset)
+        if self._road_offset is ...:
+            return None
+        else:
+            return mode.getClosestLane(self._road_offset)
         pass
     async def align(self, speed : int = 300):
-        """Align to the start piece
+        """Align to the start piece. This only works if the map is already scanned in
         
         ## Parameters
         + Optional speed: The speed the vehicle should travel at during alignment"""
         await self.setSpeed(speed)
         track_piece = None
-        while track_piece == const.TrackPieceTypes.START: # Wait until at START
+        while track_piece is None or track_piece.type != const.TrackPieceTypes.FINISH: # Wait until at START
             track_piece = await self.wait_for_track_change()
             pass
+
+        self._position = len(self.map)-1 # Update position to be at FINISH
 
         await self.stop()
         pass
 
+    def trackPieceChange(self, func):
+        """A decorator marking a function to be executed when the supercar drives onto a new track piece"""
+        self._track_piece_watchers.append(func)
+        return func
+        pass
+
+    def removeTrackPieceWatcher(self, func):
+        """Remove an track piece event handler added by `Vehicle.trackPieceChange`
+        
+        ## Parameters\n
+        + A function to remove as an event listener
+        
+        ## Raises\n
+        + ValueError: The function passed is not an event handler"""
+        self._track_piece_watchers.remove(func)
+        pass
+
+    async def ping(self):
+        await self.__send_package__(util.const.ControllerMsg.PING)
+        pass
+
+    def pong(self, func):
+        """A decorator marking an function to be executed when the supercar responds to a Ping"""
+        self._pong_watchers.append(func)
+        return func
+        pass
     @property
     def is_connected(self) -> bool:
         return self._is_connected
@@ -309,12 +365,12 @@ class Vehicle:
         pass
 
     @property
-    def current_lane3(self) -> Lane3:
+    def current_lane3(self) -> Optional[Lane3]:
         return self.getLane(Lane3)
         pass
 
     @property
-    def current_lane4(self) -> Lane4:
+    def current_lane4(self) -> Optional[Lane4]:
         return self.getLane(Lane4)
         pass
 

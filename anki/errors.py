@@ -39,3 +39,7 @@ class DisconnectFailedException(AnkiException):
 class DisconnectTimedoutException(DisconnectFailedException):
     """The disconnect attempt timed out"""
     pass
+
+class DisconnectedVehiclePackage(RuntimeError):
+    """A packet was sent to a vehicle that is already disconnected"""
+    pass
