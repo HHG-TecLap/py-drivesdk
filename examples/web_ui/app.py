@@ -1,11 +1,26 @@
 from aiohttp import web
 import json
+import anki
+from car import Car
 
 routes = web.RouteTableDef()
-cars = []
+cars: dict[int, Car] = {}
 config = ...
+controller = anki.Controller()
 with open('./config.json', 'r') as f:
     config = json.loads(''.join(f.readlines()))
+
+async def build_response(id: int):
+    if not id in cars:
+        return {'error': f'The id {id} doesn\'t exists'}
+    res = {
+        'id': cars[id].id,
+        'speed': cars[id].speed,
+        'current_track_piece': cars[id].current_track_piece,
+        'map': cars[id].map,
+        'is_connected': cars[id].is_connected
+    }
+    return res
 
 # Index
 @routes.get('/')
@@ -27,8 +42,26 @@ async def car_dashboard(request: web.Request):
 # API
 @routes.get(r'/api/car/{id:\d+}')
 async def car_informations(request: web.Request):
-    web.json_response(data={'Test': 'Test'})
+    res = await build_response(int(request.match_info['id']))
+    return web.json_response(data=res)
 
+@routes.post(r'/api/car/{id:\d+}')
+async def create_car(request: web.Request):
+    id = int(request.match_info['id'])
+    cars[id] = Car(id, controller)
+    await cars[id].create_vehicle()
+    res = await build_response(id)
+    return web.json_response(data=res)
+
+@routes.delete(r'/api/car/{id:\d+}')
+async def delete_car(request: web.Request):
+    id = int(request.match_info['id'])
+    await cars[id].delete()
+    cars.pop(id)
+    res = {
+        'deleted': True
+    }
+    return web.json_response(data=res)
 
 def app_factory() -> web.Application:
     app = web.Application()

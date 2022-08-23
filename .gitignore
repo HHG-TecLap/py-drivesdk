@@ -1,2 +1,4 @@
 __pycache__
 /anki.code-workspace
+/build
+/py_drivesdk.egg-info
