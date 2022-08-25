@@ -21,6 +21,7 @@ extensions = [
 templates_path = ['_templates']
 exclude_patterns = []
 
+# Allow for compiling the docs without installing the library first
 import sys, os
 sys.path.append(os.path.abspath("../.."))
 autodoc_mock_imports = ["bleak"]
