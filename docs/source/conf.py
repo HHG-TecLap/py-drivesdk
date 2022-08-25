@@ -21,6 +21,9 @@ extensions = [
 templates_path = ['_templates']
 exclude_patterns = []
 
+import sys, os
+sys.path.append(os.path.abspath("../.."))
+autodoc_mock_imports = ["bleak"]
 
 
 # -- Options for HTML output -------------------------------------------------
