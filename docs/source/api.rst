@@ -66,3 +66,8 @@ Lane4
 ~~~~~
 .. autoclass:: anki.Lane4
     :members:
+
+Exceptions
+**********
+.. automodule:: anki.errors
+    :members:
