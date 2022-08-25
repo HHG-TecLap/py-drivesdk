@@ -1,6 +1,9 @@
 API Reference
 ==============
 
+Controlling the supercars
+*************************
+
 Controller
 ~~~~~~~~~~~
 .. autoclass:: anki.Controller
