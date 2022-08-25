@@ -132,7 +132,7 @@ class Controller:
         
         :param amount: :class:`int`
             The amount of vehicles to connect to
-        :param vehicled_ids: :class:`Optional[Iterable[int]]` 
+        :param vehicle_ids: :class:`Optional[Iterable[int]]` 
             The vehicle ids passed to the :class:`Vehicle` instances
 
         Returns
