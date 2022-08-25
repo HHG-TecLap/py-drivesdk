@@ -30,8 +30,9 @@ def isAnki(device : BLEDevice, advertisement : AdvertisementData):
 
 class Controller:
     """This object controls all vehicle connections. With it you can connect to any number of vehicles and disconnect cleanly.
-    ## Paramaters\n
-    timeout=10: The time until the controller gives up searching for a vehicle."""
+    :param timeout: The time until the controller gives up searching for a vehicle. (defaults to 10)
+    :type timeout: float
+    """
     __slots__ = ["_scanner","timeout","vehicles","map"]
     def __init__(self,*,timeout : float = 10):
         self._scanner = bleak.BleakScanner()
@@ -64,17 +65,17 @@ class Controller:
     async def connectOne(self, vehicle_id : Optional[int] = None) -> Vehicle:
         """Connect to one non-charging Supercar and return the Vehicle instance
 
-        ## Parameters\n
-        + Optional `vehicle_id`: The id given to the `Vehicle` instance on connection
+        :param vehicle_id: The id given to the `Vehicle` instance on connection (Optional)
+        :type vehicle_id: int
 
-        ## Returns\n
-        A `Vehicle` object representing the connected supercar
+        :return: A `Vehicle` object representing the connected supercar
+        :rtype: anki.Vehicle
 
-        ## Raises\n
-        + `VehicleNotFound`: No supercar was found in the set timeout\n
-        + `ConnectionTimedoutException`: The connection attempt to the supercar did not succeed within the set timeout
-        + `ConnectionDatabusException`: A databus error occured whilst connecting to the supercar\n
-        + `ConnectionFailedException`: A generic error occured whilst connection to the supercar"""
+        :raise anki.errors.VehicleNotFound: No supercar was found in the set timeout
+        :raise anki.errors.ConnectionTimedoutException: The connection attempt to the supercar did not succeed within the set timeout
+        :raise anki.errors.ConnectionDatabusException: A databus error occured whilst connecting to the supercar
+        :raise anki.errors.ConnectionFailedException: A generic error occured whilst connection to the supercar
+        """
         vehicle = await self._getVehicle(vehicle_id)
         vehicle._map = self.map # Add an existing map to the vehicle. If there is no map it sets None which is the default for Vehicle._map anyway
         await vehicle.connect()
@@ -88,14 +89,14 @@ class Controller:
         + `address`: A string representing the MAC-address of the vehicle to connect to. This needs to be uppercase seperated by colons\n
         + Optional `vehicle_id`: An integer id given to the vehicle on connection.\n
 
-        ## Returns\n
-        A `Vehicle` object representing the connected supercar
-        
-        ## Raises\n
-        + `VehicleNotFound`: No supercar was found in the set timeout\n
-        + `ConnectionTimedoutException`: The connection attempt to the supercar did not succeed within the set timeout
-        + `ConnectionDatabusException`: A databus error occured whilst connecting to the supercar\n
-        + `ConnectionFailedException`: A generic error occured whilst connection to the supercar"""
+        :return: A `Vehicle` object representing the connected supercar
+        :rtype: anki.Vehicle
+
+        :raise anki.errors.VehicleNotFound: No supercar was found in the set timeout
+        :raise anki.errors.ConnectionTimedoutException: The connection attempt to the supercar did not succeed within the set timeout
+        :raise anki.errors.ConnectionDatabusException: A databus error occured whilst connecting to the supercar
+        :raise anki.errors.ConnectionFailedException: A generic error occured whilst connection to the supercar
+        """
         vehicle = await self._getVehicle(vehicle_id,address)
         await vehicle.connect()
         return vehicle
