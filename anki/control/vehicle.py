@@ -62,12 +62,17 @@ class Lights:
     ENGINELIGHTS = 3
 
 class Vehicle:
-    """This class represents a supercar. With it you can control all functions of said supercar.\n
+    """This class represents a supercar. With it you can control all functions of said supercar.
+    You should not create this class manually, use one of the connect methods in the :class:`Controller`.
     
-    ## Params\n
-    + id: An integer id to be assigned to the `Vehicle` object\n
-    + device: A `bleak.BLEDevice` representing the supercar\n
-    + Optional client: A `bleak.BleakClient` wrapping the device to send/receive packets with\n
+    Parameters
+    ----------
+    :param id: :class:`int`
+        The id of the :class:`Vehicle` object
+    :param device: :class:`bleak.BLEDevice`
+        The BLE device representing the supercar
+    :param client: :class:`Optional[bleak.BleakClient]` 
+        A client wrapper around the BLE device
     """
 
     __slots__ = ("_client","_current_track_piece","_is_connected","_road_offset","_speed","on_track_piece_change","_track_piece_future","_position","_map","_read_chara","_write_chara", "_id","_track_piece_watchers","_pong_watchers","_controller")
@@ -155,13 +160,17 @@ class Vehicle:
         pass
 
     async def connect(self):
-        """Connect to the Supercar\n
-        Don't forget to call Vehicle.disconnect on program exit!
+        """Connect to the Supercar
+        **Don't forget to call Vehicle.disconnect on program exit!**
         
-        ## Raises\n
-        + `ConnectionTimedoutException`: The connection attempt to the supercar did not succeed within the set timeout\n
-        + `ConnectionDatabusException`: A databus error occured whilst connecting to the supercar\n
-        + `ConnectionFailedException`: A generic error occured whilst connection to the supercar
+        Raises
+        ------
+        :class:`ConnectionTimedoutException`
+            The connection attempt to the supercar did not succeed within the set timeout
+        :class:`ConnectionDatabusException`
+            A databus error occured whilst connecting to the supercar
+        :class:`ConnectionFailedException`
+            A generic error occured whilst connection to the supercar
         """
         try:
             if not (await self._client.connect()): raise bleak.BleakError # Handle a failed connect the same way as a BleakError
@@ -197,14 +206,21 @@ class Vehicle:
 
     async def disconnect(self) -> bool:
         """Disconnect from the Supercar\n
-        NOTE: Always do this on program exit!
+        .. note::
+            Remember to execute this for every connected :class:`Vehicle` once the program exits.
+            Not doing so will result in your supercars not connecting sometimes as they still think they are connected.
 
-        ## Returns
-        A boolean representing the connection state of the supercar. This will always be False.
+        Returns
+        -------
+        :class:`bool`
+        The connection state of the :class:`Vehicle` instance. This should always be `False`
 
-        ## Raises
-        + `DisconnectTimedoutException`: The attempt to disconnect from the supercar timed out
-        + `DisconnectFailedException`: 
+        Raises
+        ------
+        :class:`DisconnectTimedoutException`
+            The attempt to disconnect from the supercar timed out
+        :class:`DisconnectFailedException`
+            The attempt to disconnect from the supercar failed for an unspecified reason
         """
         try:
             self._is_connected = not await self._client.disconnect()
@@ -224,9 +240,12 @@ class Vehicle:
     async def setSpeed(self, speed : int, acceleration : int = 500):
         """Set the speed of the Supercar in mm/s
         
-        ## Params\n
-        + speed: An integer value describing the target speed in mm/s\n
-        + Optional acceleration: An integer value denoting the acceleration used to move to the target speed
+        Params
+        ------
+        :param speed: :class:`int`
+            The speed in mm/s
+        :param acceleration: :class:`Optional[int]`
+            The acceleration in mm/s²
         """
         await self.__send_package__(setSpeedPkg(speed,acceleration))
         self._speed = speed # Update the internal speed as well (even though it technically is an overestimate as we need to accelerate first)
@@ -240,10 +259,14 @@ class Vehicle:
     async def changeLane(self, lane : _Lane, horizontalSpeed : int = 300, horizontalAcceleration : int = 300, *, _hopIntent : int = 0x0, _tag : int = 0x0):
         """Change to a desired lane
         
-        ## Params\n
-        + lane: A `_Lane` lane to move to. The default lane types for this are `Lane3` and `Lane4`\n
-        + Optional horizontalSpeed: An integer speed to travel horizontally across the track with
-        + Optional horizontalAcceleration: An integer acceleration to accelerate to the horizontalSpeed with
+        Params
+        ------
+        :param lane: :class:`_Lane` 
+            The lane to move into. These may be :class:`Lane3` or :class:`Lane4`
+        :param horizontalSpeed: :class:`Optional[int]`
+            The speed the vehicle will move along the track at in mm/s
+        :param horizontalAcceleration: :class:`Optional[int]`
+            The acceleration in mm/s² the vehicle will move horizontally with 
         """
         await self.changePosition(lane.lane_position,horizontalSpeed,horizontalAcceleration,_hopIntent=_hopIntent,_tag=_tag) # changeLane is just changePosition but user friendly
         pass
@@ -251,29 +274,43 @@ class Vehicle:
     async def changePosition(self, roadCenterOffset : float, horizontalSpeed : int = 300, horizontalAcceleration : int = 300, *, _hopIntent : int = 0x0, _tag : int = 0x0):
         """Change to a position offset from the track centre
 
-        ## Params
-        + roadCenterOffset: A float offset from the centre of the current track piece in mm
-        + Optional horizontalSpeed: An integer speed to travel horizontally across the track with
-        + Optional horizontalAcceleration: An integer acceleration to accelerate to the horizontalSpeed with
+        Params
+        ------
+        :param roadCenterOffset: :class:`float`
+            The target offset from the centre of the track piece in mm
+        :param horizontalSpeed: :class:`int`
+            The speed the vehicle will move along the track at in mm/s
+        :param horizontalAcceleration: :class:`int`
+            The acceleration in mm/s² the vehicle will move horizontally with 
         """
         await self.__send_package__(changeLanePkg(roadCenterOffset,horizontalSpeed,horizontalAcceleration,_hopIntent,_tag))
         pass
 
     async def turn(self, type : int = 3, trigger : int = 0): # type and trigger don't work correcty
-        """NOTE: Does not function properly"""
+        """
+        .. warning::
+            This does not yet function properly. It is advised not to use this method
+        """
         await self.__send_package__(turn180Pkg(type,trigger))
         pass
 
     async def setLights(self,light : int):
-        """NOTE: Does not seem to work correctly. Likely an issue with the vehicles"""
+        """Set the lights of the vehicle in accordance with a bitmask
+        .. deprecated::
+            This function is deprecated due to not functioning properly. 
+            It will not execute.
+        """
         raise DeprecationWarning("This function is deprecated and does not work due to a bug in the vehicle computer.")
 
         await self.__send_package__(setLightPkg(light))
         pass
 
     async def setLightPattern(self, r : int, g : int, b : int):
-        """NOTE: Does not seem to work correctly\n
-        NOTE: Needs further investigation (might not have all arguments covered)"""
+        """Set the engine light (the big one) at the top of the vehicle
+        .. deprecated::
+            This function is deprecated due to a hardware bug causing it not to function. 
+            It will not execute.
+        """
         raise DeprecationWarning("This function is deprecated and does not work due to a bug in the vehicle computer.")
 
         await self.__send_package__(lightPatternPkg(r,g,b))
@@ -282,8 +319,17 @@ class Vehicle:
     def getLane(self, mode : type[_Lane]) -> Optional[_Lane]:
         """Get the current lane given a specific lane type
         
-        ## Parameters
-        + mode: A `_Lane` child class representing some lane types. By default, these can be `Lane3` or `Lane4`"""
+        Parameters
+        ----------
+        :param mode: :class:`_Lane` 
+            A class such as :class:`Lane3` or :class:`Lane4` inheriting from :class:`_Lane`. This is the lane system being used
+        
+        Returns
+        -------
+        :class:`Optional[_Lane]`
+            The lane the vehicle is on. This may be none if no lane information is available 
+            (such as at the start of the program, when the vehicles haven't moved much)
+        """
         if self._road_offset is ...:
             return None
         else:
@@ -292,8 +338,11 @@ class Vehicle:
     async def align(self, speed : int = 300):
         """Align to the start piece. This only works if the map is already scanned in
         
-        ## Parameters
-        + Optional speed: The speed the vehicle should travel at during alignment"""
+        Parameters
+        ----------
+        :param speed: :class:`int`
+            The speed the vehicle should travel at during alignment
+        """
         await self.setSpeed(speed)
         track_piece = None
         while track_piece is None or track_piece.type != const.TrackPieceTypes.FINISH: # Wait until at START
@@ -304,21 +353,39 @@ class Vehicle:
 
         await self.stop()
         pass
-
+    
     def trackPieceChange(self, func):
-        """A decorator marking a function to be executed when the supercar drives onto a new track piece"""
+        """
+        A decorator marking a function to be executed when the supercar drives onto a new track piece
+
+        Parameters
+        ----------
+        :param func: :class:`function`
+            The listening function
+        
+        Returns
+        -------
+        :class:`function`
+            The function that was passed in
+        """
         self._track_piece_watchers.append(func)
         return func
         pass
 
     def removeTrackPieceWatcher(self, func):
-        """Remove an track piece event handler added by `Vehicle.trackPieceChange`
+        """
+        Remove a track piece event handler added by :func:`Vehicle.trackPieceChange`
         
-        ## Parameters\n
-        + A function to remove as an event listener
+        Parameters
+        ----------
+        :param func: :class:`function`
+            The function to remove as an event handler
         
-        ## Raises\n
-        + ValueError: The function passed is not an event handler"""
+        Raises
+        ------
+        :class:`ValueError`
+            The function passed is not an event handler
+        """
         self._track_piece_watchers.remove(func)
         pass
 
@@ -327,17 +394,38 @@ class Vehicle:
         pass
 
     def pong(self, func):
-        """A decorator marking an function to be executed when the supercar responds to a Ping"""
+        """
+        A decorator marking an function to be executed when the supercar responds to a Ping
+
+        Parameters
+        ----------
+        :param func: :class:`function`
+            The function to mark as a listener
+        
+        Returns
+        -------
+        :class:`function`
+            The function being passed in
+        """
         self._pong_watchers.append(func)
         return func
         pass
+
     @property
     def is_connected(self) -> bool:
+        """
+        `True` if the vehicle is currently connected
+        """
         return self._is_connected
         pass
 
     @property
     def current_track_piece(self) -> TrackPiece:
+        """
+        The :class:`TrackPiece` the vehicle is currently located at
+        .. note::
+            This will return :class:`None` if either scan or align is not completed
+        """
         if None in (self.map, self.map_position): # If no scan or align not complete, we can't find the track piece
             return None
             pass
@@ -346,36 +434,65 @@ class Vehicle:
 
     @property
     def map(self) -> tuple[TrackPiece]:
+        """
+        The map the :class:`Vehicle` instance is using. 
+        This is :class:`None` if the :class:`Vehicle` does not have a map supplied.
+        """
         return tuple(self._map) if self._map is not None else None
         pass
 
     @property
     def map_position(self) -> int:
+        """
+        The position of the :class:`Vehicle` instance on the map.
+        This is :class:`None` if :func:`Vehicle.align` has not yet been called.
+        """
         return self._position
         pass
 
     @property
     def road_offset(self) -> float:
+        """
+        The offset from the road centre.
+        This is :class:`None` if the supercar did not send any information yet. (Such as when it hasn't moved much)
+        """
         return self._road_offset
         pass
 
     @property
     def speed(self) -> int:
+        """
+        The speed of the supercar in mm/s.
+        This is :class:`None` if the supercar has not moved or :func:`Vehicle.setSpeed` hasn't been called yet.
+        """
         return self._speed
         pass
 
     @property
     def current_lane3(self) -> Optional[Lane3]:
+        """
+        Short-hand for 
+        .. code-block:: python
+            Vehicle.getLane(Lane3)
+        """
         return self.getLane(Lane3)
         pass
 
     @property
     def current_lane4(self) -> Optional[Lane4]:
+        """
+        Short-hand for 
+        .. code-block:: python
+            Vehicle.getLane(Lane4)
+        """
         return self.getLane(Lane4)
         pass
 
     @property
     def id(self) -> int:
+        """
+        The id of the :class:`Vehicle` instance. This is set during initialisation of the object.
+        """
         return self._id
         pass
     pass
