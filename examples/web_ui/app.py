@@ -1,32 +1,49 @@
 from aiohttp import web
 import json
 import anki
-from car import Car
 
 routes = web.RouteTableDef()
-cars: dict[int, Car] = {}
+vehicles: dict[int, anki.Vehicle] = {}
 config = ...
 controller = anki.Controller()
 with open('./config.json', 'r') as f:
     config = json.loads(''.join(f.readlines()))
 
 async def build_response(id: int):
-    if not id in cars:
-        return {'error': f'The id {id} doesn\'t exists'}
+    if not id in vehicles:
+        return web.json_response(data={'error': f'The id {id} doesn\'t exists'}, status=404)
+
+    json_map = []
+    current_track_piece = None
+    if vehicles[id].map:
+        for j in vehicles[id].map:
+            json_map.append({'clockwise': j.clockwise, 'type_name': j.type.name, 'loc': j.loc})
+    if vehicles[id].current_track_piece:
+        current_track_piece = {'clockwise': vehicles[id].current_track_piece.clockwise, 'type': vehicles[id].current_track_piece.type.name, 'loc': vehicles[id].current_track_piece.loc}
+    
     res = {
-        'id': cars[id].id,
-        'speed': cars[id].speed,
-        'current_track_piece': cars[id].current_track_piece,
-        'map': cars[id].map,
-        'is_connected': cars[id].is_connected
+        'id': vehicles[id].id,
+        'speed': vehicles[id].speed,
+        'current_track_piece': current_track_piece,
+        'map': json_map,
+        'is_connected': vehicles[id].is_connected
     }
-    return res
+    return web.json_response(data=res)
+
+async def edit_car(id: int, jsonPayload) -> web.json_response:
+    for key in jsonPayload:
+        if key == 'speed':
+            await vehicles[id].setSpeed(speed=jsonPayload[key])
+        elif key == 'id':
+            return web.json_response({'error': 'You can\'t edit the id'})
+        else:
+            pass
+    return build_response(id=id)
 
 # Index
 @routes.get('/')
 async def index(request: web.Request):
     return web.Response(text='Index')
-    pass
 
 # Dashboard for the Cars
 @routes.get(r'/car/{id:\d+}')
@@ -36,32 +53,52 @@ async def car_dashboard(request: web.Request):
     with open('./templates/car_dashboard.html') as f:
         body = ''.join(f.readlines()).replace(r'%id%', request.match_info['id'])
     return web.Response(body=body, content_type='text/html')
-    pass
 
 
 # API
 @routes.get(r'/api/car/{id:\d+}')
-async def car_informations(request: web.Request):
-    res = await build_response(int(request.match_info['id']))
-    return web.json_response(data=res)
+async def get_car_information(request: web.Request):
+    return await build_response(int(request.match_info['id']))
 
 @routes.post(r'/api/car/{id:\d+}')
 async def create_car(request: web.Request):
     id = int(request.match_info['id'])
-    cars[id] = Car(id, controller)
-    await cars[id].create_vehicle()
-    res = await build_response(id)
-    return web.json_response(data=res)
+    if id in vehicles:
+        return web.json_response(data={'error': f'The id {id} already exists'}, status=400)
+    vehicles[id] = await controller.connectOne(id)
+    return await build_response(id)
 
 @routes.delete(r'/api/car/{id:\d+}')
 async def delete_car(request: web.Request):
     id = int(request.match_info['id'])
-    await cars[id].delete()
-    cars.pop(id)
+    if not id in vehicles:
+        return web.json_response(data={'error': f'The id {id} doesn\'t exists'}, status=404)
+    await vehicles[id].disconnect()
+    vehicles.pop(id)
     res = {
         'deleted': True
     }
     return web.json_response(data=res)
+
+@routes.patch(r'/api/car/{id:\d+}')
+async def patch_car(request: web.Request):
+    id = int(request.match_info['id'])
+    if not id in vehicles:
+        return web.json_response(data={'error': f'The id {id} doesn\'t exists'}, status=404)
+    if not request.body_exists:
+        return web.json_response(data={'error': 'No request body'}, status=400)
+
+    return await edit_car(id=id, jsonPayload=await request.json())
+
+@routes.post('/api/scan')
+async def scan(request: web.Request):
+    if controller.map:
+        return web.json_response({'error': 'The map is already scanned'}, status=409)
+    map_obj = await controller.scan(align_pre_scan=True)
+    res = []
+    for j in map_obj:
+        res.append({'clockwise': j.clockwise, 'type_name': j.type.name, 'loc': j.loc})
+    return web.json_response({'map': res})
 
 def app_factory() -> web.Application:
     app = web.Application()
