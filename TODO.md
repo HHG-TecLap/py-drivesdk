@@ -13,3 +13,4 @@
 
 + Write a Documentation
 + Find out what piece value 66 is
++ Add README.md
