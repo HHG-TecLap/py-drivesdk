@@ -41,12 +41,15 @@ class VehicleState:
 
     @classmethod
     def from_int(cls, state : int):
-        """Constructs a `VehicleState` from an integer representation\n
-        ## Parameters:
-        + `state`: An integer representation of the state
+        """Constructs a :class:`VehicleState` from an integer representation
         
-        ## Returns:
-        A `VehicleState` instance"""
+        :param state: :class:`int`
+            The integer state passed by the discovery process
+        
+        Returns
+        -------
+        :class:`VehicleState`
+        The new :class:`VehicleState` instance"""
         full     = bool(state & (1 << const.VehicleBattery.FULL_BATTERY))
         low      = bool(state & (1 << const.VehicleBattery.LOW_BATTERY))
         charging = bool(state & (1 << const.VehicleBattery.ON_CHARGER))
@@ -63,16 +66,17 @@ class Lights:
 
 class Vehicle:
     """This class represents a supercar. With it you can control all functions of said supercar.
-    You should not create this class manually, use one of the connect methods in the :class:`Controller`.
+
     
-    Parameters
-    ----------
     :param id: :class:`int`
         The id of the :class:`Vehicle` object
     :param device: :class:`bleak.BLEDevice`
         The BLE device representing the supercar
     :param client: :class:`Optional[bleak.BleakClient]` 
         A client wrapper around the BLE device
+    
+    .. note::
+        You should not create this class manually, use one of the connect methods in the :class:`Controller`.
     """
 
     __slots__ = ("_client","_current_track_piece","_is_connected","_road_offset","_speed","on_track_piece_change","_track_piece_future","_position","_map","_read_chara","_write_chara", "_id","_track_piece_watchers","_pong_watchers","_controller")
@@ -152,8 +156,11 @@ class Vehicle:
     async def wait_for_track_change(self) -> Optional[TrackPiece]:
         """Waits until the current track piece changes.
         
-        ## Returns\n
-        A `TrackPiece` object denoting the new track piece or None if the scanner is not completed yet.
+        Returns
+        -------
+        :class:`TrackPiece`
+            The new track piece. `None` if :func:`Vehicle.map` is None
+            (for example if the map has not been scanned yet)
         """
         await self._track_piece_future # Wait on a new track piece (See __notify_handler__)
         return self.current_track_piece
@@ -205,7 +212,8 @@ class Vehicle:
         pass
 
     async def disconnect(self) -> bool:
-        """Disconnect from the Supercar\n
+        """Disconnect from the Supercar
+
         .. note::
             Remember to execute this for every connected :class:`Vehicle` once the program exits.
             Not doing so will result in your supercars not connecting sometimes as they still think they are connected.
@@ -239,9 +247,7 @@ class Vehicle:
 
     async def setSpeed(self, speed : int, acceleration : int = 500):
         """Set the speed of the Supercar in mm/s
-        
-        Params
-        ------
+
         :param speed: :class:`int`
             The speed in mm/s
         :param acceleration: :class:`Optional[int]`
@@ -258,9 +264,7 @@ class Vehicle:
 
     async def changeLane(self, lane : _Lane, horizontalSpeed : int = 300, horizontalAcceleration : int = 300, *, _hopIntent : int = 0x0, _tag : int = 0x0):
         """Change to a desired lane
-        
-        Params
-        ------
+
         :param lane: :class:`_Lane` 
             The lane to move into. These may be :class:`Lane3` or :class:`Lane4`
         :param horizontalSpeed: :class:`Optional[int]`
@@ -273,9 +277,7 @@ class Vehicle:
 
     async def changePosition(self, roadCenterOffset : float, horizontalSpeed : int = 300, horizontalAcceleration : int = 300, *, _hopIntent : int = 0x0, _tag : int = 0x0):
         """Change to a position offset from the track centre
-
-        Params
-        ------
+        
         :param roadCenterOffset: :class:`float`
             The target offset from the centre of the track piece in mm
         :param horizontalSpeed: :class:`int`
@@ -296,7 +298,8 @@ class Vehicle:
 
     async def setLights(self,light : int):
         """Set the lights of the vehicle in accordance with a bitmask
-        .. deprecated::
+
+        .. warning::
             This function is deprecated due to not functioning properly. 
             It will not execute.
         """
@@ -307,7 +310,8 @@ class Vehicle:
 
     async def setLightPattern(self, r : int, g : int, b : int):
         """Set the engine light (the big one) at the top of the vehicle
-        .. deprecated::
+
+        .. warning::
             This function is deprecated due to a hardware bug causing it not to function. 
             It will not execute.
         """
@@ -318,9 +322,7 @@ class Vehicle:
 
     def getLane(self, mode : type[_Lane]) -> Optional[_Lane]:
         """Get the current lane given a specific lane type
-        
-        Parameters
-        ----------
+
         :param mode: :class:`_Lane` 
             A class such as :class:`Lane3` or :class:`Lane4` inheriting from :class:`_Lane`. This is the lane system being used
         
@@ -337,9 +339,7 @@ class Vehicle:
         pass
     async def align(self, speed : int = 300):
         """Align to the start piece. This only works if the map is already scanned in
-        
-        Parameters
-        ----------
+
         :param speed: :class:`int`
             The speed the vehicle should travel at during alignment
         """
@@ -358,8 +358,6 @@ class Vehicle:
         """
         A decorator marking a function to be executed when the supercar drives onto a new track piece
 
-        Parameters
-        ----------
         :param func: :class:`function`
             The listening function
         
@@ -375,9 +373,7 @@ class Vehicle:
     def removeTrackPieceWatcher(self, func):
         """
         Remove a track piece event handler added by :func:`Vehicle.trackPieceChange`
-        
-        Parameters
-        ----------
+
         :param func: :class:`function`
             The function to remove as an event handler
         
@@ -397,8 +393,6 @@ class Vehicle:
         """
         A decorator marking an function to be executed when the supercar responds to a Ping
 
-        Parameters
-        ----------
         :param func: :class:`function`
             The function to mark as a listener
         
@@ -423,6 +417,7 @@ class Vehicle:
     def current_track_piece(self) -> TrackPiece:
         """
         The :class:`TrackPiece` the vehicle is currently located at
+
         .. note::
             This will return :class:`None` if either scan or align is not completed
         """
@@ -472,7 +467,9 @@ class Vehicle:
     def current_lane3(self) -> Optional[Lane3]:
         """
         Short-hand for 
+        
         .. code-block:: python
+            
             Vehicle.getLane(Lane3)
         """
         return self.getLane(Lane3)
@@ -482,7 +479,9 @@ class Vehicle:
     def current_lane4(self) -> Optional[Lane4]:
         """
         Short-hand for 
+        
         .. code-block:: python
+            
             Vehicle.getLane(Lane4)
         """
         return self.getLane(Lane4)
