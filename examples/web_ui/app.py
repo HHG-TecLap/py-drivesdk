@@ -20,13 +20,15 @@ async def build_response(id: int):
             json_map.append({'clockwise': j.clockwise, 'type_name': j.type.name, 'loc': j.loc})
     if vehicles[id].current_track_piece:
         current_track_piece = {'clockwise': vehicles[id].current_track_piece.clockwise, 'type': vehicles[id].current_track_piece.type.name, 'loc': vehicles[id].current_track_piece.loc}
-    
     res = {
         'id': vehicles[id].id,
         'speed': vehicles[id].speed,
         'current_track_piece': current_track_piece,
+        'map_position': vehicles[id].map_position,
         'map': json_map,
-        'is_connected': vehicles[id].is_connected
+        'is_connected': vehicles[id].is_connected,
+        'current_lane': vehicles[id].current_lane4,
+        'road_offset': vehicles[id].road_offset
     }
     return web.json_response(data=res)
 
@@ -34,11 +36,32 @@ async def edit_car(id: int, jsonPayload) -> web.json_response:
     for key in jsonPayload:
         if key == 'speed':
             await vehicles[id].setSpeed(speed=jsonPayload[key])
+
+        elif key == 'is_connected':
+            if jsonPayload[key] == True and vehicles[id].is_connected == False:
+                try:
+                    vehicles[id].connect()
+                except:
+                    return web.json_response({'error': 'Server got itself in trouble'}, status=500)
+            elif jsonPayload[key] == False and vehicles[id].is_connected == True:
+                try:
+                    vehicles[id].disconnect()
+                except:
+                    return web.json_response({'error': 'Server got itself in trouble'}, status=500)
+
         elif key == 'id':
-            return web.json_response({'error': 'You can\'t edit the id'})
+            return web.json_response({'error': 'You can\'t edit the id'}, status=400)
+
+        elif key == 'map':
+            return web.json_response({'error': 'You can\'t edit the map'}, status=400)
+
+        elif key == 'current_track_piece':
+            return web.json_response({'error': 'You can\'t edit the current track piece'}, status=400)
+
         else:
             pass
-    return build_response(id=id)
+    
+    return await build_response(id=id)
 
 # Index
 @routes.get('/')
