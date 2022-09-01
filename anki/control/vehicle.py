@@ -8,7 +8,7 @@ from bleak.exc import BleakDBusError
 
 from ..utility import msg_protocol
 
-from ..msgs import *
+from ..utility.msgs import *
 from ..utility.track_pieces import TrackPiece
 from ..utility import const
 from ..utility.lanes import Lane3, Lane4, _Lane
