@@ -6,7 +6,7 @@ from bleak.backends.device import BLEDevice
 import dataclasses
 from bleak.exc import BleakDBusError
 
-from ..utility import util
+from ..utility import msg_protocol
 
 from ..msgs import *
 from ..utility.track_pieces import TrackPiece
@@ -101,7 +101,7 @@ class Vehicle:
 
     def __notify_handler__(self,handler,data : bytearray):
         """An internal handler function that gets called on a notify receive"""
-        msg_type, payload = util.disassemblePacket(data)
+        msg_type, payload = msg_protocol.disassemblePacket(data)
         if msg_type == const.VehicleMsg.TRACK_PIECE_UPDATE:
             # This gets called when part-way along a track piece (sometimes)
             loc, piece, offset, speed, clockwise = disassembleTrackUpdate(payload)
@@ -386,7 +386,7 @@ class Vehicle:
         pass
 
     async def ping(self):
-        await self.__send_package__(util.const.ControllerMsg.PING)
+        await self.__send_package__(msg_protocol.const.ControllerMsg.PING)
         pass
 
     def pong(self, func):

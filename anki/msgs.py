@@ -1,4 +1,4 @@
-from .utility.util import *
+from .utility.msg_protocol import *
 from .utility import const
 import struct
 
