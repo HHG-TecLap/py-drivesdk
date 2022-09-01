@@ -13,3 +13,12 @@
 
 + Write a Documentation
 + Find out what piece value 66 is
+
+## pep-up
++ Change all to snake case
+    Implement aliases with `DeprecationWarning`
++ rename `Vehicle.__notify_handler__`
++ rename all `[...]Exception`s to `[...]Error`s
+    Implement deprecated aliases here as well
++ rename `anki.utility` and `anki.utility.util` since they don't actually provide any
++ Change the `raise` usages to `raise from`
