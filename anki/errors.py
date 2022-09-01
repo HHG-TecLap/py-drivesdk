@@ -28,7 +28,7 @@ class ConnectionDatabusException(ConnectionFailedException):
     """A data-bus error occured whilst connecting to the vehicle"""
     pass
 
-class ConnectionTimedOutException(ConnectionFailedException):
+class ConnectionTimedoutException(ConnectionFailedException):
     """The attempt to connect with the vehicle timed out"""
     pass
 
@@ -36,7 +36,7 @@ class DisconnectFailedException(AnkiException):
     """The attempt to disconnect from the vehicle failed"""
     pass
 
-class DisconnectTimedOutException(DisconnectFailedException):
+class DisconnectTimedoutException(DisconnectFailedException):
     """The disconnect attempt timed out"""
     pass
 

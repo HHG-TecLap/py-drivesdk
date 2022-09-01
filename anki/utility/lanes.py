@@ -13,9 +13,12 @@ def __addConstants__(cls : "_Lane"):
 class _Lane:
     """The raw base class for lane types. Inherit from this class to create your own lane type.
     
-    ## Params\n
-    + lane_name: The name of a lane
-    + lane_position: The optimal position for a lane
+    Parameters
+    ----------
+    :param lane_name: :class:`str`
+        The name of the lane
+    :param lane_position: :class:`float`
+        The optimal position for this lane
     """
 
     __LANE_EQUIVS__ = {}

@@ -4,3 +4,4 @@ __pycache__
 /py_drivesdk.egg-info
 /.vscode
 /docs/build
+/docs/source/_build

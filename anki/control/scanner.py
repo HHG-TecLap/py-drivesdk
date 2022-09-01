@@ -13,8 +13,9 @@ def reorderMap(map : list[TrackPiece]):
 class Scanner:
     """A scanner object performs a simple map scan without any alignment.
     
-    ## Params\n
-    + vehicle: The `Vehicle` object to perform the scan with"""
+    :param vehicle: :class:`Vehicle`
+        The vehicle to perform the scan with
+    """
 
     __slots__ = ["vehicle","map"]
     def __init__(self, vehicle : Vehicle):
