@@ -1,5 +1,6 @@
 from email.policy import default
 import os, sys
+from time import sleep
 sys.path.append(os.getcwd())
 
 import anki, asyncio, pygame
@@ -83,11 +84,11 @@ def gen_vismap(vismap):
 
 
 
-def Uimain(self, control : anki.Controller, CarDict: dict):
+def Uimain(control : anki.Controller, CarDict: dict):
     map = control.map
     autos = tuple(control.vehicles)
     vismap = [[]]
-    gen_vismap()
+    gen_vismap(vismap)
 
 
     
@@ -96,7 +97,7 @@ def Uimain(self, control : anki.Controller, CarDict: dict):
     pygame.display.set_caption("Anki Ui Access")
     pygame.display.set_icon(Logo)
     clock = pygame.time.Clock()
-    self.font = pygame.self.font.SysFont("Arial",20)
+    font = pygame.font.SysFont("Arial",20)
     Gerade = pygame.image.load("Gerade.png")
     Kurve = pygame.image.load("Kurve.png")
     Kreuzung = pygame.image.load("Kreuzung.png")
@@ -142,13 +143,13 @@ def Uimain(self, control : anki.Controller, CarDict: dict):
         for x in range(len(autos)):
             work_surface = autoData[x]
             work_surface.fill((135, 237, 208))
-            auto_name = self.font.render(f"Name: {CarDict[autos[x].id]}", True, (0,0,0))
-            auto_id = self.font.render(f"ID: {autos[x].id}", True, (0,0,0))
-            auto_pos = self.font.render(f"Position: {autos[x].map_position}", True, (0,0,0))
+            auto_name = font.render(f"Name: {CarDict[autos[x].id]}", True, (0,0,0))
+            auto_id = font.render(f"ID: {autos[x].id}", True, (0,0,0))
+            auto_pos = font.render(f"Position: {autos[x].map_position}", True, (0,0,0))
             
-            auto_piece = self.font.render(f"Streckenteil Typ:{anki.TrackPieceTypes.as_str(autos[x].current_track_piece.type)}", True, (0,0,0))
+            auto_piece = font.render(f"Streckenteil Typ:{anki.TrackPieceTypes.as_str(autos[x].current_track_piece.type)}", True, (0,0,0))
             
-            auto_lane = self.font.render(f"Spur: {autos[x].current_lane4}", True, (0,0,0))
+            auto_lane = font.render(f"Spur: {autos[x].current_lane4}", True, (0,0,0))
             surf_height = 40 + sum([surf.get_height() for surf in (auto_name, auto_pos, auto_piece, auto_lane)])
             #surf_width = max([surf.get_width() for surf in (auto_name, auto_pos, auto_piece)])
             if surf_height != work_surface.get_height():
@@ -182,7 +183,7 @@ def Uimain(self, control : anki.Controller, CarDict: dict):
                 for vehicle_num in range(len(carPosMap[x][y])):
                     carPosSurface.blit(
                         pygame.transform.flip(
-                            self.font.render(
+                            font.render(
                                 str(carPosMap[x][y][vehicle_num]), 
                             True, 
                             (245,255,84)
@@ -192,7 +193,7 @@ def Uimain(self, control : anki.Controller, CarDict: dict):
                         )
                 carPosMap[x][y].clear()
         Ui.blit(pygame.transform.flip(carPosSurface,True, False),(0,0))
-        Ui.blit(self.logSurface,(0,mapsurface.get_height()))
+        #Ui.blit(logSurface,(0,mapsurface.get_height()))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -235,3 +236,27 @@ class Ui:
         for i in range(len(self.logHistory)):
             self.logSurface.blit(self.logHistory[i], (0, i*30))
             # print(i, self.logHistory[i])
+
+
+async def ankiMain(): 
+    control = anki.Controller()
+    global auto1, auto2
+    global map
+    global autos
+
+    auto1 = await control.connectOne(vehicle_id =1)
+    auto2 = await control.connectOne(vehicle_id =2)
+    autos = [auto1, auto2]
+    await control.scan()
+    map = control.map
+    #print(vismap,map,sep="\n")
+    await auto1.setSpeed(200)
+    Ui(control,CarDict)
+    while True:
+        sleep(1)
+
+CarDict = {
+    1 : "auto1",
+    2 : "auto2"
+}
+asyncio.run(ankiMain())
