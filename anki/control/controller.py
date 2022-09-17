@@ -12,7 +12,7 @@ from .scanner import Scanner
 
 from typing import Iterable, Optional
 
-def is_anki(device : BLEDevice, advertisement : AdvertisementData):
+def _is_anki(device : BLEDevice, advertisement : AdvertisementData):
     try:
         state, version, name = interpretLocalName(advertisement.local_name)
     except ValueError: # Catch error if name is not interpretable (not a vehicle then)
@@ -47,7 +47,7 @@ class Controller:
     async def _get_vehicle(self,vehicle_id : Optional[int] = None, address : str = None) -> Vehicle:
         """Finds a Supercar and creates a Vehicle instance around it"""
 
-        device = await self._scanner.find_device_by_filter(lambda device, advertisement: is_anki(device,advertisement) and (address is None or device.address == address), timeout=self.timeout)
+        device = await self._scanner.find_device_by_filter(lambda device, advertisement: _is_anki(device,advertisement) and (address is None or device.address == address), timeout=self.timeout)
         # Get a BLEDevice and ensure it is of a required address if address was given
         if device is None:
             raise errors.VehicleNotFound("Could not find a supercar within the given timeout")

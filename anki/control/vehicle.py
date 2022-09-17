@@ -101,7 +101,7 @@ class Vehicle:
         self._controller = controller
         pass
 
-    def __notify_handler__(self,handler,data : bytearray):
+    def _notify_handler(self,handler,data : bytearray):
         """An internal handler function that gets called on a notify receive"""
         msg_type, payload = msg_protocol.disassemblePacket(data)
         if msg_type == const.VehicleMsg.TRACK_PIECE_UPDATE:
@@ -146,7 +146,7 @@ class Vehicle:
             pass
         pass
 
-    async def __send_package__(self, payload : bytes):
+    async def __send_package(self, payload : bytes):
         """Send a payload to the supercar"""
         try:
             await self._client.write_gatt_char(self._write_chara,payload)
@@ -205,7 +205,7 @@ class Vehicle:
         write  = anki_service.get_characteristic(const.WRITE_CHAR_UUID) 
 
         await self._client.write_gatt_char(write,set_sdk_pkg(True,0x1)) # Enable SDK mode
-        await self._client.start_notify(read,self.__notify_handler__) # Start Notifier for data handling
+        await self._client.start_notify(read,self._notify_handler) # Start Notifier for data handling
 
         self._read_chara = read
         self._write_chara= write
@@ -255,7 +255,7 @@ class Vehicle:
         :param acceleration: :class:`Optional[int]`
             The acceleration in mm/s²
         """
-        await self.__send_package__(set_speed_pkg(speed,acceleration))
+        await self.__send_package(set_speed_pkg(speed,acceleration))
         self._speed = speed # Update the internal speed as well (even though it technically is an overestimate as we need to accelerate first)
         pass
 
@@ -289,7 +289,7 @@ class Vehicle:
         :param horizontalAcceleration: :class:`int`
             The acceleration in mm/s² the vehicle will move horizontally with 
         """
-        await self.__send_package__(change_lane_pkg(roadCenterOffset,horizontalSpeed,horizontalAcceleration,_hopIntent,_tag))
+        await self.__send_package(change_lane_pkg(roadCenterOffset,horizontalSpeed,horizontalAcceleration,_hopIntent,_tag))
         pass
 
     async def turn(self, type : int = 3, trigger : int = 0): # type and trigger don't work correcty
@@ -297,7 +297,7 @@ class Vehicle:
         .. warning::
             This does not yet function properly. It is advised not to use this method
         """
-        await self.__send_package__(turn_180_pkg(type,trigger))
+        await self.__send_package(turn_180_pkg(type,trigger))
         pass
     
     @deprecated_alias("setLights")
@@ -310,7 +310,7 @@ class Vehicle:
         """
         raise DeprecationWarning("This function is deprecated and does not work due to a bug in the vehicle computer.")
 
-        await self.__send_package__(setLightPkg(light))
+        await self.__send_package(setLightPkg(light))
         pass
     
     @deprecated_alias("setLightPattern")
@@ -323,7 +323,7 @@ class Vehicle:
         """
         raise DeprecationWarning("This function is deprecated and does not work due to a bug in the vehicle computer.")
 
-        await self.__send_package__(lightPatternPkg(r,g,b))
+        await self.__send_package(lightPatternPkg(r,g,b))
         pass
     
     @deprecated_alias("getLane")
@@ -396,7 +396,7 @@ class Vehicle:
         pass
 
     async def ping(self):
-        await self.__send_package__(msg_protocol.const.ControllerMsg.PING)
+        await self.__send_package(msg_protocol.const.ControllerMsg.PING)
         pass
 
     def pong(self, func):
