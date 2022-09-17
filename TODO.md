@@ -15,8 +15,8 @@
 + Find out what piece value 66 is
 
 ## pep-up
-+ Change all to snake case
-    Implement aliases with `DeprecationWarning`
++ ~~Change all to snake case~~
+    ~~Implement aliases with `DeprecationWarning`~~
 + rename `Vehicle.__notify_handler__`
 + rename all `[...]Exception`s to `[...]Error`s
     Implement deprecated aliases here as well

@@ -1,3 +1,4 @@
+from ..utility.deprecated_alias import alias_class, deprecated_alias
 from warnings import warn
 
 from typing import Callable, Optional
@@ -20,7 +21,7 @@ if TYPE_CHECKING:
     pass
 
 
-def interpretLocalName(name : str):
+def interpret_local_name(name : str):
     if name is None or len(name) < 1: # Fix some issues that might occur
         raise ValueError("Name was empty")
         pass
@@ -64,6 +65,7 @@ class Lights:
     FRONTLIGHTS = 2
     ENGINELIGHTS = 3
 
+@alias_class
 class Vehicle:
     """This class represents a supercar. With it you can control all functions of said supercar.
 
@@ -104,7 +106,7 @@ class Vehicle:
         msg_type, payload = msg_protocol.disassemblePacket(data)
         if msg_type == const.VehicleMsg.TRACK_PIECE_UPDATE:
             # This gets called when part-way along a track piece (sometimes)
-            loc, piece, offset, speed, clockwise = disassembleTrackUpdate(payload)
+            loc, piece, offset, speed, clockwise = disassemble_track_update(payload)
 
             # Update internal variables when new info available
             self._road_offset = offset
@@ -202,7 +204,7 @@ class Vehicle:
         read   = anki_service.get_characteristic(const.READ_CHAR_UUID)  
         write  = anki_service.get_characteristic(const.WRITE_CHAR_UUID) 
 
-        await self._client.write_gatt_char(write,setSdkPkg(True,0x1)) # Enable SDK mode
+        await self._client.write_gatt_char(write,set_sdk_pkg(True,0x1)) # Enable SDK mode
         await self._client.start_notify(read,self.__notify_handler__) # Start Notifier for data handling
 
         self._read_chara = read
@@ -244,8 +246,8 @@ class Vehicle:
         return self._is_connected
         pass
 
-
-    async def setSpeed(self, speed : int, acceleration : int = 500):
+    @deprecated_alias("setSpeed")
+    async def set_speed(self, speed : int, acceleration : int = 500):
         """Set the speed of the Supercar in mm/s
 
         :param speed: :class:`int`
@@ -253,7 +255,7 @@ class Vehicle:
         :param acceleration: :class:`Optional[int]`
             The acceleration in mm/s²
         """
-        await self.__send_package__(setSpeedPkg(speed,acceleration))
+        await self.__send_package__(set_speed_pkg(speed,acceleration))
         self._speed = speed # Update the internal speed as well (even though it technically is an overestimate as we need to accelerate first)
         pass
 
@@ -261,8 +263,9 @@ class Vehicle:
         """Stops the Supercar"""
         await self.setSpeed(0, 600) # stop = 0 speed
         pass
-
-    async def changeLane(self, lane : _Lane, horizontalSpeed : int = 300, horizontalAcceleration : int = 300, *, _hopIntent : int = 0x0, _tag : int = 0x0):
+    
+    @deprecated_alias("changeLane")
+    async def change_lane(self, lane : _Lane, horizontalSpeed : int = 300, horizontalAcceleration : int = 300, *, _hopIntent : int = 0x0, _tag : int = 0x0):
         """Change to a desired lane
 
         :param lane: :class:`_Lane` 
@@ -272,10 +275,11 @@ class Vehicle:
         :param horizontalAcceleration: :class:`Optional[int]`
             The acceleration in mm/s² the vehicle will move horizontally with 
         """
-        await self.changePosition(lane.lane_position,horizontalSpeed,horizontalAcceleration,_hopIntent=_hopIntent,_tag=_tag) # changeLane is just changePosition but user friendly
+        await self.change_position(lane.lane_position,horizontalSpeed,horizontalAcceleration,_hopIntent=_hopIntent,_tag=_tag) # changeLane is just changePosition but user friendly
         pass
-
-    async def changePosition(self, roadCenterOffset : float, horizontalSpeed : int = 300, horizontalAcceleration : int = 300, *, _hopIntent : int = 0x0, _tag : int = 0x0):
+    
+    @deprecated_alias("changePosition")
+    async def change_position(self, roadCenterOffset : float, horizontalSpeed : int = 300, horizontalAcceleration : int = 300, *, _hopIntent : int = 0x0, _tag : int = 0x0):
         """Change to a position offset from the track centre
         
         :param roadCenterOffset: :class:`float`
@@ -285,7 +289,7 @@ class Vehicle:
         :param horizontalAcceleration: :class:`int`
             The acceleration in mm/s² the vehicle will move horizontally with 
         """
-        await self.__send_package__(changeLanePkg(roadCenterOffset,horizontalSpeed,horizontalAcceleration,_hopIntent,_tag))
+        await self.__send_package__(change_lane_pkg(roadCenterOffset,horizontalSpeed,horizontalAcceleration,_hopIntent,_tag))
         pass
 
     async def turn(self, type : int = 3, trigger : int = 0): # type and trigger don't work correcty
@@ -293,10 +297,11 @@ class Vehicle:
         .. warning::
             This does not yet function properly. It is advised not to use this method
         """
-        await self.__send_package__(turn180Pkg(type,trigger))
+        await self.__send_package__(turn_180_pkg(type,trigger))
         pass
-
-    async def setLights(self,light : int):
+    
+    @deprecated_alias("setLights")
+    async def set_lights(self,light : int):
         """Set the lights of the vehicle in accordance with a bitmask
 
         .. warning::
@@ -307,8 +312,9 @@ class Vehicle:
 
         await self.__send_package__(setLightPkg(light))
         pass
-
-    async def setLightPattern(self, r : int, g : int, b : int):
+    
+    @deprecated_alias("setLightPattern")
+    async def set_light_pattern(self, r : int, g : int, b : int):
         """Set the engine light (the big one) at the top of the vehicle
 
         .. warning::
@@ -319,8 +325,9 @@ class Vehicle:
 
         await self.__send_package__(lightPatternPkg(r,g,b))
         pass
-
-    def getLane(self, mode : type[_Lane]) -> Optional[_Lane]:
+    
+    @deprecated_alias("getLane")
+    def get_lane(self, mode : type[_Lane]) -> Optional[_Lane]:
         """Get the current lane given a specific lane type
 
         :param mode: :class:`_Lane` 
@@ -337,6 +344,7 @@ class Vehicle:
         else:
             return mode.getClosestLane(self._road_offset)
         pass
+
     async def align(self, speed : int = 300):
         """Align to the start piece. This only works if the map is already scanned in
 
@@ -354,7 +362,8 @@ class Vehicle:
         await self.stop()
         pass
     
-    def trackPieceChange(self, func):
+    @deprecated_alias("trackPieceChange")
+    def track_piece_change(self, func):
         """
         A decorator marking a function to be executed when the supercar drives onto a new track piece
 
@@ -369,8 +378,9 @@ class Vehicle:
         self._track_piece_watchers.append(func)
         return func
         pass
-
-    def removeTrackPieceWatcher(self, func):
+    
+    @deprecated_alias("removeTrackPieceWatcher")
+    def remove_track_piece_watcher(self, func):
         """
         Remove a track piece event handler added by :func:`Vehicle.trackPieceChange`
 
@@ -472,7 +482,7 @@ class Vehicle:
             
             Vehicle.getLane(Lane3)
         """
-        return self.getLane(Lane3)
+        return self.get_lane(Lane3)
         pass
 
     @property
@@ -484,7 +494,7 @@ class Vehicle:
             
             Vehicle.getLane(Lane4)
         """
-        return self.getLane(Lane4)
+        return self.get_lane(Lane4)
         pass
 
     @property

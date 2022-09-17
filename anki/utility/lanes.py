@@ -1,6 +1,7 @@
+from ..utility.deprecated_alias import alias_class, deprecated_alias
 import dataclasses
 
-def __addConstants__(cls : "_Lane"):
+def __add_constants__(cls : "_Lane"):
     """Add constants equivalent to the entries of LANE_EQUIVS (just as objects)"""
     for position, name in cls.__LANE_EQUIVS__.items():
         setattr(cls,name,cls(name,position))
@@ -28,13 +29,16 @@ class _Lane:
 
 
     @classmethod
-    def getClosestLane(cls, position : float):
+    @deprecated_alias("getClosestLane")
+    def get_closest_lane(cls, position : float):
         _, lane_val = min({abs(k-position) : k for k, v in cls.__LANE_EQUIVS__.items()}.items(),key=lambda v: v[0]) # Find the name, offset pairing with minimal distance to the position
         
         return cls(cls.__LANE_EQUIVS__[lane_val],lane_val) # Construct _Lane object around raw info
         pass
+    
     @classmethod
-    def byName(cls, name : str):
+    @deprecated_alias("byName")
+    def by_name(cls, name : str):
         if not name in cls.__LANE_EQUIVS__.values(): raise ValueError("Lane does not exist for the chosen type")
         rev_equivs = {v:k for k,v in cls.__LANE_EQUIVS__.items()}
 
@@ -42,6 +46,7 @@ class _Lane:
         pass
 
     @classmethod
+    @deprecated_alias("getALl")
     def getAll(cls):
         return [cls(name,position) for position, name in cls.__LANE_EQUIVS__.items()]
         pass
@@ -61,7 +66,7 @@ class _Lane:
         pass
     pass
 
-@__addConstants__
+@__add_constants__
 class Lane3(_Lane):
     """A lane type for programs using 3 lanes (left, middle, right)
     This holds three constants (ordered left-to-right):
@@ -76,7 +81,7 @@ class Lane3(_Lane):
     }
     pass
 
-@__addConstants__
+@__add_constants__
 class Lane4(_Lane):
     """A lane type for programs using 4 lanes (leftmost, left-middle, right-middle, rightmost)
     This holds three constants (ordered left-to-right):

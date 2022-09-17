@@ -1,3 +1,5 @@
+from ..utility.deprecated_alias import alias_class, deprecated_alias
+
 import bleak, asyncio
 from bleak.backends.device import BLEDevice
 from bleak.backends.scanner import AdvertisementData
@@ -10,7 +12,7 @@ from .scanner import Scanner
 
 from typing import Iterable, Optional
 
-def isAnki(device : BLEDevice, advertisement : AdvertisementData):
+def is_anki(device : BLEDevice, advertisement : AdvertisementData):
     try:
         state, version, name = interpretLocalName(advertisement.local_name)
     except ValueError: # Catch error if name is not interpretable (not a vehicle then)
@@ -28,6 +30,7 @@ def isAnki(device : BLEDevice, advertisement : AdvertisementData):
     return ankiFound
     pass
 
+@alias_class
 class Controller:
     """This object controls all vehicle connections. With it you can connect to any number of vehicles and disconnect cleanly.
 
@@ -41,10 +44,10 @@ class Controller:
         self.map : Optional[list[TrackPiece]] = None
         pass
 
-    async def _getVehicle(self,vehicle_id : Optional[int] = None, address : str = None) -> Vehicle:
+    async def _get_vehicle(self,vehicle_id : Optional[int] = None, address : str = None) -> Vehicle:
         """Finds a Supercar and creates a Vehicle instance around it"""
 
-        device = await self._scanner.find_device_by_filter(lambda device, advertisement: isAnki(device,advertisement) and (address is None or device.address == address), timeout=self.timeout)
+        device = await self._scanner.find_device_by_filter(lambda device, advertisement: is_anki(device,advertisement) and (address is None or device.address == address), timeout=self.timeout)
         # Get a BLEDevice and ensure it is of a required address if address was given
         if device is None:
             raise errors.VehicleNotFound("Could not find a supercar within the given timeout")
@@ -61,8 +64,8 @@ class Controller:
         return vehicle
         pass
 
-
-    async def connectOne(self, vehicle_id : Optional[int] = None) -> Vehicle:
+    @deprecated_alias("connectOne")
+    async def connect_one(self, vehicle_id : Optional[int] = None) -> Vehicle:
         """Connect to one non-charging Supercar and return the Vehicle instance
 
         :param vehicle_id: :class:`Optional[int]` 
@@ -89,13 +92,14 @@ class Controller:
         :class:`ConnectionFailedException` 
             A generic error occured whilst connection to the supercar
         """
-        vehicle = await self._getVehicle(vehicle_id)
+        vehicle = await self._get_vehicle(vehicle_id)
         vehicle._map = self.map # Add an existing map to the vehicle. If there is no map it sets None which is the default for Vehicle._map anyway
         await vehicle.connect()
         return vehicle
         pass
 
-    async def connectSpecific(self, address : str, vehicle_id : Optional[int] = None) -> Vehicle:
+    @deprecated_alias("connectSpecific")
+    async def connect_specific(self, address : str, vehicle_id : Optional[int] = None) -> Vehicle:
         """Connect to a supercar with a specified MAC address
         
         :param address: :class:`str`
@@ -122,12 +126,13 @@ class Controller:
         :class:`ConnectionFailedException`
             A generic error occured whilst connection to the supercar
         """
-        vehicle = await self._getVehicle(vehicle_id,address)
+        vehicle = await self._get_vehicle(vehicle_id,address)
         await vehicle.connect()
         return vehicle
         pass
-
-    async def connectMany(self, amount : int, vehicle_ids : Iterable[int] = None) -> tuple[Vehicle]:
+    
+    @deprecated_alias("connectMany")
+    async def connect_many(self, amount : int, vehicle_ids : Iterable[int] = None) -> tuple[Vehicle]:
         """Connect to <amount> non-charging Supercars
         
         :param amount: :class:`int`
@@ -258,9 +263,8 @@ class Controller:
         return self.map
         pass
 
-
-
-    async def disconnectAll(self):
+    @deprecated_alias("disconnectAll")
+    async def disconnect_all(self):
         """Disconnects from all the connected supercars
         
         Raises
@@ -278,10 +282,11 @@ class Controller:
         pass
 
     async def __aexit__(self,*args):
-        await self.disconnectAll()
+        await self.disconnect_all()
         pass
     
-    def handleShutdown(self):
+    @deprecated_alias("handleShutdown")
+    def handle_shutdown(self):
         """Handles a shutdown neatly and disconnects the vehicles
         
         Raises
@@ -291,7 +296,7 @@ class Controller:
         :class:`DisconnectFailedException`
             A disconnection attempt failed for unspecific reasons
         """
-        asyncio.run(self.disconnectAll())
+        asyncio.run(self.disconnect_all())
         pass
 
 

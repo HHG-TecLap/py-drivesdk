@@ -3,7 +3,7 @@ from .vehicle import Vehicle
 from ..utility.const import TrackPieceTypes
 import asyncio
 
-def reorderMap(map : list[TrackPiece]):
+def reorder_map(map : list[TrackPiece]):
     # Basically: Move the last piece to the front until START is at index 0 and FINISH is at index -1 (i.e. the end)
     while not (map[0].type is TrackPieceTypes.START and map[-1].type is TrackPieceTypes.FINISH):
         map.insert(0,map.pop(-1))
@@ -48,7 +48,7 @@ class Scanner:
         self.vehicle.on_track_piece_change = lambda: None
         await self.vehicle.stop()
 
-        reorderMap(self.map) # Assure that START is at the beginning and FINISH is at the end
+        reorder_map(self.map) # Assure that START is at the beginning and FINISH is at the end
 
         return self.map
         pass
