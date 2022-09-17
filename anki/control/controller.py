@@ -6,7 +6,7 @@ from bleak.backends.scanner import AdvertisementData
 
 from ..utility.const import *
 from .. import errors
-from .vehicle import Vehicle, interpretLocalName
+from .vehicle import Vehicle, interpret_local_name
 from ..utility.track_pieces import TrackPiece
 from .scanner import Scanner
 
@@ -14,7 +14,7 @@ from typing import Iterable, Optional
 
 def _is_anki(device : BLEDevice, advertisement : AdvertisementData):
     try:
-        state, version, name = interpretLocalName(advertisement.local_name)
+        state, version, name = interpret_local_name(advertisement.local_name)
     except ValueError: # Catch error if name is not interpretable (not a vehicle then)
         return False
         pass

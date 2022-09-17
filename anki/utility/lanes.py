@@ -11,6 +11,7 @@ def __add_constants__(cls : "_Lane"):
     pass
 
 @dataclasses.dataclass(frozen=True,unsafe_hash=False,slots=True)
+@alias_class
 class _Lane:
     """The raw base class for lane types. Inherit from this class to create your own lane type.
     
@@ -46,7 +47,7 @@ class _Lane:
         pass
 
     @classmethod
-    @deprecated_alias("getALl")
+    @deprecated_alias("getAll")
     def getAll(cls):
         return [cls(name,position) for position, name in cls.__LANE_EQUIVS__.items()]
         pass
