@@ -30,8 +30,9 @@ def isAnki(device : BLEDevice, advertisement : AdvertisementData):
 
 class Controller:
     """This object controls all vehicle connections. With it you can connect to any number of vehicles and disconnect cleanly.
-    ## Paramaters\n
-    timeout=10: The time until the controller gives up searching for a vehicle."""
+
+    :param timeout: :class:`float` The time until the controller gives up searching for a vehicle.
+    """
     __slots__ = ["_scanner","timeout","vehicles","map"]
     def __init__(self,*,timeout : float = 10):
         self._scanner = bleak.BleakScanner()
@@ -64,17 +65,30 @@ class Controller:
     async def connectOne(self, vehicle_id : Optional[int] = None) -> Vehicle:
         """Connect to one non-charging Supercar and return the Vehicle instance
 
-        ## Parameters\n
-        + Optional `vehicle_id`: The id given to the `Vehicle` instance on connection
+        :param vehicle_id: :class:`Optional[int]` 
+            The id given to the :class:`Vehicle` instance on connection
 
-        ## Returns\n
-        A `Vehicle` object representing the connected supercar
 
-        ## Raises\n
-        + `VehicleNotFound`: No supercar was found in the set timeout\n
-        + `ConnectionTimedoutException`: The connection attempt to the supercar did not succeed within the set timeout
-        + `ConnectionDatabusException`: A databus error occured whilst connecting to the supercar\n
-        + `ConnectionFailedException`: A generic error occured whilst connection to the supercar"""
+        Returns
+        -------
+        :class:`Vehicle` 
+            The connected supercar
+
+
+        Raises
+        ------
+        :class:`VehicleNotFound` 
+            No supercar was found in the set timeout
+        
+        :class:`ConnectionTimedoutException` 
+            The connection attempt to the supercar did not succeed within the set timeout
+        
+        :class:`ConnectionDatabusException` 
+            A databus error occured whilst connecting to the supercar
+        
+        :class:`ConnectionFailedException` 
+            A generic error occured whilst connection to the supercar
+        """
         vehicle = await self._getVehicle(vehicle_id)
         vehicle._map = self.map # Add an existing map to the vehicle. If there is no map it sets None which is the default for Vehicle._map anyway
         await vehicle.connect()
@@ -84,18 +98,30 @@ class Controller:
     async def connectSpecific(self, address : str, vehicle_id : Optional[int] = None) -> Vehicle:
         """Connect to a supercar with a specified MAC address
         
-        ## Parameters\n
-        + `address`: A string representing the MAC-address of the vehicle to connect to. This needs to be uppercase seperated by colons\n
-        + Optional `vehicle_id`: An integer id given to the vehicle on connection.\n
+        :param address: :class:`str`
+            The MAC-address of the vehicle to connect to. Needs to be uppercase seperated by colons
+        :param vehicle_id: :class:`int`
+            The id passed to the :class:`Vehicle` object on its creation
 
-        ## Returns\n
-        A `Vehicle` object representing the connected supercar
+        Returns
+        -------
+        :class:`Vehicle`
+            The connected supercar
         
-        ## Raises\n
-        + `VehicleNotFound`: No supercar was found in the set timeout\n
-        + `ConnectionTimedoutException`: The connection attempt to the supercar did not succeed within the set timeout
-        + `ConnectionDatabusException`: A databus error occured whilst connecting to the supercar\n
-        + `ConnectionFailedException`: A generic error occured whilst connection to the supercar"""
+        Raises
+        ------
+        :class:`VehicleNotFound`
+            No supercar was found in the set timeout
+        
+        :class:`ConnectionTimedoutException`
+            The connection attempt to the supercar did not succeed within the set timeout
+        
+        :class:`ConnectionDatabusException`
+            A databus error occured whilst connecting to the supercar
+        
+        :class:`ConnectionFailedException`
+            A generic error occured whilst connection to the supercar
+        """
         vehicle = await self._getVehicle(vehicle_id,address)
         await vehicle.connect()
         return vehicle
@@ -104,19 +130,33 @@ class Controller:
     async def connectMany(self, amount : int, vehicle_ids : Iterable[int] = None) -> tuple[Vehicle]:
         """Connect to <amount> non-charging Supercars
         
-        ## Parameters\n
-        + `amount`: An integer amount representing the number of vehicles to connect to\n
-        + Optional `vehicled_ids`: An iterable with the ids the vehicles will get on connection. These entries may be None.\n
+        :param amount: :class:`int`
+            The amount of vehicles to connect to
+        :param vehicle_ids: :class:`Optional[Iterable[int]]` 
+            The vehicle ids passed to the :class:`Vehicle` instances
 
-        ## Returns\n
-        A tuple of connected `Vehicle` instances.
+        Returns
+        -------
+        :class:`tuple[Vehicle]`
+            The connected supercars
 
-        ## Raises\n
-        + `ValueError`: The amount of requested supercars does not match the length of `vehicle_ids`.\n
-        + `VehicleNotFound`: No supercar was found in the set timeout\n
-        + `ConnectionTimedoutException`: The connection attempt to the supercar did not succeed within the set timeout
-        + `ConnectionDatabusException`: A databus error occured whilst connecting to the supercar\n
-        + `ConnectionFailedException`: A generic error occured whilst connection to the supercar
+        Raises
+        ------
+        :class:`ValueError`
+            The amount of requested supercars does not match the length of :param vehicle_ids:
+
+        :class:`VehicleNotFound`
+            No supercar was found in the set timeout
+
+        :class:`ConnectionTimedoutException`
+            A connection attempt to one of the supercars timed out
+
+        :class:`ConnectionDatabusException`
+            A databus error occured whilst connecting to a supercar
+
+        :class:`ConnectionFailedException`
+            A generic error occured whilst connecting to a supercar
+
         """
 
         if vehicle_ids is None: vehicle_ids = [None]*amount
@@ -129,15 +169,20 @@ class Controller:
     async def scan(self, scan_vehicle : Vehicle = None, align_pre_scan : bool = True) -> list[TrackPiece]:
         """Assembles a digital copy of the map and adds it to every connected vehicle.
         
-        ## Parameters\n
-        + Optional `scan_vehicle`: When passed a Vehicle object, this Vehicle will be used as a scanner. Otherwise it will be selected automatically.
-        + Optional `align_pre_scan`: When set to True, the supercars can start from any position on the map and align automatically before scanning. Disabling this means your supercars need to start between START and FINISH
+        :param scan_vehicle: :class:`Optional[Vehicle]`
+            When passed a Vehicle object, this Vehicle will be used as a scanner. Otherwise one will be selected automatically.
+        :param align_pre_scan: 
+            When set to True, the supercars can start from any position on the map and align automatically before scanning. Disabling this means your supercars need to start between START and FINISH
 
-        ## Returns\n
-        A list of track pieces representing the scanned in map.
+        Returns
+        -------
+        :class:`list[TrackPiece]`
+            The resulting map
 
-        ## Raises\n
-        + `DuplicateScanWarning`: The map was already scanned in. This scan will be skipped.
+        Raises
+        ------
+        :class:`DuplicateScanWarning`
+            The map was already scanned in. This scan will be skipped.
         """
         if self.map is not None: # The map shouldn't be scanned twice. Exiting the method is a good practice implementation
             raise errors.DuplicateScanWarning("The map has already been scanned. Check your code for any mistakes like that.")
@@ -218,9 +263,12 @@ class Controller:
     async def disconnectAll(self):
         """Disconnects from all the connected supercars
         
-        ## Raises\n
-        + `DisconnectTimedoutException`: A disconnection attempt timed out\n
-        + `DisconnectFailedException`: A disconnection attempt failed for unspecific reasons
+        Raises
+        ------
+        :class:`DisconnectTimedoutException`
+            A disconnection attempt timed out
+        :class:`DisconnectFailedException`
+            A disconnection attempt failed for unspecific reasons
         """
         await asyncio.gather(*[vehicle.disconnect() for vehicle in self.vehicles]) # Disconnect done in parallel as opposed to connect as the clients are already established
         pass
@@ -236,15 +284,19 @@ class Controller:
     def handleShutdown(self):
         """Handles a shutdown neatly and disconnects the vehicles
         
-        ## Raises\n
-        + `DisconnectTimedoutException`: A disconnection attempt timed out\n
-        + `DisconnectFailedException`: A disconnection attempt failed for unspecific reasons"""
+        Raises
+        ------
+        :class:`DisconnectTimedoutException`
+            A disconnection attempt timed out
+        :class:`DisconnectFailedException`
+            A disconnection attempt failed for unspecific reasons
+        """
         asyncio.run(self.disconnectAll())
         pass
 
 
     @property
     def map_types(self) -> tuple:
-        return tuple([track_piece.type for track_piece in self.map]) # Converting to a tuple to prevent DAUs thinking they can affect the map
+        return tuple([track_piece.type for track_piece in self.map]) # Converting to a tuple to prevent DAUs (that's German) thinking they can affect the map
         pass
     pass

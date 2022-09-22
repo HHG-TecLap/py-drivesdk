@@ -28,7 +28,7 @@ class ConnectionDatabusException(ConnectionFailedException):
     """A data-bus error occured whilst connecting to the vehicle"""
     pass
 
-class ConnectionTimedOutException(ConnectionFailedException):
+class ConnectionTimedoutException(ConnectionFailedException):
     """The attempt to connect with the vehicle timed out"""
     pass
 
