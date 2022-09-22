@@ -1,5 +1,6 @@
 from ..utility.deprecated_alias import alias_class, deprecated_alias
 from warnings import warn
+from enum import IntEnum
 
 from typing import Callable, Optional
 import bleak, asyncio
@@ -59,7 +60,7 @@ class VehicleState:
         pass
     pass
 
-class Lights:
+class Lights(IntEnum):
     HEADLIGHTS = 0
     BRAKELIGHTS = 1
     FRONTLIGHTS = 2
