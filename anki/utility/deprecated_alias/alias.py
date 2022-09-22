@@ -1,6 +1,7 @@
 from inspect import getmembers, isfunction, ismethod
 from functools import wraps, WRAPPER_ASSIGNMENTS
 from warnings import warn
+from typing_extensions import Self
 
 _DEFAULT_WARNING = "Use of method {0}.{1} is deprecated. Use {0}.{2} instead"
 
@@ -75,18 +76,13 @@ def _set_aliases(cls: type):
         pass
     pass
 
-def alias_class(cls: type):
-    class WrapperClass(cls):
-        def __init_subclass__(cls) -> None:
-            _set_aliases(cls)
+def alias_class(cls):
+    def __init_subclass__(cls) -> None:
+        _set_aliases(cls)
 
-            return super().__init_subclass__()
-        pass
+        return super(cls).__init_subclass__()
     
-    for name in WRAPPER_ASSIGNMENTS:
-        setattr(WrapperClass,name,getattr(cls,name))
-    # This is basically a manual functools.wraps for classes
+    cls.__init_subclass__ = __init_subclass__
 
-    _set_aliases(WrapperClass)
-    return WrapperClass
+    return cls
     pass
