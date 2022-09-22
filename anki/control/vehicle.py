@@ -353,7 +353,7 @@ class Vehicle:
         """
         await self.setSpeed(speed)
         track_piece = None
-        while track_piece is None or track_piece.type != const.TrackPieceTypes.FINISH: # Wait until at START
+        while track_piece is None or track_piece.type != const.TrackPieceType.FINISH: # Wait until at START
             track_piece = await self.wait_for_track_change()
             pass
 

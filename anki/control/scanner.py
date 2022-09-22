@@ -1,11 +1,11 @@
 from ..utility.track_pieces import TrackPiece
 from .vehicle import Vehicle
-from ..utility.const import TrackPieceTypes
+from ..utility.const import TrackPieceType
 import asyncio
 
 def reorder_map(map : list[TrackPiece]):
     # Basically: Move the last piece to the front until START is at index 0 and FINISH is at index -1 (i.e. the end)
-    while not (map[0].type is TrackPieceTypes.START and map[-1].type is TrackPieceTypes.FINISH):
+    while not (map[0].type is TrackPieceType.START and map[-1].type is TrackPieceType.FINISH):
         map.insert(0,map.pop(-1))
         pass
     pass
@@ -32,7 +32,7 @@ class Scanner:
             if track is not None: # track might be None for the first time this event is called
                 self.map.append(track)
                 track_types.append(track.type)
-                if TrackPieceTypes.START in track_types and TrackPieceTypes.FINISH in track_types: # This marks the scan as complete once both START and FINISH have been found
+                if TrackPieceType.START in track_types and TrackPieceType.FINISH in track_types: # This marks the scan as complete once both START and FINISH have been found
                     completed[0] = True
                     pass
                 pass
