@@ -1,5 +1,5 @@
-from inspect import getmembers, isfunction
-from functools import wraps
+from inspect import getmembers, isfunction, ismethod
+from functools import wraps, WRAPPER_ASSIGNMENTS
 from warnings import warn
 
 _DEFAULT_WARNING = "Use of method {0}.{1} is deprecated. Use {0}.{2} instead"
@@ -48,10 +48,11 @@ def _generate_deprecation_wrapper(cls,fname, func, alias_name, is_deprecated, de
     return wrapper
     pass
 
-def alias_class(cls: type):
+
+def _set_aliases(cls: type):
     for (fname, func) in getmembers(
         cls,
-        lambda func: isfunction(func) and hasattr(func,"__alias_info__")
+        lambda func: (ismethod(func) or isfunction(func)) and hasattr(func,"__alias_info__")
     ):
         for alias in func.__alias_info__:
             alias_name = alias["name"]
@@ -72,6 +73,20 @@ def alias_class(cls: type):
             )
             pass
         pass
+    pass
 
-    return cls
+def alias_class(cls: type):
+    class WrapperClass(cls):
+        def __init_subclass__(cls) -> None:
+            _set_aliases(cls)
+
+            return super().__init_subclass__()
+        pass
+    
+    for name in WRAPPER_ASSIGNMENTS:
+        setattr(WrapperClass,name,getattr(cls,name))
+    # This is basically a manual functools.wraps for classes
+
+    _set_aliases(WrapperClass)
+    return WrapperClass
     pass
