@@ -193,7 +193,7 @@ class Controller:
             raise errors.DuplicateScanWarning("The map has already been scanned. Check your code for any mistakes like that.")
             pass
 
-        async def noScanAlign(vehicle : Vehicle, align_target = TrackPieceTypes.FINISH): # Alignment when the scanner is not currently running
+        async def noScanAlign(vehicle : Vehicle, align_target = TrackPieceType.FINISH): # Alignment when the scanner is not currently running
             await vehicle.setSpeed(250)
             while vehicle._current_track_piece is None or vehicle._current_track_piece.type != align_target: # Don't check when none to prevent AttributeError
                 await asyncio.sleep(0.1)
@@ -209,7 +209,7 @@ class Controller:
             temp_vehicles.remove(scan_vehicle) # Remove the scanning vehicle from the set if it is already passed as an argument
 
         if align_pre_scan: # Aligning before scanning if enabled. This allows the vehicles to be placed anywhere on the map
-            await asyncio.gather(*[noScanAlign(v,TrackPieceTypes.FINISH) for v in self.vehicles]) # Since we're aligning BEFORE scan, we need the piece before the one we want to align in front of
+            await asyncio.gather(*[noScanAlign(v,TrackPieceType.FINISH) for v in self.vehicles]) # Since we're aligning BEFORE scan, we need the piece before the one we want to align in front of
             await asyncio.sleep(1)
             pass
 
@@ -237,7 +237,7 @@ class Controller:
             while True:
                 await vehicle.wait_for_track_change()
                 track=vehicle._current_track_piece
-                if track is not None and track.type is TrackPieceTypes.FINISH:
+                if track is not None and track.type is TrackPieceType.FINISH:
                     break
                     pass
                 pass
