@@ -151,8 +151,8 @@ class Vehicle:
         """Send a payload to the supercar"""
         try:
             await self._client.write_gatt_char(self._write_chara,payload)
-        except OSError:
-            raise DisconnectedVehiclePackage("A command was sent to a vehicle that is already disconnected")
+        except OSError as e:
+            raise DisconnectedVehiclePackage("A command was sent to a vehicle that is already disconnected") from e
             pass
         pass
 
@@ -186,18 +186,18 @@ class Vehicle:
             if not (await self._client.connect()): raise bleak.BleakError # Handle a failed connect the same way as a BleakError
             pass
         # Catch a bunch of errors occuring on connection
-        except BleakDBusError:
+        except BleakDBusError as e:
             raise errors.ConnectionDatabusException(
                 "An attempt to connect to the vehicle failed. This can occur sometimes and is usually not an error in your code."
-            )
-        except bleak.BleakError:
+            ) from e
+        except bleak.BleakError as e:
             raise errors.ConnectionFailedException(
                 "An attempt to connect to the vehicle failed. This is usually not associated with your code."
-            )
-        except asyncio.TimeoutError:
+            ) from e
+        except asyncio.TimeoutError as e:
             raise errors.ConnectionTimedoutException(
                 "An attempt to connect to the vehicle timed out. Make sure the car is actually disconnected."
-            )
+            ) from e
         
         # Get service and characteristics
         services = await self._client.get_services()
@@ -235,8 +235,8 @@ class Vehicle:
         """
         try:
             self._is_connected = not await self._client.disconnect()
-        except asyncio.TimeoutError:
-            raise errors.DisconnectTimedoutException("The attempt to disconnect from the vehicle timed out.")
+        except asyncio.TimeoutError as e:
+            raise errors.DisconnectTimedoutException("The attempt to disconnect from the vehicle timed out.") from e
         if self._is_connected:
             raise errors.DisconnectFailedException("The attempt to disconnect the vehicle failed.")
         
@@ -343,7 +343,7 @@ class Vehicle:
         if self._road_offset is ...:
             return None
         else:
-            return mode.getClosestLane(self._road_offset)
+            return mode.get_closest_lane(self._road_offset)
         pass
 
     async def align(self, speed : int = 300):
