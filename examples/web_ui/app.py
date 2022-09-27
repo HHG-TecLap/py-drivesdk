@@ -1,6 +1,7 @@
 from aiohttp import web
 import json
 import anki
+import time
 
 routes = web.RouteTableDef()
 vehicles: dict[int, anki.Vehicle] = {}
@@ -15,11 +16,18 @@ async def build_response(id: int):
 
     json_map = []
     current_track_piece = None
+    current_lane = None
     if vehicles[id].map:
         for j in vehicles[id].map:
             json_map.append({'clockwise': j.clockwise, 'type_name': j.type.name, 'loc': j.loc})
-    if vehicles[id].current_track_piece:
-        current_track_piece = {'clockwise': vehicles[id].current_track_piece.clockwise, 'type': vehicles[id].current_track_piece.type.name, 'loc': vehicles[id].current_track_piece.loc}
+    
+    if vehicles[id].current_track_piece: current_track_piece = {'clockwise': vehicles[id].current_track_piece.clockwise, 'type': vehicles[id].current_track_piece.type.name, 'loc': vehicles[id].current_track_piece.loc}
+
+    if vehicles[id].road_offset == ...: road_offset = None
+    else: road_offset = vehicles[id].road_offset
+
+    if vehicles[id].current_lane4: current_lane = vehicles[id].current_lane4.lane_name
+
     res = {
         'id': vehicles[id].id,
         'speed': vehicles[id].speed,
@@ -27,8 +35,8 @@ async def build_response(id: int):
         'map_position': vehicles[id].map_position,
         'map': json_map,
         'is_connected': vehicles[id].is_connected,
-        'current_lane': vehicles[id].current_lane4,
-        'road_offset': vehicles[id].road_offset
+        'current_lane': current_lane,
+        'road_offset': road_offset
     }
     return web.json_response(data=res)
 
@@ -123,6 +131,22 @@ async def scan(request: web.Request):
         res.append({'clockwise': j.clockwise, 'type_name': j.type.name, 'loc': j.loc})
     return web.json_response({'map': res})
 
+# ws
+@routes.get('/api/ws')
+async def ws_hanler(request: web.Request):
+    ws = web.WebSocketResponse()
+    await ws.prepare(request)
+
+    async for msg in ws:
+        content = msg.json()
+        if content['type'] == 'get':
+            await ws.send_json(data={'test': 'DATA'})
+        elif content['type'] == 'edit':
+            pass
+
+    print('websocket connection closed')
+
+    return ws
 def app_factory() -> web.Application:
     app = web.Application()
     app.add_routes(routes)
