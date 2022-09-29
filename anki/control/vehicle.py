@@ -152,7 +152,7 @@ class Vehicle:
         try:
             await self._client.write_gatt_char(self._write_chara,payload)
         except OSError as e:
-            raise DisconnectedVehiclePackageError("A command was sent to a vehicle that is already disconnected") from e
+            raise RuntimeError("A command was sent to a vehicle that is already disconnected") from e
             pass
         pass
 

@@ -40,10 +40,6 @@ class DisconnectTimedoutError(DisconnectFailedError):
     """The disconnect attempt timed out"""
     pass
 
-class DisconnectedVehiclePackageError(RuntimeError):
-    """A packet was sent to a vehicle that is already disconnected"""
-    pass
-
 # Aliases (it turns out these cannot be deprecated aliases, due to them being in a global scope)
 AnkiException = AnkiError
 VehicleNotFound = VehicleNotFoundError
@@ -52,4 +48,4 @@ ConnectionDatabusException = ConnectionDatabusError
 ConnectionTimedoutException = ConnectionTimedoutError
 DisconnectFailedException = DisconnectFailedError
 DisconnectTimedoutException = DisconnectTimedoutError
-DisconnectedVehiclePackage = DisconnectedVehiclePackageError
+DisconnectedVehiclePackage = RuntimeError
