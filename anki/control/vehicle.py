@@ -142,6 +142,9 @@ class Vehicle:
                 func()
                 pass
             pass
+        elif msg_type == const.VehicleMsg.CHARGER_INFO:
+            unknown, onCharger, loading, full = disassembleChargerInfo(payload)
+            print(f'unknown: {unknown}, onCharger: {onCharger}, loading: {loading}, full: {full}')
         pass
 
     async def __send_package__(self, payload : bytes):

@@ -57,3 +57,6 @@ def disassembleTrackChange(payload : bytes) -> tuple[int,int,float,int,int,int,i
         right_wheel_dist
     )
     pass
+
+def disassembleChargerInfo(payload: bytes) -> tuple[bool, bool, bool, bool]:
+    return struct.unpack_from('<????', payload)

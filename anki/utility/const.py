@@ -51,10 +51,11 @@ class VehicleMsg:
     # Notify characteristic
     TRACK_PIECE_UPDATE = 39
     TRACK_PIECE_CHANGE = 41
+    CHARGER_INFO = 63
     pass
 
 class RawTrackPieces:
-    """Thank you to https://github.com/BerndMuller/JAnki/"""
+    """Thank you to https://github.com/BerndMuller/JAnki/ """
     START = [33]
     FINISH = [34]
     STRAIGHT = [36,39,40,48,51]
