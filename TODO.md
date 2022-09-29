@@ -21,4 +21,4 @@
 + rename all `[...]Exception`s to `[...]Error`s
     Implement deprecated aliases here as well
 + rename `anki.utility` and `anki.utility.util` since they don't actually provide any
-+ Change the `raise` usages to `raise from`
++ ~~Change the `raise` usages to `raise from`~~
