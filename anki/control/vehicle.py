@@ -152,7 +152,7 @@ class Vehicle:
         try:
             await self._client.write_gatt_char(self._write_chara,payload)
         except OSError as e:
-            raise DisconnectedVehiclePackage("A command was sent to a vehicle that is already disconnected") from e
+            raise DisconnectedVehiclePackageError("A command was sent to a vehicle that is already disconnected") from e
             pass
         pass
 
@@ -187,15 +187,15 @@ class Vehicle:
             pass
         # Catch a bunch of errors occuring on connection
         except BleakDBusError as e:
-            raise errors.ConnectionDatabusException(
+            raise errors.ConnectionDatabusError(
                 "An attempt to connect to the vehicle failed. This can occur sometimes and is usually not an error in your code."
             ) from e
         except bleak.BleakError as e:
-            raise errors.ConnectionFailedException(
+            raise errors.ConnectionFailedError(
                 "An attempt to connect to the vehicle failed. This is usually not associated with your code."
             ) from e
         except asyncio.TimeoutError as e:
-            raise errors.ConnectionTimedoutException(
+            raise errors.ConnectionTimedoutError(
                 "An attempt to connect to the vehicle timed out. Make sure the car is actually disconnected."
             ) from e
         
@@ -236,9 +236,9 @@ class Vehicle:
         try:
             self._is_connected = not await self._client.disconnect()
         except asyncio.TimeoutError as e:
-            raise errors.DisconnectTimedoutException("The attempt to disconnect from the vehicle timed out.") from e
+            raise errors.DisconnectTimedoutError("The attempt to disconnect from the vehicle timed out.") from e
         if self._is_connected:
-            raise errors.DisconnectFailedException("The attempt to disconnect the vehicle failed.")
+            raise errors.DisconnectFailedError("The attempt to disconnect the vehicle failed.")
         
         if not self._is_connected and self._controller is not None:
             self._controller.vehicles.remove(self)

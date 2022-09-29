@@ -50,7 +50,7 @@ class Controller:
         device = await self._scanner.find_device_by_filter(lambda device, advertisement: _is_anki(device,advertisement) and (address is None or device.address == address), timeout=self.timeout)
         # Get a BLEDevice and ensure it is of a required address if address was given
         if device is None:
-            raise errors.VehicleNotFound("Could not find a supercar within the given timeout")
+            raise errors.VehicleNotFoundError("Could not find a supercar within the given timeout")
             pass
 
         client = bleak.BleakClient(device) # Wrapping the device in a client. This client will be used to send and receive data in the Vehicle class
