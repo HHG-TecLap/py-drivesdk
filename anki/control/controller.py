@@ -1,13 +1,13 @@
-from ..utility.deprecated_alias import AliasMeta, deprecated_alias
+from ..misc.deprecated_alias import AliasMeta, deprecated_alias
 
 import bleak, asyncio
 from bleak.backends.device import BLEDevice
 from bleak.backends.scanner import AdvertisementData
 
-from ..utility.const import *
+from ..misc.const import *
 from .. import errors
 from .vehicle import Vehicle, interpret_local_name
-from ..utility.track_pieces import TrackPiece
+from ..misc.track_pieces import TrackPiece
 from .scanner import Scanner
 
 from typing import Iterable, Optional

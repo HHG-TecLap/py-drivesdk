@@ -1,6 +1,6 @@
-from ..utility.track_pieces import TrackPiece
+from ..misc.track_pieces import TrackPiece
 from .vehicle import Vehicle
-from ..utility.const import TrackPieceType
+from ..misc.const import TrackPieceType
 import asyncio
 
 def reorder_map(map : list[TrackPiece]):

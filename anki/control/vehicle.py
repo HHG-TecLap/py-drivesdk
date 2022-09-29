@@ -1,4 +1,4 @@
-from ..utility.deprecated_alias import AliasMeta, deprecated_alias
+from ..misc.deprecated_alias import AliasMeta, deprecated_alias
 from warnings import warn
 from enum import IntEnum
 
@@ -8,12 +8,12 @@ from bleak.backends.device import BLEDevice
 import dataclasses
 from bleak.exc import BleakDBusError
 
-from ..utility import msg_protocol
+from ..misc import msg_protocol
 
-from ..utility.msgs import *
-from ..utility.track_pieces import TrackPiece
-from ..utility import const
-from ..utility.lanes import Lane3, Lane4, _Lane
+from ..misc.msgs import *
+from ..misc.track_pieces import TrackPiece
+from ..misc import const
+from ..misc.lanes import Lane3, Lane4, _Lane
 from .. import errors
 
 from typing import TYPE_CHECKING
