@@ -43,11 +43,15 @@ TrackPiece
 .. autoclass:: anki.TrackPiece
     :members:
 
-TrackPieceTypes
-~~~~~~~~~~~~~~~
-.. autoclass:: anki.TrackPieceTypes
-    :members:
-
+TrackPieceType
+~~~~~~~~~~~~~~
+.. autoclass:: anki.TrackPieceType
+    
+    .. autoattribute:: START
+    .. autoattribute:: FINISH
+    .. autoattribute:: STRAIGHT
+    .. autoattribute:: CURVE
+    .. autoattribute:: INTERSECTION
 
 Lane support
 ************

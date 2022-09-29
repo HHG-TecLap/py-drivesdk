@@ -95,7 +95,11 @@ class VehicleMsg:
 #     pass
 
 class TrackPieceType(Enum):
-    """Thank you to https://github.com/BerndMuller/JAnki/"""
+    """
+    An enumerator for all supported track piece types.
+
+    Thank you to https://github.com/BerndMuller/JAnki/
+    """
     START = [33]
     FINISH = [34]
     STRAIGHT = [36,39,40,48,51]
