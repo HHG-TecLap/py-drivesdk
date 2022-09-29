@@ -1,4 +1,4 @@
-from ..utility.deprecated_alias import alias_class, deprecated_alias
+from ..utility.deprecated_alias import AliasMeta, deprecated_alias
 from warnings import warn
 from enum import IntEnum
 
@@ -66,8 +66,7 @@ class Lights(IntEnum):
     FRONTLIGHTS = 2
     ENGINELIGHTS = 3
 
-@alias_class
-class Vehicle:
+class Vehicle(metaclass=AliasMeta):
     """This class represents a supercar. With it you can control all functions of said supercar.
 
     

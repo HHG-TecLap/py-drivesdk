@@ -1,7 +1,6 @@
-from alias import deprecated_alias, alias, alias_class
+from alias import deprecated_alias, alias, AliasMeta
 
-@alias_class
-class Class:
+class Class(metaclass=AliasMeta):
     @deprecated_alias("deprecated_test")
     @alias("undeprecated_test")
     def test(self):

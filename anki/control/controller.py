@@ -1,4 +1,4 @@
-from ..utility.deprecated_alias import alias_class, deprecated_alias
+from ..utility.deprecated_alias import AliasMeta, deprecated_alias
 
 import bleak, asyncio
 from bleak.backends.device import BLEDevice
@@ -30,8 +30,7 @@ def _is_anki(device : BLEDevice, advertisement : AdvertisementData):
     return ankiFound
     pass
 
-@alias_class
-class Controller:
+class Controller(metaclass=AliasMeta):
     """This object controls all vehicle connections. With it you can connect to any number of vehicles and disconnect cleanly.
 
     :param timeout: :class:`float` The time until the controller gives up searching for a vehicle.

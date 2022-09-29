@@ -1,10 +1,9 @@
-from ..utility.deprecated_alias import alias_class, deprecated_alias
+from ..utility.deprecated_alias import deprecated_alias, AliasMeta
 import dataclasses
 
 
-@alias_class
 @dataclasses.dataclass(frozen=True,unsafe_hash=False,slots=True)
-class _Lane:
+class _Lane(metaclass=AliasMeta):
     """The raw base class for lane types. Inherit from this class to create your own lane type.
     
     Parameters
