@@ -1,9 +1,9 @@
-from ..utility.deprecated_alias import deprecated_alias, AliasMeta
+from .deprecated_alias import deprecated_alias, AliasMeta
 import dataclasses
 
 
 @dataclasses.dataclass(frozen=True,unsafe_hash=False,slots=True)
-class _Lane(metaclass=AliasMeta):
+class BaseLane(metaclass=AliasMeta):
     """The raw base class for lane types. Inherit from this class to create your own lane type.
     
     Parameters
@@ -35,7 +35,7 @@ class _Lane(metaclass=AliasMeta):
         ],key=lambda v: v[0]) 
         # Find the name->offset pairing with minimal distance to the position
         
-        return cls(cls.__LANE_EQUIVS__[lane_val],lane_val) # Construct _Lane object around raw info
+        return cls(cls.__LANE_EQUIVS__[lane_val],lane_val) # Construct BaseLane object around raw info
         pass
     
     @classmethod
@@ -54,21 +54,21 @@ class _Lane(metaclass=AliasMeta):
         pass
     
     # Implemented all equalities for better speed
-    def __eq__(self, other : "_Lane"): return self.lane_position == other.lane_position
-    def __ne__(self, other : "_Lane"): return self.lane_position != other.lane_position
-    def __gt__(self, other : "_Lane"): return self.lane_position > other.lane_position
-    def __lt__(self, other : "_Lane"): return self.lane_position < other.lane_position
-    def __ge__(self, other : "_Lane"): return self.lane_position >= other.lane_position
-    def __le__(self, other : "_Lane"): return self.lane_position <= other.lane_position
+    def __eq__(self, other : "BaseLane"): return self.lane_position == other.lane_position
+    def __ne__(self, other : "BaseLane"): return self.lane_position != other.lane_position
+    def __gt__(self, other : "BaseLane"): return self.lane_position > other.lane_position
+    def __lt__(self, other : "BaseLane"): return self.lane_position < other.lane_position
+    def __ge__(self, other : "BaseLane"): return self.lane_position >= other.lane_position
+    def __le__(self, other : "BaseLane"): return self.lane_position <= other.lane_position
 
 
     def __str__(self):
-        # This improves readability over _Lane(lane_name="MIDDLE",lane_position=0)
+        # This improves readability over BaseLane(lane_name="MIDDLE",lane_position=0)
         return self.lane_name
         pass
     pass
 
-class Lane3(_Lane):
+class Lane3(BaseLane):
     """A lane type for programs using 3 lanes (left, middle, right)
     This holds three constants (ordered left-to-right):
     + `Lane3.LEFT`
@@ -82,7 +82,7 @@ class Lane3(_Lane):
     }
     pass
 
-class Lane4(_Lane):
+class Lane4(BaseLane):
     """A lane type for programs using 4 lanes (leftmost, left-middle, right-middle, rightmost)
     This holds three constants (ordered left-to-right):
     + `Lane4.LEFT_2`

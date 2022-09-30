@@ -56,9 +56,9 @@ TrackPieceType
 Lane support
 ************
 
-_Lane
-~~~~~
-.. autoclass:: anki.utility.lanes._Lane
+BaseLane
+~~~~~~~~
+.. autoclass:: anki.BaseLane
     :members:
 
 Lane3

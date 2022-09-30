@@ -1,5 +1,5 @@
 from .control.vehicle import Vehicle, Lights
-from .utility.track_pieces import TrackPiece, TrackPieceType
+from .misc.track_pieces import TrackPiece, TrackPieceType
 from .control.controller import Controller
-from .utility.lanes import Lane3, Lane4
+from .misc.lanes import Lane3, Lane4, BaseLane
 from . import errors

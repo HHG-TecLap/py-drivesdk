@@ -13,7 +13,7 @@ from ..misc import msg_protocol
 from ..misc.msgs import *
 from ..misc.track_pieces import TrackPiece
 from ..misc import const
-from ..misc.lanes import Lane3, Lane4, _Lane
+from ..misc.lanes import Lane3, Lane4, BaseLane
 from .. import errors
 
 from typing import TYPE_CHECKING
@@ -265,10 +265,10 @@ class Vehicle(metaclass=AliasMeta):
         pass
     
     @deprecated_alias("changeLane")
-    async def change_lane(self, lane : _Lane, horizontalSpeed : int = 300, horizontalAcceleration : int = 300, *, _hopIntent : int = 0x0, _tag : int = 0x0):
+    async def change_lane(self, lane : BaseLane, horizontalSpeed : int = 300, horizontalAcceleration : int = 300, *, _hopIntent : int = 0x0, _tag : int = 0x0):
         """Change to a desired lane
 
-        :param lane: :class:`_Lane` 
+        :param lane: :class:`BaseLane` 
             The lane to move into. These may be :class:`Lane3` or :class:`Lane4`
         :param horizontalSpeed: :class:`Optional[int]`
             The speed the vehicle will move along the track at in mm/s
@@ -327,15 +327,15 @@ class Vehicle(metaclass=AliasMeta):
         pass
     
     @deprecated_alias("getLane")
-    def get_lane(self, mode : type[_Lane]) -> Optional[_Lane]:
+    def get_lane(self, mode : type[BaseLane]) -> Optional[BaseLane]:
         """Get the current lane given a specific lane type
 
-        :param mode: :class:`_Lane` 
-            A class such as :class:`Lane3` or :class:`Lane4` inheriting from :class:`_Lane`. This is the lane system being used
+        :param mode: :class:`BaseLane` 
+            A class such as :class:`Lane3` or :class:`Lane4` inheriting from :class:`BaseLane`. This is the lane system being used
         
         Returns
         -------
-        :class:`Optional[_Lane]`
+        :class:`Optional[BaseLane]`
             The lane the vehicle is on. This may be none if no lane information is available 
             (such as at the start of the program, when the vehicles haven't moved much)
         """
