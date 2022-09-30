@@ -63,7 +63,13 @@ class Controller(metaclass=AliasMeta):
         return vehicle
         pass
 
-    @deprecated_alias("connectOne")
+    @deprecated_alias("connectOne",
+    doc="""
+    Alias to :func:`Controller.connect_one`
+
+    .. deprecated:: 1.0
+        Use the alias :func:`Controller.connect_one` instead.
+    """)
     async def connect_one(self, vehicle_id : Optional[int] = None) -> Vehicle:
         """Connect to one non-charging Supercar and return the Vehicle instance
 
@@ -97,7 +103,13 @@ class Controller(metaclass=AliasMeta):
         return vehicle
         pass
 
-    @deprecated_alias("connectSpecific")
+    @deprecated_alias("connectSpecific",
+    doc="""
+    Alias to :func:`Controller.connect_specific`
+
+    .. deprecated:: 0.1
+        Use alias :func:`Controller.connect_specific` instead
+    """)
     async def connect_specific(self, address : str, vehicle_id : Optional[int] = None) -> Vehicle:
         """Connect to a supercar with a specified MAC address
         
@@ -130,7 +142,13 @@ class Controller(metaclass=AliasMeta):
         return vehicle
         pass
     
-    @deprecated_alias("connectMany")
+    @deprecated_alias("connectMany",
+    doc="""
+    Alias to :func:`Controller.connect_many`
+
+    .. deprecated:: 0.1
+        Use alias :func:`Controller.connect_many` instead
+    """)
     async def connect_many(self, amount : int, vehicle_ids : Iterable[int] = None) -> tuple[Vehicle]:
         """Connect to <amount> non-charging Supercars
         
@@ -262,7 +280,13 @@ class Controller(metaclass=AliasMeta):
         return self.map
         pass
 
-    @deprecated_alias("disconnectAll")
+    @deprecated_alias("disconnectAll", 
+    doc="""
+    Alias to :func:`Controller.disconnect_all`
+
+    .. deprecated:: 0.1
+        Use alias :func:`Controller.disconnect_all` instead
+    """)
     async def disconnect_all(self):
         """Disconnects from all the connected supercars
         
@@ -284,7 +308,13 @@ class Controller(metaclass=AliasMeta):
         await self.disconnect_all()
         pass
     
-    @deprecated_alias("handleShutdown")
+    @deprecated_alias("handleShutdown", 
+    doc="""
+    Alias to :func:`Controller.handle_shutdown`
+
+    .. deprecated:: 0.1
+        Use alias :func:`Controller.handle_shutdown` instead
+    """)
     def handle_shutdown(self):
         """Handles a shutdown neatly and disconnects the vehicles
         

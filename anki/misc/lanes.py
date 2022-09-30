@@ -6,8 +6,6 @@ import dataclasses
 class BaseLane(metaclass=AliasMeta):
     """The raw base class for lane types. Inherit from this class to create your own lane type.
     
-    Parameters
-    ----------
     :param lane_name: :class:`str`
         The name of the lane
     :param lane_position: :class:`float`
@@ -27,7 +25,10 @@ class BaseLane(metaclass=AliasMeta):
         pass
 
     @classmethod
-    @deprecated_alias("getClosestLane")
+    @deprecated_alias("getClosestLane",
+    doc="""
+    Alias to :func:`BaseLane.get_closest_lane`
+    """)
     def get_closest_lane(cls, position : float):
         _, lane_val = min([
             (abs(k-position), k) 
@@ -39,7 +40,10 @@ class BaseLane(metaclass=AliasMeta):
         pass
     
     @classmethod
-    @deprecated_alias("byName")
+    @deprecated_alias("byName",
+    doc="""
+    Alias to :func:`BaseLane.by_name`
+    """)
     def by_name(cls, name : str):
         if not name in cls.__LANE_EQUIVS__.values(): raise ValueError("Lane does not exist for the chosen type")
         rev_equivs = {v:k for k,v in cls.__LANE_EQUIVS__.items()}
@@ -48,7 +52,10 @@ class BaseLane(metaclass=AliasMeta):
         pass
 
     @classmethod
-    @deprecated_alias("getAll")
+    @deprecated_alias("getAll",
+    doc="""
+    Alias to :func:`BaseLane.get_all`
+    """)
     def get_all(cls):
         return [cls(name,position) for position, name in cls.__LANE_EQUIVS__.items()]
         pass
@@ -71,6 +78,7 @@ class BaseLane(metaclass=AliasMeta):
 class Lane3(BaseLane):
     """A lane type for programs using 3 lanes (left, middle, right)
     This holds three constants (ordered left-to-right):
+
     + `Lane3.LEFT`
     + `Lane3.MIDDLE`
     + `Lane3.RIGHT`
@@ -85,6 +93,7 @@ class Lane3(BaseLane):
 class Lane4(BaseLane):
     """A lane type for programs using 4 lanes (leftmost, left-middle, right-middle, rightmost)
     This holds three constants (ordered left-to-right):
+
     + `Lane4.LEFT_2`
     + `Lane4.LEFT_1`
     + `Lane4.RIGHT_1`
