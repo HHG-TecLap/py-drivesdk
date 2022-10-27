@@ -63,12 +63,12 @@ BaseLane
 
 Lane3
 ~~~~~
-.. autoclass:: anki.Lane3
+.. autoenum:: anki.Lane3
     :members:
 
 Lane4
 ~~~~~
-.. autoclass:: anki.Lane4
+.. autoenum:: anki.Lane4
     :members:
 
 Exceptions

@@ -15,7 +15,8 @@ author = 'HHG-TecLap'
 
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx.ext.napoleon'
+    'sphinx.ext.napoleon',
+    'enum_tools.autoenum'
 ]
 
 templates_path = ['_templates']
