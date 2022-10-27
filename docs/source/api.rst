@@ -31,7 +31,7 @@ VehicleState
 
 Lights
 ~~~~~~
-.. autoclass:: anki.Lights
+.. autoenum:: anki.Lights
     :members:
 
 
@@ -45,13 +45,8 @@ TrackPiece
 
 TrackPieceType
 ~~~~~~~~~~~~~~
-.. autoclass:: anki.TrackPieceType
-    
-    .. autoattribute:: START
-    .. autoattribute:: FINISH
-    .. autoattribute:: STRAIGHT
-    .. autoattribute:: CURVE
-    .. autoattribute:: INTERSECTION
+.. autoenum:: anki.TrackPieceType
+    :members:
 
 Lane support
 ************
