@@ -107,7 +107,7 @@ class Controller(metaclass=AliasMeta):
     doc="""
     Alias to :func:`Controller.connect_specific`
 
-    .. deprecated:: 0.1
+    .. deprecated:: 1.0
         Use alias :func:`Controller.connect_specific` instead
     """)
     async def connect_specific(self, address : str, vehicle_id : Optional[int] = None) -> Vehicle:
@@ -146,7 +146,7 @@ class Controller(metaclass=AliasMeta):
     doc="""
     Alias to :func:`Controller.connect_many`
 
-    .. deprecated:: 0.1
+    .. deprecated:: 1.0
         Use alias :func:`Controller.connect_many` instead
     """)
     async def connect_many(self, amount : int, vehicle_ids : Iterable[int] = None) -> tuple[Vehicle]:
@@ -284,7 +284,7 @@ class Controller(metaclass=AliasMeta):
     doc="""
     Alias to :func:`Controller.disconnect_all`
 
-    .. deprecated:: 0.1
+    .. deprecated:: 1.0
         Use alias :func:`Controller.disconnect_all` instead
     """)
     async def disconnect_all(self):
@@ -312,7 +312,7 @@ class Controller(metaclass=AliasMeta):
     doc="""
     Alias to :func:`Controller.handle_shutdown`
 
-    .. deprecated:: 0.1
+    .. deprecated:: 1.0
         Use alias :func:`Controller.handle_shutdown` instead
     """)
     def handle_shutdown(self):

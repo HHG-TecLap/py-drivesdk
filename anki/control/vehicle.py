@@ -250,7 +250,7 @@ class Vehicle(metaclass=AliasMeta):
     doc="""
     Alias to :func:`Vehicle.set_speed`
     
-    .. deprecated:: 0.1
+    .. deprecated:: 1.0
         Use alias :func:`Vehicle.set_speed` instead
     """)
     async def set_speed(self, speed : int, acceleration : int = 500):
@@ -274,7 +274,7 @@ class Vehicle(metaclass=AliasMeta):
     doc="""
     Alias to :func:`Vehicle.change_lane`
 
-    .. deprecated:: 0.1
+    .. deprecated:: 1.0
         Use alias :func:`Vehicle.change_lane` instead
     """)
     async def change_lane(self, lane : BaseLane, horizontalSpeed : int = 300, horizontalAcceleration : int = 300, *, _hopIntent : int = 0x0, _tag : int = 0x0):
@@ -294,7 +294,7 @@ class Vehicle(metaclass=AliasMeta):
     doc="""
     Alias to :func:`Vehicle.change_position`
 
-    .. deprecated:: 0.1
+    .. deprecated:: 1.0
         Use alias :func:`Vehicle.change_position` instead
     """)
     async def change_position(self, roadCenterOffset : float, horizontalSpeed : int = 300, horizontalAcceleration : int = 300, *, _hopIntent : int = 0x0, _tag : int = 0x0):
@@ -322,7 +322,7 @@ class Vehicle(metaclass=AliasMeta):
     doc="""
     Alias to :func:`Vehicle.set_lights`
 
-    .. deprecated:: 0.1
+    .. deprecated:: 1.0
         Use alias :func:`Vehicle.set_lights` instead
     """)
     async def set_lights(self,light : int):
@@ -341,7 +341,7 @@ class Vehicle(metaclass=AliasMeta):
     doc="""
     Alias to :func:`Vehicle.set_light_pattern`
 
-    .. deprecated:: 0.1
+    .. deprecated:: 1.0
         Use alias :func:`Vehicle.set_light_pattern` instead
     """)
     async def set_light_pattern(self, r : int, g : int, b : int):
@@ -360,7 +360,7 @@ class Vehicle(metaclass=AliasMeta):
     doc="""
     Alias to :func:`Vehicle.get_lane`
 
-    .. deprecated:: 0.1
+    .. deprecated:: 1.0
         Use alias :func:`Vehicle.get_lane` instead
     """)
     def get_lane(self, mode : type[BaseLane]) -> Optional[BaseLane]:
@@ -402,7 +402,7 @@ class Vehicle(metaclass=AliasMeta):
     doc="""
     Alias to :func:`Vehicle.track_piece_change`
 
-    .. deprecated:: 0.1
+    .. deprecated:: 1.0
         Use :func:`Vehicle.track_piece_change` instead
     """)
     def track_piece_change(self, func):
@@ -425,7 +425,7 @@ class Vehicle(metaclass=AliasMeta):
     doc="""
     Alias to :func:`Vehicle.remove_track_piece_change`
 
-    .. deprecated:: 0.1
+    .. deprecated:: 1.0
         Use :func:`Vehicle.remove_track_piece_watcher` instead
     """)
     def remove_track_piece_watcher(self, func):
