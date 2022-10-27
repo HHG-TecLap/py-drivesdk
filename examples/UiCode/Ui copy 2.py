@@ -1,4 +1,3 @@
-from email.policy import default
 import os, sys
 from time import sleep
 sys.path.append(os.getcwd())
@@ -243,7 +242,7 @@ async def ankiMain():
     global auto1, auto2
     global map
     global autos
-
+    
     auto1 = await control.connectOne(vehicle_id =1)
     auto2 = await control.connectOne(vehicle_id =2)
     autos = [auto1, auto2]

@@ -1,0 +1,77 @@
+from enum import auto
+import os, sys
+from time import sleep
+sys.path.append(os.getcwd())
+
+import anki, asyncio, pygame
+from anki import TrackPieceTypes
+import threading
+
+os.chdir(os.path.dirname(os.path.abspath(__file__))) #warum auch immer das nötig ist
+
+
+class Ui:
+    _fahrzeuge = []
+    _run = True
+    _map = []
+    _visMap = None
+    
+    def __init__(self, fahrzeuge, map) -> None:
+        pygame.init()
+        self._fahrzeuge = fahrzeuge
+        self._map = map
+        self._thread =  threading.Thread(target=self._UiThread,daemon=True)
+        self._thread.start()
+    
+    def kill(self):
+        self._run = False
+    
+    def expand_map_to_size(map, width, height):
+        current_width = len(map[0])
+        current_height = len(map)
+        for i in range(width - current_width):
+            map.append([[]])
+            pass
+        for i in range(height - current_height):
+            for column in map: 
+                column.append([])
+            pass
+        pass
+    
+    def gen_vismap(self, map: list[anki.TrackPiece]) -> list[list[list[anki.TrackPiece]]]: ...
+    
+    def gen_MapSurface(self, visMap):
+        mapSurf = pygame.surface.Surface((len(visMap)*100, len(visMap[0])*100))
+        for x in range(len(visMap)):
+            for y in range(len(visMap[x])):
+                for i in range(len(visMap[x][y])):
+                    pass #add object to map
+    
+    def _UiThread():
+        font = pygame.font.SysFont("Arial",20)
+        Ui = pygame.display.set_mode((1000,600),pygame.SCALED)
+        Logo = pygame.image.load("Logo.png")
+        pygame.display.set_icon(Logo)
+        pygame.display.set_caption("Anki Ui Access")
+        Gerade = pygame.image.load("Gerade.png")
+        Kurve = pygame.image.load("Kurve.png")
+        Kreuzung = pygame.image.load("Kreuzung.png")
+        Start = pygame.image.load("Start.png")
+        Bruecke = pygame.image.load("Bruecke.png")
+        clock = pygame.time.Clock()
+        
+        
+    
+    pass
+
+
+async def TestMain():
+    print("Start")
+    #control = anki.Controller()
+    #auto1 = await control.connectOne()
+    #auto2 = await control.connectOne()
+    #await control.scan()
+    
+    
+
+asyncio.run(TestMain())
