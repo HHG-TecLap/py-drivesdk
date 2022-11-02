@@ -1,4 +1,5 @@
 from enum import auto
+from nis import maps
 import os, sys
 from time import sleep
 sys.path.append(os.getcwd())
@@ -41,10 +42,25 @@ class Ui:
     def gen_vismap(self, map: list[anki.TrackPiece]) -> list[list[list[anki.TrackPiece]]]: ...
     
     def gen_MapSurface(self, visMap):
+        Gerade = pygame.image.load("Gerade.png")
+        Kurve = pygame.image.load("Kurve.png")
+        Kreuzung = pygame.image.load("Kreuzung.png")
+        Start = pygame.image.load("Start.png")
         mapSurf = pygame.surface.Surface((len(visMap)*100, len(visMap[0])*100))
         for x in range(len(visMap)):
             for y in range(len(visMap[x])):
                 for i in range(len(visMap[x][y])):
+                    match visMap[x][y][i]:
+                        case TrackPieceTypes.STRAIGHT:
+                            mapSurf.blit(Gerade,(x*100,y*100))
+                        case TrackPieceTypes.CURVE:
+                            mapSurf.blit(Kurve,(x*100,y*100))
+                        case TrackPieceTypes.INTERSECTION:
+                            mapSurf.blit(Kreuzung,(x*100,y*100))
+                        case TrackPieceTypes.START:
+                            mapSurf.blit(Start,(x*100,y*100))
+                        case TrackPieceTypes.FINISH:
+                            pass
                     pass #add object to map
     
     def _UiThread():
@@ -53,11 +69,6 @@ class Ui:
         Logo = pygame.image.load("Logo.png")
         pygame.display.set_icon(Logo)
         pygame.display.set_caption("Anki Ui Access")
-        Gerade = pygame.image.load("Gerade.png")
-        Kurve = pygame.image.load("Kurve.png")
-        Kreuzung = pygame.image.load("Kreuzung.png")
-        Start = pygame.image.load("Start.png")
-        Bruecke = pygame.image.load("Bruecke.png")
         clock = pygame.time.Clock()
         
         
@@ -67,10 +78,10 @@ class Ui:
 
 async def TestMain():
     print("Start")
-    #control = anki.Controller()
-    #auto1 = await control.connectOne()
-    #auto2 = await control.connectOne()
-    #await control.scan()
+    control = anki.Controller()
+    auto1 = await control.connectOne()
+    auto2 = await control.connectOne()
+    await control.scan()
     
     
 
