@@ -7,6 +7,7 @@ sys.path.append(os.getcwd())
 import anki, asyncio, pygame
 from anki import TrackPieceTypes
 import threading
+from VisMapGenerator import generate
 
 os.chdir(os.path.dirname(os.path.abspath(__file__))) #warum auch immer das nötig ist
 
@@ -16,6 +17,7 @@ class Ui:
     _run = True
     _map = []
     _visMap = None
+    _visMapSurf = None
     
     def __init__(self, fahrzeuge, map) -> None:
         pygame.init()
@@ -23,6 +25,7 @@ class Ui:
         self._map = map
         self._thread =  threading.Thread(target=self._UiThread,daemon=True)
         self._thread.start()
+        self._visMap = generate(self._map)
     
     def kill(self):
         self._run = False
@@ -39,9 +42,8 @@ class Ui:
             pass
         pass
     
-    def gen_vismap(self, map: list[anki.TrackPiece]) -> list[list[list[anki.TrackPiece]]]: ...
-    
     def gen_MapSurface(self, visMap):
+        
         Gerade = pygame.image.load("Gerade.png")
         Kurve = pygame.image.load("Kurve.png")
         Kreuzung = pygame.image.load("Kreuzung.png")
@@ -62,16 +64,19 @@ class Ui:
                         case TrackPieceTypes.FINISH:
                             pass
                     pass #add object to map
+        self._visMapSurf = mapSurf
     
-    def _UiThread():
+    def _UiThread(self):
         font = pygame.font.SysFont("Arial",20)
         Ui = pygame.display.set_mode((1000,600),pygame.SCALED)
         Logo = pygame.image.load("Logo.png")
         pygame.display.set_icon(Logo)
         pygame.display.set_caption("Anki Ui Access")
         clock = pygame.time.Clock()
-        
-        
+        while(True):
+            Ui.blit(self._visMapSurf)
+            pygame.display.update()
+            clock.tick(60)
     
     pass
 
