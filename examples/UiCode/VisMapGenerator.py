@@ -1,10 +1,25 @@
 from warnings import warn
 from anki import TrackPiece, TrackPieceTypes
+from dataclasses import dataclass
+from typing import Literal
 
 __all__ = ("generate")
 
 
 Vismap = list[list[list[TrackPiece]]]
+Orientation = tuple[Literal[-1,0,1],Literal[-1,0,1]]
+
+@dataclass(repr=False,frozen=True,slots=True)
+class Element:
+    piece: TrackPiece
+    orientation: Orientation
+
+    def __repr__(self):
+        return f"{type(self).__qualname__}({self.piece.type.name},{self.orientation})"
+        pass
+    def __str__(self):
+        return repr(self)
+    pass
 
 _ORIENTATIONS=((1,0),(0,-1),(-1,0),(0,1))
 def _next_orientation(orientation: tuple[int,int], is_clockwise: bool) -> tuple[int,int]:
@@ -83,11 +98,13 @@ def generate(track_map: list[TrackPiece]) -> Vismap:
             check.type == TrackPieceTypes.INTERSECTION 
             for check in working_cell
         ])):
+            working_cell.append(Element(piece,orientation))
+            pass
+        else:
             warn(
                 "Ignoring an intersection piece. If you have stacked two intersection pieces, this will cause bugs. If not, you can ignore this warning.",
-                stacklevel=2)
-            working_cell.append(piece)
-            pass
+                stacklevel=2
+            )
         pass
 
     return vismap
