@@ -15,12 +15,17 @@ class Ui:
     _map = []
     _visMap = None
     _visMapSurf = None
-    _eventList = []
+    _eventList : list[pygame.surface.Surface] = []
+    _font = None
     
     def __init__(self, fahrzeuge: list[anki.Vehicle], map) -> None:
         self._fahrzeuge = fahrzeuge
         self._map = map
         self._visMap = generate(self._map)
+        
+        pygame.init()
+        self._font = pygame.font.SysFont("Arial",20)
+        
         self._thread =  threading.Thread(target=self._UiThread,daemon=True)
         self._thread.start()
     
@@ -40,7 +45,6 @@ class Ui:
         pass
     
     def gen_MapSurface(self, visMap):
-        print(visMap)
         Gerade = pygame.image.load("Gerade.png")
         Kurve = pygame.image.load("Kurve.png")
         Kreuzung = pygame.image.load("Kreuzung.png")
@@ -49,7 +53,7 @@ class Ui:
         for x in range(len(visMap)):
             for y in range(len(visMap[x])):
                 for i in range(len(visMap[x][y])):
-                    match visMap[x][y][i].type: #rotating of map pieces to be implemented
+                    match visMap[x][y][i].piece.type: #rotating of map pieces to be implemented
                         case TrackPieceTypes.STRAIGHT:
                             mapSurf.blit(Gerade,(x*100,y*100))
                             
@@ -64,24 +68,33 @@ class Ui:
                     pass #add object to map
         self._visMapSurf = mapSurf
     
-    def addEvent(self, text:str, )
+    def addEvent(self, text:str, color:tuple[int,int,int]):
+        self._eventList.insert(0,self._font.render(text,True,color))
     
     def _UiThread(self):
-        pygame.init()
+        self.addEvent("Started Ui",(0,0,0))
         self.gen_MapSurface(self._visMap)
-        font = pygame.font.SysFont("Arial",20)
         Ui = pygame.display.set_mode((1000,600),pygame.SCALED)
         Logo = pygame.image.load("Logo.png")
         pygame.display.set_icon(Logo)
         pygame.display.set_caption("Anki Ui Access")
         clock = pygame.time.Clock()
+        
+        
         run = True
-        while(run):
+        while(self._run):
             Ui.fill((100,150,100))
             Ui.blit(self._visMapSurf,(0,0))
+            
+            EventSurf = pygame.surface.Surface((max(self._eventList,key= lambda val: val.get_size()[0]).get_size()[0] +20 , 200)) 
+            EventSurf.fill((100,150,150))
+            for i in range(len(self._eventList)):
+                EventSurf.blit(self._eventList[i],(10,i*20))
+            Ui.blit(EventSurf,(0,self._visMapSurf.get_size()[1]))
+            
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    run = False
+                    self._run = False
             pygame.display.update()
             clock.tick(60)
     
@@ -93,9 +106,12 @@ async def TestMain():
     auto1 = await control.connectOne()
     #auto2 = await control.connectOne()
     await control.scan()
-    Ui((auto1),control.map)
+    Uiob = Ui((auto1),control.map)
+    iteration = 0
     while True:
-        await asyncio.sleep(100)
+        await asyncio.sleep(1000)
+        Uiob.addEvent(f"{iteration}",(0,0,0))
+        iteration += 1
 
 try:
     control = anki.Controller()

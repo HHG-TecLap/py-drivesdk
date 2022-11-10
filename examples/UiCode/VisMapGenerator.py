@@ -6,7 +6,7 @@ from typing import Literal
 __all__ = ("generate")
 
 
-Vismap = list[list[list[TrackPiece]]]
+Vismap = list[list[list["Element"]]]
 Orientation = tuple[Literal[-1,0,1],Literal[-1,0,1]]
 
 @dataclass(repr=False,frozen=True,slots=True)
@@ -95,7 +95,7 @@ def generate(track_map: list[TrackPiece]) -> Vismap:
         if not(piece.type == TrackPieceTypes.INTERSECTION 
         and len(working_cell) > 0
         and all([
-            check.type == TrackPieceTypes.INTERSECTION 
+            check.piece.type == TrackPieceTypes.INTERSECTION 
             for check in working_cell
         ])):
             working_cell.append(Element(piece,orientation))
