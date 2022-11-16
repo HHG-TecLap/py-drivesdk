@@ -70,6 +70,8 @@ class Ui:
     
     def addEvent(self, text:str, color:tuple[int,int,int]):
         self._eventList.insert(0,self._font.render(text,True,color))
+        if(len(self._eventList) > 5):
+            self._eventList.pop(len(self._eventList)-1)
     
     def _UiThread(self):
         self.addEvent("Started Ui",(0,0,0))
@@ -86,7 +88,10 @@ class Ui:
             Ui.fill((100,150,100))
             Ui.blit(self._visMapSurf,(0,0))
             
-            EventSurf = pygame.surface.Surface((max(self._eventList,key= lambda val: val.get_size()[0]).get_size()[0] +20 , 200)) 
+            EventSurf = pygame.surface.Surface(
+                (max(self._eventList,key= lambda val: val.get_size()[0]).get_size()[0] +20 , 
+                200)
+            ) 
             EventSurf.fill((100,150,150))
             for i in range(len(self._eventList)):
                 EventSurf.blit(self._eventList[i],(10,i*20))
@@ -108,8 +113,9 @@ async def TestMain():
     await control.scan()
     Uiob = Ui((auto1),control.map)
     iteration = 0
+    print("Constructor finished")
     while True:
-        await asyncio.sleep(1000)
+        await asyncio.sleep(10)
         Uiob.addEvent(f"{iteration}",(0,0,0))
         iteration += 1
 
