@@ -73,6 +73,11 @@ class Ui:
         if(len(self._eventList) > 5):
             self._eventList.pop(len(self._eventList)-1)
     
+    def carInfo(fahrzeug):
+        surf = pygame.surface.Surface((200,100))
+        surf.fill(200,100,200)
+        return surf
+    
     def _UiThread(self):
         self.addEvent("Started Ui",(0,0,0))
         self.gen_MapSurface(self._visMap)
@@ -96,6 +101,9 @@ class Ui:
             for i in range(len(self._eventList)):
                 EventSurf.blit(self._eventList[i],(10,i*20))
             Ui.blit(EventSurf,(0,self._visMapSurf.get_size()[1]))
+            
+            for i in range(len(self._fahrzeuge)):
+                Ui.blit(self.carInfo(self._fahrzeuge[i]),(self._visMapSurf.get_size()[0],100*i))
             
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
