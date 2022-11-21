@@ -53,9 +53,10 @@ def _expand_down(vismap: Vismap):
         pass
     pass
 
-def generate(track_map: list[TrackPiece]) -> Vismap:
+def generate(track_map: list[TrackPiece]) -> tuple[Vismap,list[tuple[int,int,int]]]:
     """Creates a 3d map of the track from the 1d version passed as an argument"""
     vismap: Vismap = [[[]]]
+    position_tracker = []
 
     head = [0,0]
     orientation = (1,0)
@@ -98,6 +99,7 @@ def generate(track_map: list[TrackPiece]) -> Vismap:
             check.piece.type == TrackPieceTypes.INTERSECTION 
             for check in working_cell
         ])):
+            position_tracker.append((head[0],head[1],len(working_cell)))
             working_cell.append(Element(piece,orientation))
             pass
         else:
@@ -107,5 +109,5 @@ def generate(track_map: list[TrackPiece]) -> Vismap:
             )
         pass
 
-    return vismap
+    return vismap, position_tracker
     pass
