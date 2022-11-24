@@ -1,4 +1,5 @@
 import os, sys
+import math
 sys.path.append(os.getcwd())
 
 import anki, asyncio, pygame
@@ -17,11 +18,12 @@ class Ui:
     _visMapSurf = None
     _eventList : list[pygame.surface.Surface] = []
     _font = None
+    _lookup = []
     
     def __init__(self, fahrzeuge: list[anki.Vehicle], map) -> None:
         self._fahrzeuge = fahrzeuge
         self._map = map
-        self._visMap = generate(self._map)
+        self._visMap, self._lookup = generate(self._map)
         
         pygame.init()
         self._font = pygame.font.SysFont("Arial",20)
@@ -45,6 +47,9 @@ class Ui:
         pass
     
     def gen_MapSurface(self, visMap):
+        def get_angle(vector: tuple[int,int]):
+            angle = math.atan2(vector[1],vector[0])
+            return angle
         Gerade = pygame.image.load("Gerade.png")
         Kurve = pygame.image.load("Kurve.png")
         Kreuzung = pygame.image.load("Kreuzung.png")
@@ -55,14 +60,14 @@ class Ui:
                 for i in range(len(visMap[x][y])):
                     match visMap[x][y][i].piece.type: #rotating of map pieces to be implemented
                         case TrackPieceTypes.STRAIGHT:
-                            mapSurf.blit(Gerade,(x*100,y*100))
+                            mapSurf.blit(pygame.transform.rotate(Gerade,get_angle(visMap[x][y][i].orientation)),(x*100,y*100))
                             
                         case TrackPieceTypes.CURVE:
-                            mapSurf.blit(Kurve,(x*100,y*100))
+                            mapSurf.blit(pygame.transform.rotate(Kurve,get_angle(visMap[x][y][i].orientation)),(x*100,y*100))
                         case TrackPieceTypes.INTERSECTION:
-                            mapSurf.blit(Kreuzung,(x*100,y*100))
+                            mapSurf.blit(pygame.transform.rotate(Kurve,get_angle(visMap[x][y][i].orientation)),(x*100,y*100))
                         case TrackPieceTypes.START:
-                            mapSurf.blit(Start,(x*100,y*100))
+                            mapSurf.blit(pygame.transform.rotate(Kurve,get_angle(visMap[x][y][i].orientation)),(x*100,y*100))
                         case TrackPieceTypes.FINISH:
                             pass
                     pass #add object to map
@@ -73,9 +78,9 @@ class Ui:
         if(len(self._eventList) > 5):
             self._eventList.pop(len(self._eventList)-1)
     
-    def carInfo(fahrzeug):
+    def carInfo(self, fahrzeug):
         surf = pygame.surface.Surface((200,100))
-        surf.fill(200,100,200)
+        surf.fill((200,100,200))
         return surf
     
     def _UiThread(self):
@@ -119,7 +124,7 @@ async def TestMain():
     auto1 = await control.connectOne()
     #auto2 = await control.connectOne()
     await control.scan()
-    Uiob = Ui((auto1),control.map)
+    Uiob = Ui([auto1],control.map)
     iteration = 0
     print("Constructor finished")
     while True:
