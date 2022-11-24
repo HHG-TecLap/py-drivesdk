@@ -61,6 +61,7 @@ class RawTrackPieces:
     STRAIGHT = [36,39,40,48,51]
     CURVE = [17,18,20,23,24,27]
     INTERSECTION = [10]
+    LAUNCH_START = [43]
     pass
 
 @dataclass(frozen=True,slots=True)
