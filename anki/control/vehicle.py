@@ -199,7 +199,7 @@ class Vehicle(metaclass=AliasMeta):
             ) from e
         
         # Get service and characteristics
-        services = await self._client.get_services()
+        services = self._client.services
         anki_service = services.get_service(const.SERVICE_UUID)
         read   = anki_service.get_characteristic(const.READ_CHAR_UUID)  
         write  = anki_service.get_characteristic(const.WRITE_CHAR_UUID) 
