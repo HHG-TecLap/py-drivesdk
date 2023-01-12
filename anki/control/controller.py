@@ -184,7 +184,7 @@ class Controller(metaclass=AliasMeta):
         if vehicle_ids is None: vehicle_ids = [None]*amount
         if amount != len(vehicle_ids): raise ValueError("Amount of passed vehicle ids is different to amount of requested connections")
 
-        return tuple([await self.connectOne(vehicle_id) for vehicle_id in vehicle_ids]) # Done in series because the documentation said that would be more stable
+        return tuple([await self.connect_one(vehicle_id) for vehicle_id in vehicle_ids]) # Done in series because the documentation said that would be more stable
         pass
 
     
