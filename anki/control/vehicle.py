@@ -136,12 +136,12 @@ class Vehicle(metaclass=AliasMeta):
             self._track_piece_future = asyncio.Future() # Create new future since the old one is now done
             self.on_track_piece_change() # Call the track piece event handle
             for func in self._track_piece_watchers:
-                func()
+                asyncio.get_running_loop().call_soon(func)
                 pass
             pass
         elif msg_type == const.VehicleMsg.PONG:
             for func in self._pong_watchers:
-                func()
+                asyncio.get_running_loop().call_soon(func)
                 pass
             pass
         pass
