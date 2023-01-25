@@ -34,21 +34,10 @@ class Ui:
     def kill(self):
         self._run = False
     
-    def expand_map_to_size(map, width, height):
-        current_width = len(map[0])
-        current_height = len(map)
-        for i in range(width - current_width):
-            map.append([[]])
-            pass
-        for i in range(height - current_height):
-            for column in map: 
-                column.append([])
-            pass
-        pass
-    
     def gen_MapSurface(self, visMap):
+        print(visMap)
         def get_angle(vector: tuple[int,int]):
-            angle = math.atan2(vector[1],vector[0])
+            angle = math.degrees(math.atan2(vector[1],vector[0]))
             return angle
         Gerade = pygame.image.load("Gerade.png")
         Kurve = pygame.image.load("Kurve.png")
@@ -61,13 +50,12 @@ class Ui:
                     match visMap[x][y][i].piece.type: #rotating of map pieces to be implemented
                         case TrackPieceTypes.STRAIGHT:
                             mapSurf.blit(pygame.transform.rotate(Gerade,get_angle(visMap[x][y][i].orientation)),(x*100,y*100))
-                            
                         case TrackPieceTypes.CURVE:
                             mapSurf.blit(pygame.transform.rotate(Kurve,get_angle(visMap[x][y][i].orientation)),(x*100,y*100))
                         case TrackPieceTypes.INTERSECTION:
-                            mapSurf.blit(pygame.transform.rotate(Kurve,get_angle(visMap[x][y][i].orientation)),(x*100,y*100))
+                            mapSurf.blit(Kreuzung ,(x*100,y*100))
                         case TrackPieceTypes.START:
-                            mapSurf.blit(pygame.transform.rotate(Kurve,get_angle(visMap[x][y][i].orientation)),(x*100,y*100))
+                            mapSurf.blit(pygame.transform.rotate(Start,get_angle(visMap[x][y][i].orientation)),(x*100,y*100))
                         case TrackPieceTypes.FINISH:
                             pass
                     pass #add object to map
@@ -127,13 +115,13 @@ async def TestMain():
     Uiob = Ui([auto1],control.map)
     iteration = 0
     print("Constructor finished")
-    while True:
-        await asyncio.sleep(10)
-        Uiob.addEvent(f"{iteration}",(0,0,0))
-        iteration += 1
+    try:
+        while True:
+            await asyncio.sleep(10)
+            Uiob.addEvent(f"{iteration}",(0,0,0))
+            iteration += 1
+    finally:
+        await control.disconnectAll()
 
-try:
-    control = anki.Controller()
-    asyncio.run(TestMain())
-finally:
-    control.disconnectAll()
+control = anki.Controller()
+asyncio.run(TestMain())
