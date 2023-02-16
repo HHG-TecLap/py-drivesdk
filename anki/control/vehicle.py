@@ -9,7 +9,7 @@ from bleak.exc import BleakDBusError
 from ..utility import util
 
 from ..msgs import *
-from ..utility.track_pieces import TrackPiece
+from ..utility.track_pieces import TrackPiece, TrackPieceTypes
 from ..utility import const
 from ..utility.lanes import Lane3, Lane4, _Lane
 from .. import errors
@@ -127,6 +127,8 @@ class Vehicle:
                 self._position += 1
                 self._position %= len(self._map)
                 track_piece = self.current_track_piece # This is very hacky! (And also doesn't ~~quite~~ work)
+                if self._current_track_piece.type is TrackPieceTypes.START:
+                    self._position = 1
                 pass
             else:
                 track_piece = self._current_track_piece
