@@ -12,10 +12,12 @@ async def main():
     vehicle = await controller.connectOne() # This object represents the vehicle and is used to control it.
 
     await vehicle.setSpeed(300) # Accelerate the vehicle to 300mm/s
-    await asyncio.sleep(10)
-    await vehicle.stop() # Stop the vehicle
+    # await asyncio.sleep(10)
+    # await vehicle.stop() # Stop the vehicle
 
-    await vehicle.disconnect() # Always disconnect the vehicle. Otherwise it may bug into a state where it won't reconnect.
+    # await vehicle.disconnect() # Always disconnect the vehicle. Otherwise it may bug into a state where it won't reconnect.
+    
+    await asyncio.sleep(3600)
     pass
 
 # Only running the main function when actually executing this program
