@@ -122,7 +122,7 @@ class Vehicle:
             pass
         elif msg_type == const.VehicleMsg.TRACK_PIECE_CHANGE:
             uphill_count, downhill_count = disassembleTrackChange(payload)[8:10]
-            print("Vehicle uphill/downhill:",uphill_count,downhill_count)
+            # print("Vehicle uphill/downhill:",uphill_count,downhill_count)
             if None not in (self._position, self._map): # If there was a scan & align already
                 self._position += 1
                 self._position %= len(self._map)
