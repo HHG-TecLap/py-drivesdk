@@ -25,8 +25,8 @@ async def main():
                 break
         await vehicles[i+1].align()
         print("vehicle aligned")
-        for v in vehicles:
-            await v.setSpeed(300)
+    for v in vehicles:
+        await v.setSpeed(300)
     try:
         while True:
             await asyncio.sleep(10000)
