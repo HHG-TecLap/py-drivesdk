@@ -9,7 +9,7 @@ from bleak.exc import BleakDBusError
 from ..utility import util
 
 from ..msgs import *
-from ..utility.track_pieces import TrackPiece
+from ..utility.track_pieces import TrackPiece, TrackPieceTypes
 from ..utility import const
 from ..utility.lanes import Lane3, Lane4, _Lane
 from .. import errors
@@ -121,10 +121,14 @@ class Vehicle:
             self._current_track_piece = piece_obj # Update the internal track object
             pass
         elif msg_type == const.VehicleMsg.TRACK_PIECE_CHANGE:
+            uphill_count, downhill_count = disassembleTrackChange(payload)[8:10]
+            # print("Vehicle uphill/downhill:",uphill_count,downhill_count)
             if None not in (self._position, self._map): # If there was a scan & align already
                 self._position += 1
                 self._position %= len(self._map)
                 track_piece = self.current_track_piece # This is very hacky! (And also doesn't ~~quite~~ work)
+                if self._current_track_piece.type is TrackPieceTypes.START:
+                    self._position = 1
                 pass
             else:
                 track_piece = self._current_track_piece
@@ -347,12 +351,14 @@ class Vehicle:
             The speed the vehicle should travel at during alignment
         """
         await self.setSpeed(speed)
-        track_piece = None
-        while track_piece is None or track_piece.type != const.TrackPieceTypes.FINISH: # Wait until at START
-            track_piece = await self.wait_for_track_change()
+        while self._current_track_piece is None\
+            or self._current_track_piece.type is not TrackPieceTypes.FINISH:
+            # Waits until the previous track piece was FINISH.
+            # This means the current position is START
+            await self.wait_for_track_change()
             pass
 
-        self._position = len(self.map)-1 # Update position to be at FINISH
+        self._position = 0 # Vehicle is now at START which is always 0
 
         await self.stop()
         pass

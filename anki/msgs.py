@@ -40,7 +40,18 @@ def disassembleTrackUpdate(payload : bytes) -> tuple[int,int,float,int,int]:
 def disassembleTrackChange(payload : bytes) -> tuple[int,int,float,int,int,int,int,int,int,int,int,int]:
     """HA! You think this is useful! No! The first two values are always 0! And those are the road piece and the previous road piece! THIS IS HORRIBLE! WHY DOES THERE HAVE TO BE SUCH LACK OF DOCUMENTATION?! I HATE IT!"""
 
-    road_piece, prev_road_piece, road_offset, last_received_lane_change_id, last_executed_lane_change_id, last_desired_lane_change_speed, ave_follow_line_drift_pixels, had_lane_change, uphill_counter, downhill_counter, left_wheel_dist, right_wheel_dist = struct.unpack_from("<bbfBBHbBBBBB",payload)
+    road_piece, \
+    prev_road_piece, \
+    road_offset, \
+    last_received_lane_change_id, \
+    last_executed_lane_change_id, \
+    last_desired_lane_change_speed, \
+    ave_follow_line_drift_pixels, \
+    had_lane_change, \
+    uphill_counter, \
+    downhill_counter, \
+    left_wheel_dist, \
+    right_wheel_dist = struct.unpack_from("<bbfBBHbBBBBB",payload)
 
     return (
         road_piece, 
