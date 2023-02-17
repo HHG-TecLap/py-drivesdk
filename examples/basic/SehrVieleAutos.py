@@ -6,15 +6,13 @@ async def main():
 
     vehicles:list(anki.Vehicle) = []
     
-    vehicle = await controller.connectOne()
-    vehicles.append(vehicle)
+    vehicles.append(await controller.connectOne())
     await controller.scan()
-    for i in range(4):
+    for i in range(5):
         print("start shifting")
         for j in range(len(vehicles)):
-            curPos = vehicles[j].map_position
             await vehicles[j].setSpeed(300)
-            while(vehicles[j].map_position != curPos +1):
+            while(vehicles[j].map_position != i-j+1):
                 await asyncio.sleep(0.001)
             await vehicles[j].stop()
         while True:
@@ -27,17 +25,14 @@ async def main():
                 break
         await vehicles[i+1].align()
         print("vehicle aligned")
-    
+        for v in vehicles:
+            await v.setSpeed(300)
     try:
         while True:
-            await vehicle.wait_for_track_change()
-            print(
-                "The vehicle is currently at",vehicle.current_track_piece.type,
-                "that is the", vehicle.map_position+1, ". track piece of the map"
-                )
+            await asyncio.sleep(10000)
             pass
     finally:
-        await vehicle.disconnect()
+        await controller.disconnectAll()
         pass
     pass
 
