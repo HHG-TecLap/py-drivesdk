@@ -351,7 +351,8 @@ class Vehicle:
             The speed the vehicle should travel at during alignment
         """
         await self.setSpeed(speed)
-        while self._current_track_piece.type is TrackPieceTypes.FINISH:
+        while self._current_track_piece is None\
+            or self._current_track_piece.type is not TrackPieceTypes.FINISH:
             # Waits until the previous track piece was FINISH.
             # This means the current position is START
             await self.wait_for_track_change()
