@@ -382,18 +382,20 @@ class Vehicle(metaclass=AliasMeta):
         pass
 
     async def align(self, speed : int=300):
-        """Align to the start piece. This only works if the map is already scanned in
+        """Align to the start piece.
 
         :param speed: :class:`int`
             The speed the vehicle should travel at during alignment
         """
         await self.set_speed(speed)
-        track_piece = None
-        while track_piece is None or track_piece.type != const.TrackPieceType.FINISH: # Wait until at START
-            track_piece = await self.wait_for_track_change()
+        while self._current_track_piece is None\
+            or self._current_track_piece.type is not TrackPieceTypes.FINISH:
+            # Waits until the previous track piece was FINISH.
+            # This means the current position is START
+            await self.wait_for_track_change()
             pass
 
-        self._position = len(self.map)-1 # Update position to be at FINISH
+        self._position = 0 # Vehicle is now at START which is always 0
 
         await self.stop()
         pass
