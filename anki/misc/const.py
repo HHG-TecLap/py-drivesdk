@@ -52,6 +52,7 @@ class VehicleMsg:
     # Notify characteristic
     TRACK_PIECE_UPDATE = 39
     TRACK_PIECE_CHANGE = 41
+    CHARGER_INFO = 63
     pass
 
 # class RawTrackPieces:
@@ -105,6 +106,7 @@ class TrackPieceType(Enum):
     STRAIGHT = [36,39,40,48,51]
     CURVE = [17,18,20,23,24,27]
     INTERSECTION = [10]
+    LAUNCH_START = [43]
 
     def __str__(self) -> str:
         return self.name

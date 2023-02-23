@@ -123,6 +123,8 @@ class Vehicle(metaclass=AliasMeta):
             self._current_track_piece = piece_obj # Update the internal track object
             pass
         elif msg_type == const.VehicleMsg.TRACK_PIECE_CHANGE:
+            uphill_count, downhill_count = disassemble_track_change(payload)[8:10]
+            print("Vehicle uphill/downhill:",uphill_count,downhill_count)
             if None not in (self._position, self._map): # If there was a scan & align already
                 self._position += 1
                 self._position %= len(self._map)
@@ -144,6 +146,9 @@ class Vehicle(metaclass=AliasMeta):
                 asyncio.get_running_loop().call_soon(func)
                 pass
             pass
+        elif msg_type == const.VehicleMsg.CHARGER_INFO:
+            unknown, onCharger, loading, full = disassemble_charger_info(payload)
+            print(f'unknown: {unknown}, onCharger: {onCharger}, loading: {loading}, full: {full}')
         pass
 
     async def __send_package(self, payload : bytes):
@@ -267,7 +272,7 @@ class Vehicle(metaclass=AliasMeta):
 
     async def stop(self):
         """Stops the Supercar"""
-        await self.setSpeed(0, 600) # stop = 0 speed
+        await self.set_speed(0, 600) # stop = 0 speed
         pass
     
     @deprecated_alias("changeLane",
@@ -287,7 +292,7 @@ class Vehicle(metaclass=AliasMeta):
         :param horizontalAcceleration: :class:`Optional[int]`
             The acceleration in mm/s² the vehicle will move horizontally with 
         """
-        await self.change_position(lane.lane_position,horizontalSpeed,horizontalAcceleration,_hopIntent=_hopIntent,_tag=_tag) # changeLane is just changePosition but user friendly
+        await self.change_position(lane.value,horizontalSpeed,horizontalAcceleration,_hopIntent=_hopIntent,_tag=_tag) # changeLane is just changePosition but user friendly
         pass
     
     @deprecated_alias("changePosition",
@@ -387,7 +392,7 @@ class Vehicle(metaclass=AliasMeta):
         :param speed: :class:`int`
             The speed the vehicle should travel at during alignment
         """
-        await self.setSpeed(speed)
+        await self.set_speed(speed)
         track_piece = None
         while track_piece is None or track_piece.type != const.TrackPieceType.FINISH: # Wait until at START
             track_piece = await self.wait_for_track_change()
