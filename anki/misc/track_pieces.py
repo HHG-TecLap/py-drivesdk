@@ -1,4 +1,4 @@
-from .const import TrackPieceType, TrackPieceTypes
+from .const import TrackPieceType
 from dataclasses import dataclass, field
 
 
@@ -24,7 +24,7 @@ class TrackPiece():
     def from_raw(loc : int, piece_val : int, clockwise : int) -> "TrackPiece":
         return TrackPiece(
             loc,
-            TrackPieceTypes.try_type(piece_val),
+            TrackPieceType.try_enum(piece_val),
             clockwise > 30
         )
         pass

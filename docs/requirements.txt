@@ -1,2 +1,4 @@
 sphinx
 sphinx-rtd-theme
+enum_tools
+sphinx_toolbox

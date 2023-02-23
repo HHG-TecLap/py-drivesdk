@@ -2,7 +2,7 @@ from typing import Union
 from . import const
 from ..errors import * 
 
-def assemblePacket(msgType : Union[bytes,bytearray],payload : Union[str,bytes,bytearray]) -> bytes:
+def assemble_packet(msgType : Union[bytes,bytearray],payload : Union[str,bytes,bytearray]) -> bytes:
     if isinstance(msgType, bytearray): # Convert bytearray to bytes
         msgType = bytes(msgType)
         pass
@@ -28,7 +28,7 @@ def assemblePacket(msgType : Union[bytes,bytearray],payload : Union[str,bytes,by
     return byteSize + msgType + payload
     pass
 
-def disassemblePacket(packet : Union[bytes,bytearray]) -> tuple[bytes,bytes]:
+def disassemble_packet(packet : Union[bytes,bytearray]) -> tuple[int,bytes]:
     if isinstance(packet,bytearray): # Convert bytearray to bytes
         packet = bytes(packet)
         pass

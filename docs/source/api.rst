@@ -31,7 +31,7 @@ VehicleState
 
 Lights
 ~~~~~~
-.. autoclass:: anki.Lights
+.. autoenum:: anki.Lights
     :members:
 
 
@@ -43,28 +43,27 @@ TrackPiece
 .. autoclass:: anki.TrackPiece
     :members:
 
-TrackPieceTypes
-~~~~~~~~~~~~~~~
-.. autoclass:: anki.TrackPieceTypes
+TrackPieceType
+~~~~~~~~~~~~~~
+.. autoenum:: anki.TrackPieceType
     :members:
-
 
 Lane support
 ************
 
-_Lane
-~~~~~
-.. autoclass:: anki.utility.lanes._Lane
+BaseLane
+~~~~~~~~
+.. autoclass:: anki.BaseLane
     :members:
 
 Lane3
 ~~~~~
-.. autoclass:: anki.Lane3
+.. autoenum:: anki.Lane3
     :members:
 
 Lane4
 ~~~~~
-.. autoclass:: anki.Lane4
+.. autoenum:: anki.Lane4
     :members:
 
 Exceptions

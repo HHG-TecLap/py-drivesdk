@@ -1,18 +1,20 @@
+from ..misc.deprecated_alias import AliasMeta, deprecated_alias
+
 import bleak, asyncio
 from bleak.backends.device import BLEDevice
 from bleak.backends.scanner import AdvertisementData
 
-from ..utility.const import *
+from ..misc.const import *
 from .. import errors
-from .vehicle import Vehicle, interpretLocalName
-from ..utility.track_pieces import TrackPiece
+from .vehicle import Vehicle, interpret_local_name
+from ..misc.track_pieces import TrackPiece
 from .scanner import Scanner
 
 from typing import Iterable, Optional
 
-def isAnki(device : BLEDevice, advertisement : AdvertisementData):
+def _is_anki(device: BLEDevice, advertisement: AdvertisementData):
     try:
-        state, version, name = interpretLocalName(advertisement.local_name)
+        state, version, name = interpret_local_name(advertisement.local_name)
     except ValueError: # Catch error if name is not interpretable (not a vehicle then)
         return False
         pass
@@ -28,26 +30,26 @@ def isAnki(device : BLEDevice, advertisement : AdvertisementData):
     return ankiFound
     pass
 
-class Controller:
+class Controller(metaclass=AliasMeta):
     """This object controls all vehicle connections. With it you can connect to any number of vehicles and disconnect cleanly.
 
     :param timeout: :class:`float` The time until the controller gives up searching for a vehicle.
     """
     __slots__ = ["_scanner","timeout","vehicles","map"]
-    def __init__(self,*,timeout : float = 10):
+    def __init__(self,*,timeout: float = 10):
         self._scanner = bleak.BleakScanner()
         self.timeout = timeout
         self.vehicles : set[Vehicle] = set()
         self.map : Optional[list[TrackPiece]] = None
         pass
 
-    async def _getVehicle(self,vehicle_id : Optional[int] = None, address : str = None) -> Vehicle:
+    async def _get_vehicle(self,vehicle_id: Optional[int]=None, address: str|None=None) -> Vehicle:
         """Finds a Supercar and creates a Vehicle instance around it"""
 
-        device = await self._scanner.find_device_by_filter(lambda device, advertisement: isAnki(device,advertisement) and (address is None or device.address == address), timeout=self.timeout)
+        device = await self._scanner.find_device_by_filter(lambda device, advertisement: _is_anki(device,advertisement) and (address is None or device.address == address), timeout=self.timeout)
         # Get a BLEDevice and ensure it is of a required address if address was given
         if device is None:
-            raise errors.VehicleNotFound("Could not find a supercar within the given timeout")
+            raise errors.VehicleNotFoundError("Could not find a supercar within the given timeout")
             pass
 
         client = bleak.BleakClient(device) # Wrapping the device in a client. This client will be used to send and receive data in the Vehicle class
@@ -61,8 +63,14 @@ class Controller:
         return vehicle
         pass
 
+    @deprecated_alias("connectOne",
+    doc="""
+    Alias to :func:`Controller.connect_one`
 
-    async def connectOne(self, vehicle_id : Optional[int] = None) -> Vehicle:
+    .. deprecated:: 1.0
+        Use the alias :func:`Controller.connect_one` instead.
+    """)
+    async def connect_one(self, vehicle_id: Optional[int]=None) -> Vehicle:
         """Connect to one non-charging Supercar and return the Vehicle instance
 
         :param vehicle_id: :class:`Optional[int]` 
@@ -89,13 +97,20 @@ class Controller:
         :class:`ConnectionFailedException` 
             A generic error occured whilst connection to the supercar
         """
-        vehicle = await self._getVehicle(vehicle_id)
+        vehicle = await self._get_vehicle(vehicle_id)
         vehicle._map = self.map # Add an existing map to the vehicle. If there is no map it sets None which is the default for Vehicle._map anyway
         await vehicle.connect()
         return vehicle
         pass
 
-    async def connectSpecific(self, address : str, vehicle_id : Optional[int] = None) -> Vehicle:
+    @deprecated_alias("connectSpecific",
+    doc="""
+    Alias to :func:`Controller.connect_specific`
+
+    .. deprecated:: 1.0
+        Use alias :func:`Controller.connect_specific` instead
+    """)
+    async def connect_specific(self, address: str, vehicle_id: Optional[int]=None) -> Vehicle:
         """Connect to a supercar with a specified MAC address
         
         :param address: :class:`str`
@@ -122,12 +137,19 @@ class Controller:
         :class:`ConnectionFailedException`
             A generic error occured whilst connection to the supercar
         """
-        vehicle = await self._getVehicle(vehicle_id,address)
+        vehicle = await self._get_vehicle(vehicle_id,address)
         await vehicle.connect()
         return vehicle
         pass
+    
+    @deprecated_alias("connectMany",
+    doc="""
+    Alias to :func:`Controller.connect_many`
 
-    async def connectMany(self, amount : int, vehicle_ids : Iterable[int] = None) -> tuple[Vehicle]:
+    .. deprecated:: 1.0
+        Use alias :func:`Controller.connect_many` instead
+    """)
+    async def connect_many(self, amount : int, vehicle_ids : Iterable[int|None]|None=None) -> tuple[Vehicle]:
         """Connect to <amount> non-charging Supercars
         
         :param amount: :class:`int`
@@ -162,11 +184,11 @@ class Controller:
         if vehicle_ids is None: vehicle_ids = [None]*amount
         if amount != len(vehicle_ids): raise ValueError("Amount of passed vehicle ids is different to amount of requested connections")
 
-        return tuple([await self.connectOne(vehicle_id) for vehicle_id in vehicle_ids]) # Done in series because the documentation said that would be more stable
+        return tuple([await self.connect_one(vehicle_id) for vehicle_id in vehicle_ids]) # Done in series because the documentation said that would be more stable
         pass
 
     
-    async def scan(self, scan_vehicle : Vehicle = None, align_pre_scan : bool = True) -> list[TrackPiece]:
+    async def scan(self, scan_vehicle: Vehicle|None=None, align_pre_scan: bool=True) -> list[TrackPiece]:
         """Assembles a digital copy of the map and adds it to every connected vehicle.
         
         :param scan_vehicle: :class:`Optional[Vehicle]`
@@ -188,8 +210,8 @@ class Controller:
             raise errors.DuplicateScanWarning("The map has already been scanned. Check your code for any mistakes like that.")
             pass
 
-        async def noScanAlign(vehicle : Vehicle, align_target = TrackPieceTypes.FINISH): # Alignment when the scanner is not currently running
-            await vehicle.setSpeed(250)
+        async def noScanAlign(vehicle: Vehicle, align_target=TrackPieceType.FINISH): # Alignment when the scanner is not currently running
+            await vehicle.set_speed(250)
             while vehicle._current_track_piece is None or vehicle._current_track_piece.type != align_target: # Don't check when none to prevent AttributeError
                 await asyncio.sleep(0.1)
                 pass
@@ -204,7 +226,7 @@ class Controller:
             temp_vehicles.remove(scan_vehicle) # Remove the scanning vehicle from the set if it is already passed as an argument
 
         if align_pre_scan: # Aligning before scanning if enabled. This allows the vehicles to be placed anywhere on the map
-            await asyncio.gather(*[noScanAlign(v,TrackPieceTypes.FINISH) for v in self.vehicles]) # Since we're aligning BEFORE scan, we need the piece before the one we want to align in front of
+            await asyncio.gather(*[noScanAlign(v,TrackPieceType.FINISH) for v in self.vehicles]) # Since we're aligning BEFORE scan, we need the piece before the one we want to align in front of
             await asyncio.sleep(1)
             pass
 
@@ -215,7 +237,7 @@ class Controller:
 
         scanner = Scanner(scan_vehicle)
         
-        await scan_vehicle.setSpeed(150) # Drive a little forward so that we don't immediately see START and FINISH and complete the scan
+        await scan_vehicle.set_speed(150) # Drive a little forward so that we don't immediately see START and FINISH and complete the scan
         await asyncio.sleep(1)
         await scan_vehicle.stop()
 
@@ -232,7 +254,7 @@ class Controller:
             while True:
                 await vehicle.wait_for_track_change()
                 track=vehicle._current_track_piece
-                if track is not None and track.type is TrackPieceTypes.FINISH:
+                if track is not None and track.type is TrackPieceType.FINISH:
                     break
                     pass
                 pass
@@ -242,14 +264,6 @@ class Controller:
             completed_tasks[vehicle] = True
             pass
 
-        # for v in self.vehicles: 
-        #     asyncio.create_task(align(v))
-        #     await v.setSpeed(300)
-        #     completed_tasks[v] = False
-        #     pass
-
-        # while not all(completed_tasks.values()): await asyncio.sleep(0) # Wait until all tasks are done
-
         for v in self.vehicles:
             v._map = self.map
             v._position = -1 if v in temp_vehicles else 0 # Scanner is always one piece ahead
@@ -258,9 +272,14 @@ class Controller:
         return self.map
         pass
 
+    @deprecated_alias("disconnectAll", 
+    doc="""
+    Alias to :func:`Controller.disconnect_all`
 
-
-    async def disconnectAll(self):
+    .. deprecated:: 1.0
+        Use alias :func:`Controller.disconnect_all` instead
+    """)
+    async def disconnect_all(self):
         """Disconnects from all the connected supercars
         
         Raises
@@ -278,10 +297,17 @@ class Controller:
         pass
 
     async def __aexit__(self,*args):
-        await self.disconnectAll()
+        await self.disconnect_all()
         pass
     
-    def handleShutdown(self):
+    @deprecated_alias("handleShutdown", 
+    doc="""
+    Alias to :func:`Controller.handle_shutdown`
+
+    .. deprecated:: 1.0
+        Use alias :func:`Controller.handle_shutdown` instead
+    """)
+    def handle_shutdown(self):
         """Handles a shutdown neatly and disconnects the vehicles
         
         Raises
@@ -291,12 +317,14 @@ class Controller:
         :class:`DisconnectFailedException`
             A disconnection attempt failed for unspecific reasons
         """
-        asyncio.run(self.disconnectAll())
+        warn("This method does not really work and is therefore deprecated",DeprecationWarning)
+        asyncio.run(self.disconnect_all())
         pass
 
 
     @property
-    def map_types(self) -> tuple:
+    def map_types(self) -> tuple[TrackPieceType]|None:
+        if self.map is None: return None
         return tuple([track_piece.type for track_piece in self.map]) # Converting to a tuple to prevent DAUs (that's German) thinking they can affect the map
         pass
     pass

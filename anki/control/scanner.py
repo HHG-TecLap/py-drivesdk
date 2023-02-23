@@ -1,11 +1,11 @@
-from ..utility.track_pieces import TrackPiece
+from ..misc.track_pieces import TrackPiece
 from .vehicle import Vehicle
-from ..utility.const import TrackPieceTypes
+from ..misc.const import TrackPieceType
 import asyncio
 
-def reorderMap(map : list[TrackPiece]):
+def reorder_map(map: list[TrackPiece]):
     # Basically: Move the last piece to the front until START is at index 0 and FINISH is at index -1 (i.e. the end)
-    while not (map[0].type is TrackPieceTypes.START and map[-1].type is TrackPieceTypes.FINISH):
+    while not (map[0].type is TrackPieceType.START and map[-1].type is TrackPieceType.FINISH):
         map.insert(0,map.pop(-1))
         pass
     pass
@@ -18,7 +18,7 @@ class Scanner:
     """
 
     __slots__ = ["vehicle","map"]
-    def __init__(self, vehicle : Vehicle):
+    def __init__(self, vehicle: Vehicle):
         self.vehicle = vehicle
         self.map : list[TrackPiece] = []
         pass
@@ -32,7 +32,7 @@ class Scanner:
             if track is not None: # track might be None for the first time this event is called
                 self.map.append(track)
                 track_types.append(track.type)
-                if TrackPieceTypes.START in track_types and TrackPieceTypes.FINISH in track_types: # This marks the scan as complete once both START and FINISH have been found
+                if TrackPieceType.START in track_types and TrackPieceType.FINISH in track_types: # This marks the scan as complete once both START and FINISH have been found
                     completed[0] = True
                     pass
                 pass
@@ -40,7 +40,7 @@ class Scanner:
 
         self.vehicle.on_track_piece_change = watcher
         
-        await self.vehicle.setSpeed(300)
+        await self.vehicle.set_speed(300)
         while not completed[0]: # Drive along until the scan is marked as complete. (This does NOT cause parallelity issues because we're running the watcher synchronously in the background)
             await asyncio.sleep(0.5)
             pass
@@ -48,7 +48,7 @@ class Scanner:
         self.vehicle.on_track_piece_change = lambda: None
         await self.vehicle.stop()
 
-        reorderMap(self.map) # Assure that START is at the beginning and FINISH is at the end
+        reorder_map(self.map) # Assure that START is at the beginning and FINISH is at the end
 
         return self.map
         pass
