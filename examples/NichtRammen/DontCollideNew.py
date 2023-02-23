@@ -5,12 +5,15 @@ Tasks: list[asyncio.Task] = []
 
 async def OnTrackChange(vehicle:anki.Vehicle, speed: int):
     while True:
-        await vehicle.wait_for_track_change()
         if Locks[vehicle.map_position].locked():
             await vehicle.stop()
-        await Locks[vehicle.map_position].acquire()
-        await vehicle.setSpeed(speed)
-        Locks[vehicle.map_position-1].release()
+        async with Locks[vehicle.map_position]:
+            if Locks[(vehicle.map_position+1)%len(Locks)].locked():
+                await vehicle.stop()
+                while Locks[(vehicle.map_position+1)%len(Locks)].locked():
+                    await asyncio.sleep(0.01)
+            await vehicle.setSpeed(speed)
+            await vehicle.wait_for_track_change()
 
 
 
