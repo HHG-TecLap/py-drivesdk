@@ -1,5 +1,6 @@
 from warnings import warn
 from enum import Enum
+from typing import TypeVar
 
 class BaseLane(float,Enum):
     """
@@ -123,3 +124,5 @@ class Lane4(BaseLane):
     RIGHT_1 = 30
     RIGHT_2 = 60
     pass
+
+_LaneType = TypeVar('_LaneType',bound=BaseLane)

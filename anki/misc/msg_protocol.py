@@ -28,7 +28,7 @@ def assemble_packet(msgType : Union[bytes,bytearray],payload : Union[str,bytes,b
     return byteSize + msgType + payload
     pass
 
-def disassemble_packet(packet : Union[bytes,bytearray]) -> tuple[bytes,bytes]:
+def disassemble_packet(packet : Union[bytes,bytearray]) -> tuple[int,bytes]:
     if isinstance(packet,bytearray): # Convert bytearray to bytes
         packet = bytes(packet)
         pass

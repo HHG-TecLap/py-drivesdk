@@ -13,7 +13,7 @@ from ..misc import msg_protocol
 from ..misc.msgs import *
 from ..misc.track_pieces import TrackPiece
 from ..misc import const
-from ..misc.lanes import Lane3, Lane4, BaseLane
+from ..misc.lanes import Lane3, Lane4, BaseLane, _LaneType
 from .. import errors
 
 from typing import TYPE_CHECKING
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     pass
 
 
-def interpret_local_name(name : str):
+def interpret_local_name(name: str):
     if name is None or len(name) < 1: # Fix some issues that might occur
         raise ValueError("Name was empty")
         pass
@@ -42,7 +42,7 @@ class VehicleState:
     charging : bool
 
     @classmethod
-    def from_int(cls, state : int):
+    def from_int(cls, state: int):
         """Constructs a :class:`VehicleState` from an integer representation
         
         :param state: :class:`int`
@@ -82,14 +82,14 @@ class Vehicle(metaclass=AliasMeta):
     """
 
     __slots__ = ("_client","_current_track_piece","_is_connected","_road_offset","_speed","on_track_piece_change","_track_piece_future","_position","_map","_read_chara","_write_chara", "_id","_track_piece_watchers","_pong_watchers","_controller")
-    def __init__(self, id : int, device : BLEDevice, client : bleak.BleakClient = None, controller : "Controller" = None):
+    def __init__(self, id: int, device : BLEDevice, client: bleak.BleakClient=None, controller: "Controller"=None):
         self._client = client if client is not None else bleak.BleakClient(device)
 
         self._id : int = id
-        self._current_track_piece : TrackPiece = None
+        self._current_track_piece : TrackPiece|None = None
         """Do not use! This can only show the last position for... reasons"""
         self._is_connected = False
-        self._road_offset : float = ...
+        self._road_offset : float|None = None
         self._speed : int = 0
         self._map : Optional[list[TrackPiece]] = None
         self._position : Optional[int] = None
@@ -103,7 +103,7 @@ class Vehicle(metaclass=AliasMeta):
 
     def _notify_handler(self,handler,data : bytearray):
         """An internal handler function that gets called on a notify receive"""
-        msg_type, payload = msg_protocol.disassemblePacket(data)
+        msg_type, payload = msg_protocol.disassemble_packet(data)
         if msg_type == const.VehicleMsg.TRACK_PIECE_UPDATE:
             # This gets called when part-way along a track piece (sometimes)
             loc, piece, offset, speed, clockwise = disassemble_track_update(payload)
@@ -128,11 +128,6 @@ class Vehicle(metaclass=AliasMeta):
             if None not in (self._position, self._map): # If there was a scan & align already
                 self._position += 1
                 self._position %= len(self._map)
-                track_piece = self.current_track_piece # This is very hacky! (And also doesn't ~~quite~~ work)
-                pass
-            else:
-                track_piece = self._current_track_piece
-                pass
 
             self._track_piece_future.set_result(None) # Complete internal future when on new track piece. This is used in wait_for_track_change
             self._track_piece_future = asyncio.Future() # Create new future since the old one is now done
@@ -151,7 +146,7 @@ class Vehicle(metaclass=AliasMeta):
             print(f'unknown: {unknown}, onCharger: {onCharger}, loading: {loading}, full: {full}')
         pass
 
-    async def __send_package(self, payload : bytes):
+    async def __send_package(self, payload: bytes):
         """Send a payload to the supercar"""
         try:
             await self._client.write_gatt_char(self._write_chara,payload)
@@ -258,7 +253,7 @@ class Vehicle(metaclass=AliasMeta):
     .. deprecated:: 1.0
         Use alias :func:`Vehicle.set_speed` instead
     """)
-    async def set_speed(self, speed : int, acceleration : int = 500):
+    async def set_speed(self, speed: int, acceleration: int = 500):
         """Set the speed of the Supercar in mm/s
 
         :param speed: :class:`int`
@@ -282,7 +277,7 @@ class Vehicle(metaclass=AliasMeta):
     .. deprecated:: 1.0
         Use alias :func:`Vehicle.change_lane` instead
     """)
-    async def change_lane(self, lane : BaseLane, horizontalSpeed : int = 300, horizontalAcceleration : int = 300, *, _hopIntent : int = 0x0, _tag : int = 0x0):
+    async def change_lane(self, lane: BaseLane, horizontalSpeed: int = 300, horizontalAcceleration: int = 300, *, _hopIntent: int = 0x0, _tag: int = 0x0):
         """Change to a desired lane
 
         :param lane: :class:`BaseLane` 
@@ -302,7 +297,7 @@ class Vehicle(metaclass=AliasMeta):
     .. deprecated:: 1.0
         Use alias :func:`Vehicle.change_position` instead
     """)
-    async def change_position(self, roadCenterOffset : float, horizontalSpeed : int = 300, horizontalAcceleration : int = 300, *, _hopIntent : int = 0x0, _tag : int = 0x0):
+    async def change_position(self, roadCenterOffset: float, horizontalSpeed: int = 300, horizontalAcceleration: int = 300, *, _hopIntent: int = 0x0, _tag: int = 0x0):
         """Change to a position offset from the track centre
         
         :param roadCenterOffset: :class:`float`
@@ -315,7 +310,7 @@ class Vehicle(metaclass=AliasMeta):
         await self.__send_package(change_lane_pkg(roadCenterOffset,horizontalSpeed,horizontalAcceleration,_hopIntent,_tag))
         pass
 
-    async def turn(self, type : int = 3, trigger : int = 0): # type and trigger don't work correcty
+    async def turn(self, type: int = 3, trigger: int = 0): # type and trigger don't work correcty
         """
         .. warning::
             This does not yet function properly. It is advised not to use this method
@@ -330,7 +325,7 @@ class Vehicle(metaclass=AliasMeta):
     .. deprecated:: 1.0
         Use alias :func:`Vehicle.set_lights` instead
     """)
-    async def set_lights(self,light : int):
+    async def set_lights(self,light: int):
         """Set the lights of the vehicle in accordance with a bitmask
 
         .. warning::
@@ -349,7 +344,7 @@ class Vehicle(metaclass=AliasMeta):
     .. deprecated:: 1.0
         Use alias :func:`Vehicle.set_light_pattern` instead
     """)
-    async def set_light_pattern(self, r : int, g : int, b : int):
+    async def set_light_pattern(self, r: int, g: int, b: int):
         """Set the engine light (the big one) at the top of the vehicle
 
         .. warning::
@@ -368,7 +363,7 @@ class Vehicle(metaclass=AliasMeta):
     .. deprecated:: 1.0
         Use alias :func:`Vehicle.get_lane` instead
     """)
-    def get_lane(self, mode : type[BaseLane]) -> Optional[BaseLane]:
+    def get_lane(self, mode: _LaneType) -> Optional[_LaneType]:
         """Get the current lane given a specific lane type
 
         :param mode: :class:`BaseLane` 
@@ -380,13 +375,13 @@ class Vehicle(metaclass=AliasMeta):
             The lane the vehicle is on. This may be none if no lane information is available 
             (such as at the start of the program, when the vehicles haven't moved much)
         """
-        if self._road_offset is ...:
+        if self._road_offset is None:
             return None
         else:
             return mode.get_closest_lane(self._road_offset)
         pass
 
-    async def align(self, speed : int = 300):
+    async def align(self, speed : int=300):
         """Align to the start piece. This only works if the map is already scanned in
 
         :param speed: :class:`int`
@@ -477,7 +472,7 @@ class Vehicle(metaclass=AliasMeta):
         pass
 
     @property
-    def current_track_piece(self) -> TrackPiece:
+    def current_track_piece(self) -> TrackPiece|None:
         """
         The :class:`TrackPiece` the vehicle is currently located at
 
@@ -491,7 +486,7 @@ class Vehicle(metaclass=AliasMeta):
         pass
 
     @property
-    def map(self) -> tuple[TrackPiece]:
+    def map(self) -> tuple[TrackPiece]|None:
         """
         The map the :class:`Vehicle` instance is using. 
         This is :class:`None` if the :class:`Vehicle` does not have a map supplied.
@@ -500,7 +495,7 @@ class Vehicle(metaclass=AliasMeta):
         pass
 
     @property
-    def map_position(self) -> int:
+    def map_position(self) -> int|None:
         """
         The position of the :class:`Vehicle` instance on the map.
         This is :class:`None` if :func:`Vehicle.align` has not yet been called.
@@ -509,7 +504,7 @@ class Vehicle(metaclass=AliasMeta):
         pass
 
     @property
-    def road_offset(self) -> float:
+    def road_offset(self) -> float|None:
         """
         The offset from the road centre.
         This is :class:`None` if the supercar did not send any information yet. (Such as when it hasn't moved much)

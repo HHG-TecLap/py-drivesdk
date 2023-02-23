@@ -3,7 +3,7 @@ from .vehicle import Vehicle
 from ..misc.const import TrackPieceType
 import asyncio
 
-def reorder_map(map : list[TrackPiece]):
+def reorder_map(map: list[TrackPiece]):
     # Basically: Move the last piece to the front until START is at index 0 and FINISH is at index -1 (i.e. the end)
     while not (map[0].type is TrackPieceType.START and map[-1].type is TrackPieceType.FINISH):
         map.insert(0,map.pop(-1))
@@ -18,7 +18,7 @@ class Scanner:
     """
 
     __slots__ = ["vehicle","map"]
-    def __init__(self, vehicle : Vehicle):
+    def __init__(self, vehicle: Vehicle):
         self.vehicle = vehicle
         self.map : list[TrackPiece] = []
         pass
@@ -40,7 +40,7 @@ class Scanner:
 
         self.vehicle.on_track_piece_change = watcher
         
-        await self.vehicle.setSpeed(300)
+        await self.vehicle.set_speed(300)
         while not completed[0]: # Drive along until the scan is marked as complete. (This does NOT cause parallelity issues because we're running the watcher synchronously in the background)
             await asyncio.sleep(0.5)
             pass

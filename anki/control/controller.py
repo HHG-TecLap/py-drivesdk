@@ -12,7 +12,7 @@ from .scanner import Scanner
 
 from typing import Iterable, Optional
 
-def _is_anki(device : BLEDevice, advertisement : AdvertisementData):
+def _is_anki(device: BLEDevice, advertisement: AdvertisementData):
     try:
         state, version, name = interpret_local_name(advertisement.local_name)
     except ValueError: # Catch error if name is not interpretable (not a vehicle then)
@@ -36,14 +36,14 @@ class Controller(metaclass=AliasMeta):
     :param timeout: :class:`float` The time until the controller gives up searching for a vehicle.
     """
     __slots__ = ["_scanner","timeout","vehicles","map"]
-    def __init__(self,*,timeout : float = 10):
+    def __init__(self,*,timeout: float = 10):
         self._scanner = bleak.BleakScanner()
         self.timeout = timeout
         self.vehicles : set[Vehicle] = set()
         self.map : Optional[list[TrackPiece]] = None
         pass
 
-    async def _get_vehicle(self,vehicle_id : Optional[int] = None, address : str = None) -> Vehicle:
+    async def _get_vehicle(self,vehicle_id: Optional[int]=None, address: str|None=None) -> Vehicle:
         """Finds a Supercar and creates a Vehicle instance around it"""
 
         device = await self._scanner.find_device_by_filter(lambda device, advertisement: _is_anki(device,advertisement) and (address is None or device.address == address), timeout=self.timeout)
@@ -70,7 +70,7 @@ class Controller(metaclass=AliasMeta):
     .. deprecated:: 1.0
         Use the alias :func:`Controller.connect_one` instead.
     """)
-    async def connect_one(self, vehicle_id : Optional[int] = None) -> Vehicle:
+    async def connect_one(self, vehicle_id: Optional[int]=None) -> Vehicle:
         """Connect to one non-charging Supercar and return the Vehicle instance
 
         :param vehicle_id: :class:`Optional[int]` 
@@ -110,7 +110,7 @@ class Controller(metaclass=AliasMeta):
     .. deprecated:: 1.0
         Use alias :func:`Controller.connect_specific` instead
     """)
-    async def connect_specific(self, address : str, vehicle_id : Optional[int] = None) -> Vehicle:
+    async def connect_specific(self, address: str, vehicle_id: Optional[int]=None) -> Vehicle:
         """Connect to a supercar with a specified MAC address
         
         :param address: :class:`str`
@@ -149,7 +149,7 @@ class Controller(metaclass=AliasMeta):
     .. deprecated:: 1.0
         Use alias :func:`Controller.connect_many` instead
     """)
-    async def connect_many(self, amount : int, vehicle_ids : Iterable[int] = None) -> tuple[Vehicle]:
+    async def connect_many(self, amount : int, vehicle_ids : Iterable[int|None]|None=None) -> tuple[Vehicle]:
         """Connect to <amount> non-charging Supercars
         
         :param amount: :class:`int`
@@ -188,7 +188,7 @@ class Controller(metaclass=AliasMeta):
         pass
 
     
-    async def scan(self, scan_vehicle : Vehicle = None, align_pre_scan : bool = True) -> list[TrackPiece]:
+    async def scan(self, scan_vehicle: Vehicle|None=None, align_pre_scan: bool=True) -> list[TrackPiece]:
         """Assembles a digital copy of the map and adds it to every connected vehicle.
         
         :param scan_vehicle: :class:`Optional[Vehicle]`
@@ -210,8 +210,8 @@ class Controller(metaclass=AliasMeta):
             raise errors.DuplicateScanWarning("The map has already been scanned. Check your code for any mistakes like that.")
             pass
 
-        async def noScanAlign(vehicle : Vehicle, align_target = TrackPieceType.FINISH): # Alignment when the scanner is not currently running
-            await vehicle.setSpeed(250)
+        async def noScanAlign(vehicle: Vehicle, align_target=TrackPieceType.FINISH): # Alignment when the scanner is not currently running
+            await vehicle.set_speed(250)
             while vehicle._current_track_piece is None or vehicle._current_track_piece.type != align_target: # Don't check when none to prevent AttributeError
                 await asyncio.sleep(0.1)
                 pass
@@ -237,7 +237,7 @@ class Controller(metaclass=AliasMeta):
 
         scanner = Scanner(scan_vehicle)
         
-        await scan_vehicle.setSpeed(150) # Drive a little forward so that we don't immediately see START and FINISH and complete the scan
+        await scan_vehicle.set_speed(150) # Drive a little forward so that we don't immediately see START and FINISH and complete the scan
         await asyncio.sleep(1)
         await scan_vehicle.stop()
 
@@ -263,14 +263,6 @@ class Controller(metaclass=AliasMeta):
 
             completed_tasks[vehicle] = True
             pass
-
-        # for v in self.vehicles: 
-        #     asyncio.create_task(align(v))
-        #     await v.setSpeed(300)
-        #     completed_tasks[v] = False
-        #     pass
-
-        # while not all(completed_tasks.values()): await asyncio.sleep(0) # Wait until all tasks are done
 
         for v in self.vehicles:
             v._map = self.map
@@ -325,12 +317,14 @@ class Controller(metaclass=AliasMeta):
         :class:`DisconnectFailedException`
             A disconnection attempt failed for unspecific reasons
         """
+        warn("This method does not really work and is therefore deprecated",DeprecationWarning)
         asyncio.run(self.disconnect_all())
         pass
 
 
     @property
-    def map_types(self) -> tuple:
+    def map_types(self) -> tuple[TrackPieceType]|None:
+        if self.map is None: return None
         return tuple([track_piece.type for track_piece in self.map]) # Converting to a tuple to prevent DAUs (that's German) thinking they can affect the map
         pass
     pass
