@@ -154,14 +154,11 @@ class Vehicle(metaclass=AliasMeta):
             self._track_piece_future.set_result(None) # Complete internal future when on new track piece. This is used in wait_for_track_change
             self._track_piece_future = asyncio.Future() # Create new future since the old one is now done
             self.on_track_piece_change() # Call the track piece event handle
-            for func in self._track_piece_watchers:
-                asyncio.get_running_loop().call_soon(func)
-                pass
+            _call_all_soon(self._track_piece_watchers)
             pass
         elif msg_type == const.VehicleMsg.PONG:
-            for func in self._pong_watchers:
-                asyncio.get_running_loop().call_soon(func)
-                pass
+            _call_all_soon(self._pong_watchers)
+            pass
         elif msg_type == const.VehicleMsg.DELOCALIZED:
             _call_all_soon(self._delocal_watchers)
             pass
