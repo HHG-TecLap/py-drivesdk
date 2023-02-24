@@ -34,6 +34,10 @@ def interpret_local_name(name: str):
     return VehicleState.from_int(vehicleState), version, vehicleName
     pass
 
+def _call_all_soon(funcs,*args):
+    for f in funcs:
+        asyncio.get_running_loop().call_soon(f,*args)
+
 @dataclasses.dataclass(frozen=True)
 class VehicleState:
     """Represents the state of a supercar"""
@@ -81,7 +85,24 @@ class Vehicle(metaclass=AliasMeta):
         You should not create this class manually, use one of the connect methods in the :class:`Controller`.
     """
 
-    __slots__ = ("_client","_current_track_piece","_is_connected","_road_offset","_speed","on_track_piece_change","_track_piece_future","_position","_map","_read_chara","_write_chara", "_id","_track_piece_watchers","_pong_watchers","_controller")
+    __slots__ = (
+        "_client",
+        "_current_track_piece",
+        "_is_connected",
+        "_road_offset",
+        "_speed",
+        "on_track_piece_change",
+        "_track_piece_future",
+        "_position",
+        "_map",
+        "_read_chara",
+        "_write_chara", 
+        "_id",
+        "_track_piece_watchers",
+        "_pong_watchers",
+        "_delocal_watchers"
+        "_controller"
+    )
     def __init__(self, id: int, device : BLEDevice, client: bleak.BleakClient=None, controller: "Controller"=None):
         self._client = client if client is not None else bleak.BleakClient(device)
 
@@ -98,6 +119,7 @@ class Vehicle(metaclass=AliasMeta):
         self._track_piece_future = asyncio.Future()
         self._track_piece_watchers = []
         self._pong_watchers = []
+        self._delocal_watchers = []
         self._controller = controller
         pass
 
@@ -140,6 +162,8 @@ class Vehicle(metaclass=AliasMeta):
             for func in self._pong_watchers:
                 asyncio.get_running_loop().call_soon(func)
                 pass
+        elif msg_type == const.VehicleMsg.DELOCALIZED:
+            _call_all_soon(self._delocal_watchers)
             pass
         elif msg_type == const.VehicleMsg.CHARGER_INFO:
             unknown, onCharger, loading, full = disassemble_charger_info(payload)
@@ -443,6 +467,36 @@ class Vehicle(metaclass=AliasMeta):
             The function passed is not an event handler
         """
         self._track_piece_watchers.remove(func)
+        pass
+
+    def delocalized(self, func: Callable[[],None]):
+        """
+        A decorator marking this function to be execute when the vehicle has delocalized*.
+
+        :param func: :class:`function` 
+            The listening function
+
+        .. note::
+            * It is not guaranteed that the handler will be called when the vehicle is delocalized.
+            Furthermore, it is not guaranteed that the handler will *not* be called when the vehicle is still localized.
+            This method should only be used for informational purposes!
+        """
+        self._delocal_watchers.append(func)
+        pass
+
+    def remove_delocalized_watcher(self, func: Callable[[],None]):
+        """
+        Remove a delocalization event handler that was added by :func:`Vehicle.delocalized`.
+
+        :param func: :class:`function`
+            The function to be removed
+
+        Raises
+        ------
+        :class:`ValueError`
+            The function passed is not an event handler
+        """
+        self._delocal_watchers.remove(func)
         pass
 
     async def ping(self):

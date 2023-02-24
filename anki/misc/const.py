@@ -53,6 +53,7 @@ class VehicleMsg:
     TRACK_PIECE_UPDATE = 39
     TRACK_PIECE_CHANGE = 41
     CHARGER_INFO = 63
+    DELOCALIZED = 0x2b
     pass
 
 # class RawTrackPieces:
