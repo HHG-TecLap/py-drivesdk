@@ -428,7 +428,7 @@ class Vehicle(metaclass=AliasMeta):
     .. deprecated:: 1.0
         Use :func:`Vehicle.track_piece_change` instead
     """)
-    def track_piece_change(self, func):
+    def track_piece_change(self, func: Callable[[],None]):
         """
         A decorator marking a function to be executed when the supercar drives onto a new track piece
 
@@ -451,9 +451,9 @@ class Vehicle(metaclass=AliasMeta):
     .. deprecated:: 1.0
         Use :func:`Vehicle.remove_track_piece_watcher` instead
     """)
-    def remove_track_piece_watcher(self, func):
+    def remove_track_piece_watcher(self, func: Callable[[],None]):
         """
-        Remove a track piece event handler added by :func:`Vehicle.trackPieceChange`
+        Remove a track piece event handler added by :func:`Vehicle.track_piece_change`
 
         :param func: :class:`function`
             The function to remove as an event handler
