@@ -410,7 +410,7 @@ class Vehicle(metaclass=AliasMeta):
         """
         await self.set_speed(speed)
         while self._current_track_piece is None\
-            or self._current_track_piece.type is not TrackPieceTypes.FINISH:
+            or self._current_track_piece.type is not const.TrackPieceType.FINISH:
             # Waits until the previous track piece was FINISH.
             # This means the current position is START
             await self.wait_for_track_change()
