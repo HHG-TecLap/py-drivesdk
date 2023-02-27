@@ -193,7 +193,7 @@ class Controller(metaclass=AliasMeta):
         
         :param scan_vehicle: :class:`Optional[Vehicle]`
             When passed a Vehicle object, this Vehicle will be used as a scanner. Otherwise one will be selected automatically.
-        :param align_pre_scan: 
+        :param align_pre_scan: :class:`bool`
             When set to True, the supercars can start from any position on the map and align automatically before scanning. Disabling this means your supercars need to start between START and FINISH
 
         Returns
