@@ -9,16 +9,16 @@ import anki, asyncio
 async def main():
     controller = anki.Controller() # This object handles all the connections to the vehicles
 
-    vehicles = await controller.connectMany(2) # This simplifies connecting to multiple vehicles a lot
+    vehicles = await controller.connect_many(2) # This simplifies connecting to multiple vehicles a lot
 
     for v in vehicles: # `vehicles` is a tuple, meaning we can iterate over it like this
-        await v.setSpeed(300) 
+        await v.set_speed(300) 
     await asyncio.sleep(10)
     for v in vehicles:
         await v.stop()
         pass
 
-    await controller.disconnectAll() # This is a short hand for disconnecting from multiple vehicles
+    await controller.disconnect_all() # This is a short hand for disconnecting from multiple vehicles
     pass
 
 # Only running the main function when actually executing this program

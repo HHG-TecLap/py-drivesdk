@@ -12,12 +12,12 @@ import anki, asyncio
 async def main():
     controller = anki.Controller() # This object handles all the connections to the vehicles
 
-    vehicle = await controller.connectOne()
+    vehicle = await controller.connect_one()
     
     await controller.scan() # This will make your vehicle scan in the whole track traversing all of it and aligning to the start field with it
     # Running this function is also necessary for you to use properties like vehicle.map, vehicle.map_position, and vehicle.current_track_piece
 
-    await vehicle.setSpeed(300) # Accelerating the vehicle to a speed of 300mm/s
+    await vehicle.set_speed(300) # Accelerating the vehicle to a speed of 300mm/s
 
     # The try-finally combination means that this code will always disconnect the vehicle before it exits.
     # It is not required, but definitely recommended to prevent vehicles staying in a semi-connected mode where they won't connect again.

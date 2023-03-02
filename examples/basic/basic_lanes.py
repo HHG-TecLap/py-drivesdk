@@ -13,13 +13,13 @@ import anki, asyncio
 
 async def main():
     controller = anki.Controller() # Create the Controller managing all connections to the vehicles
-    vehicle = await controller.connectOne() # Connect to one non-charging vehicle
+    vehicle = await controller.connect_one() # Connect to one non-charging vehicle
     
-    await vehicle.setSpeed(300) # Accelerate to 300mm/s
+    await vehicle.set_speed(300) # Accelerate to 300mm/s
 
-    for lane in anki.Lane4.getAll(): # Looping through every one of the type 4 lanes
+    for lane in anki.Lane4: # Looping through every one of the type 4 lanes
         print("Moving to lane",lane)
-        await vehicle.changeLane(lane,150) # Changing to a new lane with a horizontal speed of 150mm/s
+        await vehicle.change_lane(lane,150) # Changing to a new lane with a horizontal speed of 150mm/s
         await asyncio.sleep(3)
         pass
 

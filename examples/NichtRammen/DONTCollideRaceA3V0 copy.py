@@ -10,9 +10,9 @@ control = anki.Controller()
 
 
 async def Main():
-    auto1 = await control.connectOne(1)
-    auto2 = await control.connectOne(2)
-    auto3 = await control.connectOne(3)
+    auto1 = await control.connect_one(1)
+    auto2 = await control.connect_one(2)
+    auto3 = await control.connect_one(3)
 
     CarDict = {
         1: auto1,
@@ -50,9 +50,9 @@ async def Main():
     auto3.on_track_piece_change = registering(auto3,3)
 
 
-    await auto1.setSpeed(300)
-    await auto2.setSpeed(300)
-    await auto3.setSpeed(300)
+    await auto1.set_speed(300)
+    await auto2.set_speed(300)
+    await auto3.set_speed(300)
     
 
 
@@ -61,32 +61,32 @@ async def Main():
             if (intersect1.read() not in (0,id)) & (vehicle.map_position in(2,8)):
                 if (carOnMap[vehicle.map_position].read() not in (0,id)):
                     if (speed > CarDict[carOnMap[vehicle.map_position].read()].speed):
-                        await vehicle.setSpeed(CarDict[carOnMap[vehicle.map_position].read()].speed, 200 )
+                        await vehicle.set_speed(CarDict[carOnMap[vehicle.map_position].read()].speed, 200 )
                     while carOnMap[vehicle.map_position].read() not in (0,id):
                         await asyncio.sleep(0)
-                    await vehicle.setSpeed(speed)
+                    await vehicle.set_speed(speed)
                 else:
                     await vehicle.stop()
                     while intersect1.read() not in (0,id):
                         await asyncio.sleep(0)
-                    await vehicle.setSpeed(speed)
+                    await vehicle.set_speed(speed)
             if (intersect2.read() not in (0,id)) & (vehicle.map_position in(3,11)):
                 if (carOnMap[vehicle.map_position].read() not in (0,id)):
                     if (speed > CarDict[carOnMap[vehicle.map_position].read()].speed):
-                        await vehicle.setSpeed(CarDict[carOnMap[vehicle.map_position].read()].speed, 200 )
+                        await vehicle.set_speed(CarDict[carOnMap[vehicle.map_position].read()].speed, 200 )
                     while carOnMap[vehicle.map_position].read() not in (0,id):
                         await asyncio.sleep(0)
-                    await vehicle.setSpeed(speed)
+                    await vehicle.set_speed(speed)
                 else:
                     await vehicle.stop()
                     while intersect2.read() not in (0,id):
                         await asyncio.sleep(0)
-                    await vehicle.setSpeed(speed)
+                    await vehicle.set_speed(speed)
             if (carOnMap[vehicle.map_position].read() not in (0,id)):
-                await vehicle.setSpeed(CarDict[carOnMap[vehicle.map_position].read()].speed, 100 )
+                await vehicle.set_speed(CarDict[carOnMap[vehicle.map_position].read()].speed, 100 )
                 while carOnMap[vehicle.map_position].read() not in (0,id):
                     await asyncio.sleep(0)
-                await vehicle.setSpeed(speed)
+                await vehicle.set_speed(speed)
             await asyncio.sleep(0)
 
 
@@ -104,10 +104,8 @@ async def Main():
             #print (auto1.map_position, auto2.map_position, auto3.map_position)
             pass
     finally:
-        await control.disconnectAll()
+        await control.disconnect_all()
         pass
     pass
 
-try: asyncio.run(Main()) 
-finally:
-        asyncio.run(control.disconnectAll())
+asyncio.run(Main()) 

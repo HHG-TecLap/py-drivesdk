@@ -10,10 +10,10 @@ control = anki.Controller()
 
 
 async def Main():
-    auto1 = await control.connectOne()
-    auto2 = await control.connectOne()
-    auto3 = await control.connectOne()
-    auto4 = await control.connectOne()
+    auto1 = await control.connect_one()
+    auto2 = await control.connect_one()
+    auto3 = await control.connect_one()
+    auto4 = await control.connect_one()
 
     await control.scan()
 
@@ -46,10 +46,10 @@ async def Main():
     auto3.on_track_piece_change = registering(auto3,3)
     auto4.on_track_piece_change = registering(auto4,4)
 
-    await auto1.setSpeed(300)
-    await auto2.setSpeed(300)
-    await auto3.setSpeed(300)
-    await auto4.setSpeed(300)
+    await auto1.set_speed(300)
+    await auto2.set_speed(300)
+    await auto3.set_speed(300)
+    await auto4.set_speed(300)
     
 
 
@@ -59,17 +59,17 @@ async def Main():
                 await vehicle.stop()
                 while intersect1.read() not in (0,id):
                     await asyncio.sleep(0)
-                await vehicle.setSpeed(speed)
+                await vehicle.set_speed(speed)
             if (intersect2.read() not in (0,id)) & (vehicle.map_position in(3,11)):
                 await vehicle.stop()
                 while intersect2.read() not in (0,id):
                     await asyncio.sleep(0)
-                await vehicle.setSpeed(speed)
+                await vehicle.set_speed(speed)
             if (carOnMap[vehicle.map_position].read() not in (0,id)):
                 await vehicle.stop()
                 while carOnMap[vehicle.map_position].read() not in (0,id):
                     await asyncio.sleep(0)
-                await vehicle.setSpeed(speed)
+                await vehicle.set_speed(speed)
             await asyncio.sleep(0)
 
 
@@ -88,10 +88,8 @@ async def Main():
             #print (auto1.map_position, auto2.map_position, auto3.map_position)
             pass
     finally:
-        await control.disconnectAll()
+        await control.disconnect_all()
         pass
     pass
 
-try: asyncio.run(Main()) 
-finally:
-        asyncio.run(control.disconnectAll())
+asyncio.run(Main())

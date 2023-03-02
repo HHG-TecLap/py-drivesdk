@@ -9,9 +9,9 @@ import anki, asyncio
 async def main():
     controller = anki.Controller() # This object handles all the connections to the vehicles
 
-    vehicle = await controller.connectOne() # This object represents the vehicle and is used to control it.
+    vehicle = await controller.connect_one() # This object represents the vehicle and is used to control it.
 
-    await vehicle.setSpeed(300) # Accelerate the vehicle to 300mm/s
+    await vehicle.set_speed(300) # Accelerate the vehicle to 300mm/s
     await asyncio.sleep(10)
     await vehicle.stop() # Stop the vehicle
 

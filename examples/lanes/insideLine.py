@@ -7,18 +7,18 @@ from anki.utility.lanes import Lane4
 control = anki.Controller()
 
 async def Main():
-    auto1 = await control.connectOne()
+    auto1 = await control.connect_one()
     #await control.scan()
     print("Ready")
-    await auto1.setSpeed(300)
+    await auto1.set_speed(300)
     await asyncio.sleep(2)
     print(auto1.current_lane4)
     print(auto1.road_offset)
-    await auto1.changeLane(Lane4.LEFT_2)
+    await auto1.change_lane(Lane4.LEFT_2)
     await asyncio.sleep(2)
     print(auto1.current_lane4)
     print(auto1.road_offset)
-    await auto1.changeLane(Lane4.RIGHT_2)
+    await auto1.change_lane(Lane4.RIGHT_2)
     await asyncio.sleep(2)
     print(auto1.current_lane4)
     print(auto1.road_offset)
@@ -26,7 +26,7 @@ async def Main():
         while True:
             await asyncio.sleep(1)
     finally:
-        await asyncio.gather([await v.disconnect() for v in control.vehicles])
+        await control.disconnect_all()
 
 
 
