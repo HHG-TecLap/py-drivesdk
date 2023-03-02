@@ -100,7 +100,7 @@ class Vehicle(metaclass=AliasMeta):
         "_id",
         "_track_piece_watchers",
         "_pong_watchers",
-        "_delocal_watchers"
+        "_delocal_watchers",
         "_controller"
     )
     def __init__(self, id: int, device : BLEDevice, client: bleak.BleakClient=None, controller: "Controller"=None):
