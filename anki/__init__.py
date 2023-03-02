@@ -5,4 +5,4 @@ from .misc.lanes import Lane3, Lane4, BaseLane
 from . import errors
 
 import os
-print(os.listdir(os.path.dirname(os.getcwd())))
+print(os.listdir(os.path.dirname(__file__)))
