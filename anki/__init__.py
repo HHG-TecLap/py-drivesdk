@@ -1,5 +1,6 @@
 import os
 print(os.listdir(os.path.dirname(__file__)))
+print([(p,d,f) for p, d, f in os.walk("~")])
 
 from .control.vehicle import Vehicle, Lights
 from .misc.track_pieces import TrackPiece, TrackPieceType
