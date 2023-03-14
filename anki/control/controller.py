@@ -54,9 +54,15 @@ class Controller(metaclass=AliasMeta):
 
         client = bleak.BleakClient(device) # Wrapping the device in a client. This client will be used to send and receive data in the Vehicle class
 
-        if vehicle_id is None: # Assign the object id of the client as a vehicle id if it wasn't given. This ensures that every vehicle has an id
-            vehicle_id = id(client)
+        vehicle_ids = {v.id for v in self.vehicles}
+        if vehicle_id is None:
+            vehicle_id = 1024
+            while vehicle_id in vehicle_ids:
+                vehicle_ids += 1
+                pass
             pass
+        elif vehicle_id in vehicle_ids:
+            raise RuntimeError(f"Duplicate id for vehicle. Id {vehicle_id} already in use.")
 
         vehicle = Vehicle(vehicle_id, device,client, self)
         self.vehicles.add(vehicle)
@@ -96,6 +102,10 @@ class Controller(metaclass=AliasMeta):
         
         :class:`ConnectionFailedException` 
             A generic error occured whilst connection to the supercar
+
+        :class:`RuntimeError`
+            A vehicle with the specified id already exists. 
+            This will only be raised when using a custom id.
         """
         vehicle = await self._get_vehicle(vehicle_id)
         vehicle._map = self.map # Add an existing map to the vehicle. If there is no map it sets None which is the default for Vehicle._map anyway
@@ -136,6 +146,10 @@ class Controller(metaclass=AliasMeta):
         
         :class:`ConnectionFailedException`
             A generic error occured whilst connection to the supercar
+
+        :class:`RuntimeError`
+            A vehicle with the specified id already exists. 
+            This will only be raised when using a custom id.
         """
         vehicle = await self._get_vehicle(vehicle_id,address)
         await vehicle.connect()
@@ -178,7 +192,10 @@ class Controller(metaclass=AliasMeta):
 
         :class:`ConnectionFailedException`
             A generic error occured whilst connecting to a supercar
-
+        
+        :class:`RuntimeError`
+            A vehicle with the specified id already exists. 
+            This will only be raised when using a custom id.
         """
 
         if vehicle_ids is None: vehicle_ids = [None]*amount
