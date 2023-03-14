@@ -85,6 +85,12 @@ class Vehicle(metaclass=AliasMeta):
         You should not create this class manually, use one of the connect methods in the :class:`Controller`.
     """
 
+    AUTOMATIC_PING_CONTROL = {
+        "interval" : 10,
+        "timeout" : 10,
+        "max_timeouts" : 2
+    }
+
     __slots__ = (
         "_client",
         "_current_track_piece",
@@ -101,7 +107,8 @@ class Vehicle(metaclass=AliasMeta):
         "_track_piece_watchers",
         "_pong_watchers",
         "_delocal_watchers",
-        "_controller"
+        "_controller",
+        "_ping_task",
     )
     def __init__(self, id: int, device : BLEDevice, client: bleak.BleakClient=None, controller: "Controller"=None):
         self._client = client if client is not None else bleak.BleakClient(device)
@@ -165,6 +172,36 @@ class Vehicle(metaclass=AliasMeta):
         elif msg_type == const.VehicleMsg.CHARGER_INFO:
             unknown, onCharger, loading, full = disassemble_charger_info(payload)
             print(f'unknown: {unknown}, onCharger: {onCharger}, loading: {loading}, full: {full}')
+        pass
+
+    async def _auto_ping(self):
+        pong_reply_future = asyncio.Future()
+        @self.pong
+        def pong_watch():
+            nonlocal pong_reply_future
+            pong_reply_future.set_result()
+            pong_reply_future = asyncio.Future()
+            pass
+        
+        config = type(self).AUTOMATIC_PING_CONTROL
+        timeouts = 0
+        while self.is_connected:
+            await asyncio.sleep(config["interval"])
+            await self.ping()
+            try:
+                await asyncio.wait_for(pong_reply_future,config["timeout"])
+                pass
+            except asyncio.TimeoutError:
+                timeouts += 1
+                pass
+            else:
+                timeouts = 0
+                pass
+
+            if timeouts > config["max_timeouts"]:
+                warn("The vehicle did not sufficiently respond to pings. Disconnecting...")
+                await self.disconnect()
+            pass
         pass
 
     async def __send_package(self, payload: bytes):
@@ -232,6 +269,7 @@ class Vehicle(metaclass=AliasMeta):
         self._write_chara= write
 
         self._is_connected = True
+        self._ping_task = asyncio.create_task(self._auto_ping())
         pass
 
     async def disconnect(self) -> bool:
@@ -262,6 +300,7 @@ class Vehicle(metaclass=AliasMeta):
         
         if not self._is_connected and self._controller is not None:
             self._controller.vehicles.remove(self)
+            self._ping_task.cancel("Vehicle disconnected")
             pass
 
         return self._is_connected
