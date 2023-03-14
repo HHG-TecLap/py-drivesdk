@@ -2,6 +2,7 @@ from ..misc.track_pieces import TrackPiece
 from .vehicle import Vehicle
 from ..misc.const import TrackPieceType
 import asyncio
+import abc
 
 def reorder_map(map: list[TrackPiece]):
     # Basically: Move the last piece to the front until START is at index 0 and FINISH is at index -1 (i.e. the end)
@@ -9,6 +10,51 @@ def reorder_map(map: list[TrackPiece]):
         map.insert(0,map.pop(-1))
         pass
     pass
+
+class BaseScanner(abc.ABC):
+    """Abstract base class for all custom scanners.
+    Any subclasses of this must override the methods :meth:`BaseScanner.scan` :meth:`BaseScanner.align`.
+
+    :param vehicle: :class:`Vehicle`
+        The vehicle used for the scanning operation.
+    """
+
+    __slots__ = ("vehicle","map")
+    def __init__(self, vehicle: Vehicle):
+        self.vehicle = vehicle
+        self.map: list[TrackPiece] = []
+        pass
+
+    @abc.abstractmethod
+    async def scan(self) -> list[TrackPiece]: ...
+    """
+    This method should scan in the map using various functionalities.
+    The returned list of track pieces should begin with a type of `TrackPieceType.START` and end with `TrackPieceType.FINISH`.
+
+    Returns
+    -------
+    :class:`list[TrackPiece]`
+        The scanned map
+    
+    Raises
+    ------
+    """
+
+    @abc.abstractmethod
+    async def align(self, vehicle: Vehicle) -> None: ...
+    """
+    This method should be used to align a vehicle to the START piece.
+    It is required for this method to work without a functional scan.
+
+    :param vehicle: :class:`Vehicle`
+        The vehicle to be aligned.
+    
+    Returns
+    -------
+
+    Raises
+    ------
+    """
 
 class Scanner:
     """A scanner object performs a simple map scan without any alignment.

@@ -19,7 +19,10 @@ Scanner
 .. autoclass:: anki.control.scanner.Scanner
     :members:
 
-
+Custom Scanning
+***************
+.. autoclass:: anki.control.scanner.BaseScanner
+    :members:
 
 Vehicle models
 **************
