@@ -175,12 +175,14 @@ class Vehicle(metaclass=AliasMeta):
         pass
 
     async def _auto_ping(self):
+        return
         pong_reply_future = asyncio.Future()
         @self.pong
         def pong_watch():
             nonlocal pong_reply_future
             pong_reply_future.set_result()
             pong_reply_future = asyncio.Future()
+            print("Pong reply!")
             pass
         
         config = type(self).AUTOMATIC_PING_CONTROL
@@ -188,14 +190,17 @@ class Vehicle(metaclass=AliasMeta):
         while self.is_connected:
             await asyncio.sleep(config["interval"])
             await self.ping()
+            print("Ping!")
             try:
                 await asyncio.wait_for(pong_reply_future,config["timeout"])
                 pass
             except asyncio.TimeoutError:
                 timeouts += 1
+                print("Ping failed")
                 pass
             else:
                 timeouts = 0
+                print("Ping succeeded")
                 pass
 
             if timeouts > config["max_timeouts"]:
@@ -536,12 +541,21 @@ class Vehicle(metaclass=AliasMeta):
         pass
 
     async def ping(self):
+        """
+        .. warning::
+            Due to a bug in the firmware, supercars will never respond to pings!
+        
+        Send a ping to the vehicle
+        """
         await self.__send_package(msg_protocol.const.ControllerMsg.PING)
         pass
 
     def pong(self, func):
         """
-        A decorator marking an function to be executed when the supercar responds to a Ping
+        .. warning::
+            Due to a bug in the firmware, supercars will never respond to pings!
+        
+        A decorator marking an function to be executed when the supercar responds to a ping
 
         :param func: :class:`function`
             The function to mark as a listener
