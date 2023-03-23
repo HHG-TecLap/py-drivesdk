@@ -11,7 +11,7 @@ from bleak.exc import BleakDBusError
 from ..misc import msg_protocol
 
 from ..misc.msgs import *
-from ..misc.track_pieces import TrackPiece
+from ..misc.track_pieces import TrackPiece, TrackPieceType
 from ..misc import const
 from ..misc.lanes import Lane3, Lane4, BaseLane, _LaneType
 from .. import errors
@@ -446,7 +446,12 @@ class Vehicle(metaclass=AliasMeta):
             return mode.get_closest_lane(self._road_offset)
         pass
 
-    async def align(self, speed : int=300):
+    async def align(
+            self, 
+            speed: int=300,
+            *,
+            target_previous_track_piece_type: TrackPieceType = TrackPieceType.FINISH
+        ):
         """Align to the start piece.
 
         :param speed: :class:`int`
@@ -454,8 +459,8 @@ class Vehicle(metaclass=AliasMeta):
         """
         await self.set_speed(speed)
         while self._current_track_piece is None\
-            or self._current_track_piece.type is not const.TrackPieceType.FINISH:
-            # Waits until the previous track piece was FINISH.
+            or self._current_track_piece.type is not target_previous_track_piece_type:
+            # Waits until the previous track piece was FINISH (by default).
             # This means the current position is START
             await self.wait_for_track_change()
             pass

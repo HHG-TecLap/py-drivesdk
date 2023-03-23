@@ -41,7 +41,12 @@ class BaseScanner(abc.ABC):
         """
 
     @abc.abstractmethod
-    async def align(self, vehicle: Vehicle) -> None:
+    async def align(
+        self, 
+        vehicle: Vehicle,
+        *,
+        target_previous_track_piece_type: TrackPieceType = TrackPieceType.FINSIH
+        ) -> None:
         """
         This method should be used to align a vehicle to the START piece.
         It is required for this method to work without a functional scan.
@@ -93,13 +98,20 @@ class Scanner(BaseScanner):
         return self.map
         pass
 
-    async def align(self, vehicle: Vehicle) -> None:
+    async def align(
+        self, 
+        vehicle: Vehicle,
+        *,
+        target_previous_track_piece_type: TrackPieceType = TrackPieceType.FINISH
+        ) -> None:
         """
         Aligns a vehicle to the START piece
 
         :param vehicle: :class:`Vehicle`
             The vehicle to align
         """
-        await vehicle.align()
+        await vehicle.align(
+            target_previous_track_piece_type=target_previous_track_piece_type
+        )
         pass
     pass
