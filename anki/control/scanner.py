@@ -94,6 +94,12 @@ class Scanner(BaseScanner):
         pass
 
     async def align(self, vehicle: Vehicle) -> None:
+        """
+        Aligns a vehicle to the START piece
+
+        :param vehicle: :class:`Vehicle`
+            The vehicle to align
+        """
         await vehicle.align()
         pass
     pass
