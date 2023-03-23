@@ -8,7 +8,7 @@ from ..misc.const import *
 from .. import errors
 from .vehicle import Vehicle, interpret_local_name
 from ..misc.track_pieces import TrackPiece
-from .scanner import Scanner
+from .scanner import Scanner, _ScannerType
 
 from typing import Iterable, Optional
 
@@ -205,13 +205,21 @@ class Controller(metaclass=AliasMeta):
         pass
 
     
-    async def scan(self, scan_vehicle: Vehicle|None=None, align_pre_scan: bool=True) -> list[TrackPiece]:
+    async def scan(
+            self, 
+            scan_vehicle: Vehicle|None=None, 
+            /,
+            align_pre_scan: bool=True,
+            scanner_class: _ScannerType=Scanner
+        ) -> list[TrackPiece]:
         """Assembles a digital copy of the map and adds it to every connected vehicle.
         
         :param scan_vehicle: :class:`Optional[Vehicle]`
             When passed a Vehicle object, this Vehicle will be used as a scanner. Otherwise one will be selected automatically.
         :param align_pre_scan: :class:`bool`
             When set to True, the supercars can start from any position on the map and align automatically before scanning. Disabling this means your supercars need to start between START and FINISH
+        :param scanner_class: :class:`type`
+            The type of scanner used
 
         Returns
         -------
@@ -227,32 +235,27 @@ class Controller(metaclass=AliasMeta):
             raise errors.DuplicateScanWarning("The map has already been scanned. Check your code for any mistakes like that.")
             pass
 
-        async def noScanAlign(vehicle: Vehicle, align_target=TrackPieceType.FINISH): # Alignment when the scanner is not currently running
-            await vehicle.set_speed(250)
-            while vehicle._current_track_piece is None or vehicle._current_track_piece.type != align_target: # Don't check when none to prevent AttributeError
-                await asyncio.sleep(0.1)
-                pass
-
-            await vehicle.stop()
-            pass
+        scanner = scanner_class(scan_vehicle)
 
         temp_vehicles = self.vehicles.copy()
         if scan_vehicle is None:
-            scan_vehicle = temp_vehicles.pop() # Take a vehicle out of the set. This allows us to use temp_vehicles as a set of all non-scannning vehicles
+            scan_vehicle = temp_vehicles.pop() 
+            # This allows us to use temp_vehicles as a set of all non-scannning vehicles
         else:
-            temp_vehicles.remove(scan_vehicle) # Remove the scanning vehicle from the set if it is already passed as an argument
+            temp_vehicles.remove(scan_vehicle) 
+            # Remove the scanning vehicle from the set if it is already passed as an argument
 
-        if align_pre_scan: # Aligning before scanning if enabled. This allows the vehicles to be placed anywhere on the map
-            await asyncio.gather(*[noScanAlign(v,TrackPieceType.FINISH) for v in self.vehicles]) # Since we're aligning BEFORE scan, we need the piece before the one we want to align in front of
+        if align_pre_scan: 
+            # Aligning before scanning if enabled. This allows the vehicles to be placed anywhere on the map
+            await asyncio.gather(*[scanner.align(v) for v in self.vehicles])
+            # Since we're aligning BEFORE scan, we need the piece before the one we want to align in front of
             await asyncio.sleep(1)
             pass
 
         async def simulAlign(vehicle : Vehicle):
             await asyncio.sleep(1) # Putting a little delay here so that the other vehicles aren't in front of the scanner which would ruin the alignment
-            await noScanAlign(vehicle)
+            await scanner.align(vehicle)
             pass
-
-        scanner = Scanner(scan_vehicle)
         
         await scan_vehicle.set_speed(150) # Drive a little forward so that we don't immediately see START and FINISH and complete the scan
         await asyncio.sleep(1)
@@ -265,21 +268,6 @@ class Controller(metaclass=AliasMeta):
 
         if not align_pre_scan: # Wait until all alignments are completed
             for task in tasks: await task
-
-        completed_tasks  = {}
-        async def align(vehicle : Vehicle):
-            while True:
-                await vehicle.wait_for_track_change()
-                track=vehicle._current_track_piece
-                if track is not None and track.type is TrackPieceType.FINISH:
-                    break
-                    pass
-                pass
-
-            await vehicle.stop()
-
-            completed_tasks[vehicle] = True
-            pass
 
         for v in self.vehicles:
             v._map = self.map

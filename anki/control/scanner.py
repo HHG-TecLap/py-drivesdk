@@ -3,6 +3,7 @@ from .vehicle import Vehicle
 from ..misc.const import TrackPieceType
 import asyncio
 import abc
+from typing import TypeVar
 
 def reorder_map(map: list[TrackPiece]):
     # Basically: Move the last piece to the front until START is at index 0 and FINISH is at index -1 (i.e. the end)
@@ -115,3 +116,5 @@ class Scanner(BaseScanner):
         )
         pass
     pass
+
+_ScannerType = TypeVar('_ScannerType',bound=BaseScanner)
