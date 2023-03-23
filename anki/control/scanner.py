@@ -56,18 +56,12 @@ class BaseScanner(abc.ABC):
     ------
     """
 
-class Scanner:
+class Scanner(BaseScanner):
     """A scanner object performs a simple map scan without any alignment.
     
     :param vehicle: :class:`Vehicle`
         The vehicle to perform the scan with
     """
-
-    __slots__ = ["vehicle","map"]
-    def __init__(self, vehicle: Vehicle):
-        self.vehicle = vehicle
-        self.map : list[TrackPiece] = []
-        pass
 
     async def scan(self) -> list[TrackPiece]:
         """Perform the scan"""
@@ -97,5 +91,9 @@ class Scanner:
         reorder_map(self.map) # Assure that START is at the beginning and FINISH is at the end
 
         return self.map
+        pass
+
+    async def align(self, vehicle: Vehicle) -> None:
+        await vehicle.align()
         pass
     pass
