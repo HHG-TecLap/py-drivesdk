@@ -26,35 +26,35 @@ class BaseScanner(abc.ABC):
         pass
 
     @abc.abstractmethod
-    async def scan(self) -> list[TrackPiece]: ...
-    """
-    This method should scan in the map using various functionalities.
-    The returned list of track pieces should begin with a type of `TrackPieceType.START` and end with `TrackPieceType.FINISH`.
+    async def scan(self) -> list[TrackPiece]:
+        """
+        This method should scan in the map using various functionalities.
+        The returned list of track pieces should begin with a type of `TrackPieceType.START` and end with `TrackPieceType.FINISH`.
 
-    Returns
-    -------
-    :class:`list[TrackPiece]`
-        The scanned map
-    
-    Raises
-    ------
-    """
+        Returns
+        -------
+        :class:`list[TrackPiece]`
+            The scanned map
+        
+        Raises
+        ------
+        """
 
     @abc.abstractmethod
-    async def align(self, vehicle: Vehicle) -> None: ...
-    """
-    This method should be used to align a vehicle to the START piece.
-    It is required for this method to work without a functional scan.
+    async def align(self, vehicle: Vehicle) -> None:
+        """
+        This method should be used to align a vehicle to the START piece.
+        It is required for this method to work without a functional scan.
 
-    :param vehicle: :class:`Vehicle`
-        The vehicle to be aligned.
-    
-    Returns
-    -------
+        :param vehicle: :class:`Vehicle`
+            The vehicle to be aligned.
+        
+        Returns
+        -------
 
-    Raises
-    ------
-    """
+        Raises
+        ------
+        """
 
 class Scanner(BaseScanner):
     """A scanner object performs a simple map scan without any alignment.
