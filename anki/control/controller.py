@@ -237,12 +237,12 @@ class Controller(metaclass=AliasMeta):
 
         scanner = scanner_class(scan_vehicle)
 
-        temp_vehicles = self.vehicles.copy()
+        vehicles_no_scan = self.vehicles.copy()
         if scan_vehicle is None:
-            scan_vehicle = temp_vehicles.pop() 
+            scan_vehicle = vehicles_no_scan.pop() 
             # This allows us to use temp_vehicles as a set of all non-scannning vehicles
         else:
-            temp_vehicles.remove(scan_vehicle) 
+            vehicles_no_scan.remove(scan_vehicle) 
             # Remove the scanning vehicle from the set if it is already passed as an argument
 
         if align_pre_scan: 
@@ -261,8 +261,10 @@ class Controller(metaclass=AliasMeta):
         await asyncio.sleep(1)
         await scan_vehicle.stop()
 
-        if not align_pre_scan: # Only aligning during scan when not already aligned pre-scan. Without pre-align this is neccessary to ensure that the vehicles are where we think they are
-            tasks = [asyncio.create_task(simulAlign(v)) for v in temp_vehicles]
+        if not align_pre_scan: 
+            # Only aligning during scan when not already aligned pre-scan. 
+            # Without pre-align this is neccessary to ensure that the vehicles are where we think they are
+            tasks = [asyncio.create_task(simulAlign(v)) for v in vehicles_no_scan]
             pass
         self.map = await scanner.scan()
 
@@ -271,7 +273,8 @@ class Controller(metaclass=AliasMeta):
 
         for v in self.vehicles:
             v._map = self.map
-            v._position = -1 if v in temp_vehicles else 0 # Scanner is always one piece ahead
+            v._position = len(self.map)-1 if v in vehicles_no_scan else 0 
+            # Scanner is always one piece ahead
             pass
 
         return self.map
