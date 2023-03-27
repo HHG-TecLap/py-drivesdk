@@ -27,7 +27,6 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent.parent))
 autodoc_mock_imports = ["bleak"]
-print("DEBUG",sys.path)
 
 
 # -- Options for HTML output -------------------------------------------------
