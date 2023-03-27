@@ -15,10 +15,12 @@ from typing import Iterable, Optional
 def _is_anki(device: BLEDevice, advertisement: AdvertisementData):
     try:
         state, version, name = interpret_local_name(advertisement.local_name)
-    except ValueError: # Catch error if name is not interpretable (not a vehicle then)
+    except ValueError: 
+        # If we can't interprete the name, it can't be a vehicle
         return False
         pass
-    if state.charging: return False # We don't want to connect to a charging vehicle, so we'll just pretend it's not a vehicle
+    if state.charging: return False 
+    # We don't want to connect to a charging vehicle, so we'll just pretend it's not a vehicle
 
     return True
     # Service check doesn't work as the Supercars don't seem to advertise their services o.0
@@ -31,7 +33,9 @@ def _is_anki(device: BLEDevice, advertisement: AdvertisementData):
     pass
 
 class Controller(metaclass=AliasMeta):
-    """This object controls all vehicle connections. With it you can connect to any number of vehicles and disconnect cleanly.
+    """
+    This object controls all vehicle connections. 
+    With it you can connect to any number of vehicles and disconnect cleanly.
 
     :param timeout: :class:`float` The time until the controller gives up searching for a vehicle.
     """
@@ -43,19 +47,29 @@ class Controller(metaclass=AliasMeta):
         self.map : Optional[list[TrackPiece]] = None
         pass
 
-    async def _get_vehicle(self,vehicle_id: Optional[int]=None, address: str|None=None) -> Vehicle:
-        """Finds a Supercar and creates a Vehicle instance around it"""
+    async def _get_vehicle(
+            self,
+            vehicle_id: Optional[int]=None, 
+            address: str|None=None
+        ) -> Vehicle:
+        # Finds a Supercar and creates a Vehicle instance around it
 
-        device = await self._scanner.find_device_by_filter(lambda device, advertisement: _is_anki(device,advertisement) and (address is None or device.address == address), timeout=self.timeout)
+        device = await self._scanner.find_device_by_filter(
+            lambda device, advertisement: 
+                _is_anki(device,advertisement) 
+                and (address is None or device.address == address), 
+            timeout=self.timeout
+        )
         # Get a BLEDevice and ensure it is of a required address if address was given
         if device is None:
             raise errors.VehicleNotFoundError("Could not find a supercar within the given timeout")
             pass
 
-        client = bleak.BleakClient(device) # Wrapping the device in a client. This client will be used to send and receive data in the Vehicle class
+        client = bleak.BleakClient(device) 
 
         vehicle_ids = {v.id for v in self.vehicles}
         if vehicle_id is None:
+            # Automatically assign generate unused vehicle id
             vehicle_id = 1024
             while vehicle_id in vehicle_ids:
                 vehicle_ids += 1
@@ -76,7 +90,10 @@ class Controller(metaclass=AliasMeta):
     .. deprecated:: 1.0
         Use the alias :func:`Controller.connect_one` instead.
     """)
-    async def connect_one(self, vehicle_id: Optional[int]=None) -> Vehicle:
+    async def connect_one(
+            self, 
+            vehicle_id: Optional[int]=None
+        ) -> Vehicle:
         """Connect to one non-charging Supercar and return the Vehicle instance
 
         :param vehicle_id: :class:`Optional[int]` 
@@ -108,7 +125,8 @@ class Controller(metaclass=AliasMeta):
             This will only be raised when using a custom id.
         """
         vehicle = await self._get_vehicle(vehicle_id)
-        vehicle._map = self.map # Add an existing map to the vehicle. If there is no map it sets None which is the default for Vehicle._map anyway
+        vehicle._map = self.map 
+        # If there is no map it sets None which is the default for Vehicle._map anyway
         await vehicle.connect()
         return vehicle
         pass
@@ -120,7 +138,11 @@ class Controller(metaclass=AliasMeta):
     .. deprecated:: 1.0
         Use alias :func:`Controller.connect_specific` instead
     """)
-    async def connect_specific(self, address: str, vehicle_id: Optional[int]=None) -> Vehicle:
+    async def connect_specific(
+            self, 
+            address: str, 
+            vehicle_id: Optional[int]=None
+        ) -> Vehicle:
         """Connect to a supercar with a specified MAC address
         
         :param address: :class:`str`
@@ -163,7 +185,11 @@ class Controller(metaclass=AliasMeta):
     .. deprecated:: 1.0
         Use alias :func:`Controller.connect_many` instead
     """)
-    async def connect_many(self, amount : int, vehicle_ids : Iterable[int|None]|None=None) -> tuple[Vehicle]:
+    async def connect_many(
+            self, 
+            amount: int, 
+            vehicle_ids: Iterable[int|None]|None=None
+        ) -> tuple[Vehicle]:
         """Connect to <amount> non-charging Supercars
         
         :param amount: :class:`int`
@@ -252,19 +278,23 @@ class Controller(metaclass=AliasMeta):
             await asyncio.sleep(1)
             pass
 
-        async def simulAlign(vehicle : Vehicle):
-            await asyncio.sleep(1) # Putting a little delay here so that the other vehicles aren't in front of the scanner which would ruin the alignment
+        async def simul_align(vehicle : Vehicle):
+            await asyncio.sleep(1) 
+            # Putting a little delay here so that the other vehicles 
+            # aren't in front of the scanner which would ruin the alignment
             await scanner.align(vehicle)
             pass
         
-        await scan_vehicle.set_speed(150) # Drive a little forward so that we don't immediately see START and FINISH and complete the scan
+        await scan_vehicle.set_speed(150) 
+        # Drive a little forward so that we don't immediately 
+        # see START and FINISH and complete the scan
         await asyncio.sleep(1)
         await scan_vehicle.stop()
 
         if not align_pre_scan: 
             # Only aligning during scan when not already aligned pre-scan. 
             # Without pre-align this is neccessary to ensure that the vehicles are where we think they are
-            tasks = [asyncio.create_task(simulAlign(v)) for v in vehicles_no_scan]
+            tasks = [asyncio.create_task(simul_align(v)) for v in vehicles_no_scan]
             pass
         self.map = await scanner.scan()
 

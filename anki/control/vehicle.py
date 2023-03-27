@@ -23,6 +23,7 @@ if TYPE_CHECKING:
 
 
 def interpret_local_name(name: str):
+    # Get the state of the vehicle from the local name
     if name is None or len(name) < 1: # Fix some issues that might occur
         raise ValueError("Name was empty")
         pass
@@ -35,15 +36,16 @@ def interpret_local_name(name: str):
     pass
 
 def _call_all_soon(funcs,*args):
+    # Registers everything in funcs to be called soon with *args
     for f in funcs:
         asyncio.get_running_loop().call_soon(f,*args)
 
 @dataclasses.dataclass(frozen=True)
 class VehicleState:
     """Represents the state of a supercar"""
-    full_battery : bool
-    low_battery : bool
-    charging : bool
+    full_battery: bool
+    low_battery: bool
+    charging: bool
 
     @classmethod
     def from_int(cls, state: int):
@@ -55,7 +57,8 @@ class VehicleState:
         Returns
         -------
         :class:`VehicleState`
-        The new :class:`VehicleState` instance"""
+        The new :class:`VehicleState` instance
+        """
         full     = bool(state & (1 << const.VehicleBattery.FULL_BATTERY))
         low      = bool(state & (1 << const.VehicleBattery.LOW_BATTERY))
         charging = bool(state & (1 << const.VehicleBattery.ON_CHARGER))
@@ -149,18 +152,23 @@ class Vehicle(metaclass=AliasMeta):
                 return
                 pass
 
-            self._current_track_piece = piece_obj # Update the internal track object
+            self._current_track_piece = piece_obj
             pass
         elif msg_type == const.VehicleMsg.TRACK_PIECE_CHANGE:
             uphill_count, downhill_count = disassemble_track_change(payload)[8:10]
+            """TODO: Find out what to do with these"""
             print("Vehicle uphill/downhill:",uphill_count,downhill_count)
-            if None not in (self._position, self._map): # If there was a scan & align already
+            if None not in (self._position, self._map): 
+                # If there was a scan & align already
                 self._position += 1
                 self._position %= len(self._map)
 
-            self._track_piece_future.set_result(None) # Complete internal future when on new track piece. This is used in wait_for_track_change
-            self._track_piece_future = asyncio.Future() # Create new future since the old one is now done
-            self.on_track_piece_change() # Call the track piece event handle
+            self._track_piece_future.set_result(None) 
+            # Complete internal future when on new track piece. 
+            # This is used in wait_for_track_change
+            self._track_piece_future = asyncio.Future() 
+            # Create new future since the old one is now done
+            self.on_track_piece_change()
             _call_all_soon(self._track_piece_watchers)
             pass
         elif msg_type == const.VehicleMsg.PONG:
@@ -175,7 +183,14 @@ class Vehicle(metaclass=AliasMeta):
         pass
 
     async def _auto_ping(self):
+        # Automatically pings the supercars 
+        # and disconnects when they don't respond.
+
         return
+        # NOTE:
+        # This just returns, because for some reason 
+        # supercars don't want to respond to pings
+        # The code is left here to reimplement should we ever get ping to work
         pong_reply_future = asyncio.Future()
         @self.pong
         def pong_watch():
@@ -227,7 +242,8 @@ class Vehicle(metaclass=AliasMeta):
             The new track piece. `None` if :func:`Vehicle.map` is None
             (for example if the map has not been scanned yet)
         """
-        await self._track_piece_future # Wait on a new track piece (See __notify_handler__)
+        await self._track_piece_future 
+        # Wait on a new track piece (See _notify_handler)
         return self.current_track_piece
         pass
 
@@ -245,9 +261,11 @@ class Vehicle(metaclass=AliasMeta):
             A generic error occured whilst connection to the supercar
         """
         try:
-            if not (await self._client.connect()): raise bleak.BleakError # Handle a failed connect the same way as a BleakError
+            connect_success = await self._client.connect()
+            if not connect_success: raise bleak.BleakError
+            # Handle a failed connect the same way as a BleakError
             pass
-        # Catch a bunch of errors occuring on connection
+        # Translate a bunch of errors occuring on connection
         except BleakDBusError as e:
             raise errors.ConnectionDatabusError(
                 "An attempt to connect to the vehicle failed. This can occur sometimes and is usually not an error in your code."
@@ -267,8 +285,9 @@ class Vehicle(metaclass=AliasMeta):
         read   = anki_service.get_characteristic(const.READ_CHAR_UUID)  
         write  = anki_service.get_characteristic(const.WRITE_CHAR_UUID) 
 
-        await self._client.write_gatt_char(write,set_sdk_pkg(True,0x1)) # Enable SDK mode
-        await self._client.start_notify(read,self._notify_handler) # Start Notifier for data handling
+        await self._client.write_gatt_char(write,set_sdk_pkg(True,0x1))
+        # NOTE: If someone knows what the flags mean, please contact us
+        await self._client.start_notify(read,self._notify_handler)
 
         self._read_chara = read
         self._write_chara= write
@@ -327,12 +346,14 @@ class Vehicle(metaclass=AliasMeta):
             The acceleration in mm/s²
         """
         await self.__send_package(set_speed_pkg(speed,acceleration))
-        self._speed = speed # Update the internal speed as well (even though it technically is an overestimate as we need to accelerate first)
+        self._speed = speed 
+        # Update the internal speed as well
+        # (this is technically an overestimate, but the error is marginal)
         pass
 
     async def stop(self):
         """Stops the Supercar"""
-        await self.set_speed(0, 600) # stop = 0 speed
+        await self.set_speed(0, 600)
         pass
     
     @deprecated_alias("changeLane",
@@ -342,7 +363,15 @@ class Vehicle(metaclass=AliasMeta):
     .. deprecated:: 1.0
         Use alias :func:`Vehicle.change_lane` instead
     """)
-    async def change_lane(self, lane: BaseLane, horizontalSpeed: int = 300, horizontalAcceleration: int = 300, *, _hopIntent: int = 0x0, _tag: int = 0x0):
+    async def change_lane(
+            self, 
+            lane: BaseLane, 
+            horizontalSpeed: int = 300, 
+            horizontalAcceleration: int = 300, 
+            *, 
+            _hopIntent: int = 0x0, 
+            _tag: int = 0x0
+        ):
         """Change to a desired lane
 
         :param lane: :class:`BaseLane` 
@@ -352,7 +381,15 @@ class Vehicle(metaclass=AliasMeta):
         :param horizontalAcceleration: :class:`Optional[int]`
             The acceleration in mm/s² the vehicle will move horizontally with 
         """
-        await self.change_position(lane.value,horizontalSpeed,horizontalAcceleration,_hopIntent=_hopIntent,_tag=_tag) # changeLane is just changePosition but user friendly
+        await self.change_position(
+            lane.value,
+            horizontalSpeed,
+            horizontalAcceleration,
+            _hopIntent=_hopIntent,
+            _tag=_tag
+            # NOTE: Getting hop intent and tag to work would be awesome
+            # but the vehicles are buggy as ever
+        ) # changeLane is just changePosition but user friendly
         pass
     
     @deprecated_alias("changePosition",
@@ -362,7 +399,15 @@ class Vehicle(metaclass=AliasMeta):
     .. deprecated:: 1.0
         Use alias :func:`Vehicle.change_position` instead
     """)
-    async def change_position(self, roadCenterOffset: float, horizontalSpeed: int = 300, horizontalAcceleration: int = 300, *, _hopIntent: int = 0x0, _tag: int = 0x0):
+    async def change_position(
+            self, 
+            roadCenterOffset: float, 
+            horizontalSpeed: int = 300, 
+            horizontalAcceleration: int = 300, 
+            *, 
+            _hopIntent: int = 0x0, 
+            _tag: int = 0x0
+        ):
         """Change to a position offset from the track centre
         
         :param roadCenterOffset: :class:`float`
@@ -372,14 +417,26 @@ class Vehicle(metaclass=AliasMeta):
         :param horizontalAcceleration: :class:`int`
             The acceleration in mm/s² the vehicle will move horizontally with 
         """
-        await self.__send_package(change_lane_pkg(roadCenterOffset,horizontalSpeed,horizontalAcceleration,_hopIntent,_tag))
+        await self.__send_package(change_lane_pkg(
+            roadCenterOffset,
+            horizontalSpeed,
+            horizontalAcceleration,
+            _hopIntent,
+            _tag
+        ))
         pass
 
-    async def turn(self, type: int = 3, trigger: int = 0): # type and trigger don't work correcty
+    async def turn(self, type: int = 3, trigger: int = 0): 
+        # type and trigger don't work correcty
         """
         .. warning::
             This does not yet function properly. It is advised not to use this method
         """
+        if self.map is not None:
+            warn(
+                "Turning around with a map! This will cause a desync!",
+                UserWarning
+            )
         await self.__send_package(turn_180_pkg(type,trigger))
         pass
     
@@ -465,7 +522,8 @@ class Vehicle(metaclass=AliasMeta):
             await self.wait_for_track_change()
             pass
 
-        self._position = 0 # Vehicle is now at START which is always 0
+        self._position = 0 
+        # Vehicle is now at START which is always 0
 
         await self.stop()
         pass
@@ -590,7 +648,8 @@ class Vehicle(metaclass=AliasMeta):
         .. note::
             This will return :class:`None` if either scan or align is not completed
         """
-        if None in (self.map, self.map_position): # If no scan or align not complete, we can't find the track piece
+        if None in (self.map, self.map_position): 
+            # If scan or align not complete, we can't find the track piece
             return None
             pass
         return self.map[self.map_position]
@@ -639,7 +698,7 @@ class Vehicle(metaclass=AliasMeta):
         
         .. code-block:: python
             
-            Vehicle.getLane(Lane3)
+            Vehicle.get_lane(Lane3)
         """
         return self.get_lane(Lane3)
         pass
@@ -651,7 +710,7 @@ class Vehicle(metaclass=AliasMeta):
         
         .. code-block:: python
             
-            Vehicle.getLane(Lane4)
+            Vehicle.get_lane(Lane4)
         """
         return self.get_lane(Lane4)
         pass
