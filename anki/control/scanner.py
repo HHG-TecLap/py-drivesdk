@@ -46,7 +46,7 @@ class BaseScanner(abc.ABC):
         self, 
         vehicle: Vehicle,
         *,
-        target_previous_track_piece_type: TrackPieceType = TrackPieceType.FINSIH
+        target_previous_track_piece_type: TrackPieceType = TrackPieceType.FINISH
         ) -> None:
         """
         This method should be used to align a vehicle to the START piece.
