@@ -380,6 +380,9 @@ class Vehicle(metaclass=AliasMeta):
             The speed the vehicle will move along the track at in mm/s
         :param horizontalAcceleration: :class:`Optional[int]`
             The acceleration in mm/s² the vehicle will move horizontally with 
+        
+        .. note::
+            Due to a hardware limitation vehicles won't reliably perform lane changes under 300mm/s speed.
         """
         await self.change_position(
             lane.value,
@@ -416,6 +419,9 @@ class Vehicle(metaclass=AliasMeta):
             The speed the vehicle will move along the track at in mm/s
         :param horizontalAcceleration: :class:`int`
             The acceleration in mm/s² the vehicle will move horizontally with 
+
+        .. note::
+            Due to a hardware limitation vehicles won't reliably perform lane changes under 300mm/s speed.
         """
         await self.__send_package(change_lane_pkg(
             roadCenterOffset,
