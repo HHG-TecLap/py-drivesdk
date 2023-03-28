@@ -21,7 +21,11 @@ class TrackPiece():
     clockwise : bool = field(compare=False)
 
     @staticmethod
-    def from_raw(loc : int, piece_val : int, clockwise : int) -> "TrackPiece":
+    def from_raw(
+        loc: int, 
+        piece_val: int, 
+        clockwise: int
+    ) -> "TrackPiece":
         return TrackPiece(
             loc,
             TrackPieceType.try_enum(piece_val),

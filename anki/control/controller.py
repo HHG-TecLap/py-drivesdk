@@ -257,7 +257,9 @@ class Controller(metaclass=AliasMeta):
         :class:`DuplicateScanWarning`
             The map was already scanned in. This scan will be skipped.
         """
-        if self.map is not None: # The map shouldn't be scanned twice. Exiting the method is a good practice implementation
+        if self.map is not None: 
+            # The map shouldn't be scanned twice. 
+            # Exiting the method is a good practice implementation
             raise errors.DuplicateScanWarning("The map has already been scanned. Check your code for any mistakes like that.")
             pass
 

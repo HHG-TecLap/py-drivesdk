@@ -8,6 +8,7 @@ class BaseLane(float,Enum):
     This class does not provide any lanes of its own, but can be inherited from to create your own lane system.
     Pre-configured children of this class are :class:`Lane3` and :class:`Lane4`
     """
+    # Using manual aliases here since Enum brings its own metaclass
 
     @classmethod
     def getClosestLane(cls, position: float):
