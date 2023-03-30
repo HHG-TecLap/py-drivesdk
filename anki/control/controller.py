@@ -19,7 +19,7 @@ def _is_anki(device: BLEDevice, advertisement: AdvertisementData):
         # If we can't interprete the name, it can't be a vehicle
         return False
         pass
-    if state.charging: return False 
+    if state.on_charger: return False 
     # We don't want to connect to a charging vehicle, so we'll just pretend it's not a vehicle
 
     return True
@@ -78,7 +78,13 @@ class Controller(metaclass=AliasMeta):
         elif vehicle_id in vehicle_ids:
             raise RuntimeError(f"Duplicate id for vehicle. Id {vehicle_id} already in use.")
 
-        vehicle = Vehicle(vehicle_id, device,client, self)
+        vehicle = Vehicle(
+            vehicle_id, 
+            device,
+            client, 
+            self,
+            battery=interpret_local_name(device.name)[0]
+        )
         self.vehicles.add(vehicle)
         return vehicle
         pass
