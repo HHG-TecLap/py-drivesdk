@@ -6,7 +6,7 @@ from typing import Callable, Optional
 import bleak, asyncio
 from bleak.backends.device import BLEDevice
 import dataclasses
-from bleak.exc import BleakDBusError
+from bleak.exc import BleakDBusError, BleakError
 
 from ..misc import msg_protocol
 
@@ -32,7 +32,7 @@ def interpret_local_name(name: str):
     version = int.from_bytes(nameBytes[1:3],"little",signed=False)
     vehicleName = nameBytes[8:].decode("utf-8")
 
-    return VehicleState.from_int(vehicleState), version, vehicleName
+    return BatteryState.from_int(vehicleState), version, vehicleName
     pass
 
 def _call_all_soon(funcs,*args):
@@ -41,29 +41,47 @@ def _call_all_soon(funcs,*args):
         asyncio.get_running_loop().call_soon(f,*args)
 
 @dataclasses.dataclass(frozen=True)
-class VehicleState:
+class BatteryState:
     """Represents the state of a supercar"""
     full_battery: bool
-    low_battery: bool
-    charging: bool
+    low_battery: bool|None
+    on_charger: bool
+    charging: bool|None = None
 
     @classmethod
     def from_int(cls, state: int):
-        """Constructs a :class:`VehicleState` from an integer representation
+        """Constructs a :class:`BatteryState` from an integer representation
         
         :param state: :class:`int`
             The integer state passed by the discovery process
         
         Returns
         -------
-        :class:`VehicleState`
-        The new :class:`VehicleState` instance
+        :class:`BatteryState`
+        The new :class:`BatteryState` instance
         """
         full     = bool(state & (1 << const.VehicleBattery.FULL_BATTERY))
         low      = bool(state & (1 << const.VehicleBattery.LOW_BATTERY))
-        charging = bool(state & (1 << const.VehicleBattery.ON_CHARGER))
+        on_charger = bool(state & (1 << const.VehicleBattery.ON_CHARGER))
 
-        return cls(full,low,charging)
+        return cls(full,low,on_charger)
+        pass
+
+    @classmethod
+    def from_charger_info(cls, payload: bytes):
+        """
+        Constructs a :class:`BatteryState` instance from a CHARGER_INFO message.
+
+        :param payload: :class:`bytes`
+            The payload of the CHARGER_INFO message
+        
+        Returns
+        -------
+        :class:`BatteryState`
+        The new :class:`BatteryState` instance
+        """
+        _, on_charger, charging, full = disassemble_charger_info(payload)
+        return cls(full, None, on_charger, charging)
         pass
     pass
 
@@ -112,8 +130,17 @@ class Vehicle(metaclass=AliasMeta):
         "_delocal_watchers",
         "_controller",
         "_ping_task",
+        "_battery"
     )
-    def __init__(self, id: int, device : BLEDevice, client: bleak.BleakClient=None, controller: "Controller"=None):
+    def __init__(
+            self, 
+            id: int, 
+            device : BLEDevice, 
+            client: bleak.BleakClient|None=None, 
+            controller: "Controller"|None=None,
+            *,
+            battery: BatteryState
+        ):
         self._client = client if client is not None else bleak.BleakClient(device)
 
         self._id : int = id
@@ -131,6 +158,7 @@ class Vehicle(metaclass=AliasMeta):
         self._pong_watchers = []
         self._delocal_watchers = []
         self._controller = controller
+        self._battery: BatteryState = battery
         pass
 
     def _notify_handler(self,handler,data : bytearray):
@@ -178,8 +206,7 @@ class Vehicle(metaclass=AliasMeta):
             _call_all_soon(self._delocal_watchers)
             pass
         elif msg_type == const.VehicleMsg.CHARGER_INFO:
-            unknown, onCharger, loading, full = disassemble_charger_info(payload)
-            print(f'unknown: {unknown}, onCharger: {onCharger}, loading: {loading}, full: {full}')
+            self._battery = BatteryState.from_charger_info(payload)
         pass
 
     async def _auto_ping(self):
@@ -262,7 +289,7 @@ class Vehicle(metaclass=AliasMeta):
         """
         try:
             connect_success = await self._client.connect()
-            if not connect_success: raise bleak.BleakError
+            if not connect_success: raise BleakError
             # Handle a failed connect the same way as a BleakError
             pass
         # Translate a bunch of errors occuring on connection
@@ -270,7 +297,7 @@ class Vehicle(metaclass=AliasMeta):
             raise errors.ConnectionDatabusError(
                 "An attempt to connect to the vehicle failed. This can occur sometimes and is usually not an error in your code."
             ) from e
-        except bleak.BleakError as e:
+        except BleakError as e:
             raise errors.ConnectionFailedError(
                 "An attempt to connect to the vehicle failed. This is usually not associated with your code."
             ) from e
@@ -727,5 +754,13 @@ class Vehicle(metaclass=AliasMeta):
         The id of the :class:`Vehicle` instance. This is set during initialisation of the object.
         """
         return self._id
+        pass
+
+    @property
+    def battery_state(self) -> BatteryState:
+        """
+        The state of the supercar's battery
+        """
+        return self._battery
         pass
     pass
