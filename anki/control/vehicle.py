@@ -136,8 +136,8 @@ class Vehicle(metaclass=AliasMeta):
             self, 
             id: int, 
             device : BLEDevice, 
-            client: bleak.BleakClient=None, 
-            controller: "Controller"=None,
+            client: bleak.BleakClient|None=None, 
+            controller: "Controller"|None=None,
             *,
             battery: BatteryState
         ):
