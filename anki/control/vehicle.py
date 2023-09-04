@@ -6,7 +6,7 @@ from typing import Callable, Optional
 import bleak, asyncio
 from bleak.backends.device import BLEDevice
 import dataclasses
-from bleak.exc import BleakDBusError
+from bleak.exc import BleakDBusError, BleakError
 
 from ..misc import msg_protocol
 
@@ -289,7 +289,7 @@ class Vehicle(metaclass=AliasMeta):
         """
         try:
             connect_success = await self._client.connect()
-            if not connect_success: raise bleak.BleakError
+            if not connect_success: raise BleakError
             # Handle a failed connect the same way as a BleakError
             pass
         # Translate a bunch of errors occuring on connection
@@ -297,7 +297,7 @@ class Vehicle(metaclass=AliasMeta):
             raise errors.ConnectionDatabusError(
                 "An attempt to connect to the vehicle failed. This can occur sometimes and is usually not an error in your code."
             ) from e
-        except bleak.BleakError as e:
+        except BleakError as e:
             raise errors.ConnectionFailedError(
                 "An attempt to connect to the vehicle failed. This is usually not associated with your code."
             ) from e
