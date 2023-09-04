@@ -72,7 +72,7 @@ class Controller(metaclass=AliasMeta):
             # Automatically assign generate unused vehicle id
             vehicle_id = 1024
             while vehicle_id in vehicle_ids:
-                vehicle_ids += 1
+                vehicle_id += 1
                 pass
             pass
         elif vehicle_id in vehicle_ids:
