@@ -269,8 +269,6 @@ class Controller(metaclass=AliasMeta):
             raise errors.DuplicateScanWarning("The map has already been scanned. Check your code for any mistakes like that.")
             pass
 
-        scanner = scanner_class(scan_vehicle)
-
         vehicles_no_scan = self.vehicles.copy()
         if scan_vehicle is None:
             scan_vehicle = vehicles_no_scan.pop() 
@@ -278,6 +276,8 @@ class Controller(metaclass=AliasMeta):
         else:
             vehicles_no_scan.remove(scan_vehicle) 
             # Remove the scanning vehicle from the set if it is already passed as an argument
+        
+        scanner = scanner_class(scan_vehicle)
 
         if align_pre_scan: 
             # Aligning before scanning if enabled. This allows the vehicles to be placed anywhere on the map
