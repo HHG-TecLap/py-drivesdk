@@ -129,4 +129,5 @@ class Scanner(BaseScanner):
         pass
     pass
 
-_ScannerType = TypeVar('_ScannerType',bound=BaseScanner)
+_Scanner = TypeVar("_Scanner", bound=BaseScanner)
+_ScannerType = type[_Scanner]

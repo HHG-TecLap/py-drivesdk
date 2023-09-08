@@ -1,6 +1,7 @@
 from .msg_protocol import *
 from . import const
 import struct
+from typing import Literal
 
 def set_speed_pkg(speed: int, accel: int=500):
     speedBytes = speed.to_bytes(2,"little",signed=True)
@@ -76,14 +77,14 @@ def light_pattern_pkg(r: int,g: int,b: int):
 def disassemble_track_update(
         payload: bytes
     ) -> tuple[int,int,float,int,int]:
-    return struct.unpack_from("<BBfHB", payload)
+    return struct.unpack_from("<BBfHB", payload) # type: ignore
     pass
 
 def disassemble_track_change(
         payload: bytes
     ) -> tuple[
-        int,
-        int,
+        Literal[0],
+        Literal[0],
         float,
         int,
         int,
@@ -95,7 +96,14 @@ def disassemble_track_change(
         int,
         int
     ]:
-    """HA! You think this is useful! No! The first two values are always 0! And those are the road piece and the previous road piece! THIS IS HORRIBLE! WHY DOES THERE HAVE TO BE SUCH LACK OF DOCUMENTATION?! I HATE IT!"""
+    """
+    HA! You think this is useful! No! 
+    The first two values are always 0! 
+    And those are the road piece and the previous road piece! 
+    THIS IS HORRIBLE! 
+    WHY DOES THERE HAVE TO BE SUCH LACK OF DOCUMENTATION?!
+    I HATE IT!
+    """
 
     road_piece, \
     prev_road_piece, \
@@ -129,4 +137,4 @@ def disassemble_track_change(
 def disassemble_charger_info(
         payload: bytes
     ) -> tuple[bool, bool, bool, bool]:
-    return struct.unpack_from('<????', payload)
+    return struct.unpack_from('<????', payload) # type: ignore

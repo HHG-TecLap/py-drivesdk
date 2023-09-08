@@ -13,7 +13,7 @@ from ..misc import msg_protocol
 from ..misc.msgs import *
 from ..misc.track_pieces import TrackPiece, TrackPieceType
 from ..misc import const
-from ..misc.lanes import Lane3, Lane4, BaseLane, _LaneType
+from ..misc.lanes import Lane3, Lane4, BaseLane, _Lane
 from .. import errors
 
 from typing import TYPE_CHECKING
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     pass
 
 
-def interpret_local_name(name: str):
+def interpret_local_name(name: str|None):
     # Get the state of the vehicle from the local name
     if name is None or len(name) < 1: # Fix some issues that might occur
         raise ValueError("Name was empty")
@@ -186,7 +186,7 @@ class Vehicle(metaclass=AliasMeta):
             uphill_count, downhill_count = disassemble_track_change(payload)[8:10]
             """TODO: Find out what to do with these"""
             print("Vehicle uphill/downhill:",uphill_count,downhill_count)
-            if None not in (self._position, self._map): 
+            if self._position is not None and self._map is not None: 
                 # If there was a scan & align already
                 self._position += 1
                 self._position %= len(self._map)
@@ -253,6 +253,8 @@ class Vehicle(metaclass=AliasMeta):
 
     async def __send_package(self, payload: bytes):
         """Send a payload to the supercar"""
+        if self._write_chara is None:
+            raise RuntimeError("A command was sent to a vehicle that has not been connected.")
         try:
             await self._client.write_gatt_char(self._write_chara,payload)
         except OSError as e:
@@ -309,8 +311,12 @@ class Vehicle(metaclass=AliasMeta):
         # Get service and characteristics
         services = self._client.services
         anki_service = services.get_service(const.SERVICE_UUID)
+        if anki_service is None:
+            raise RuntimeError("The vehicle does not have an anki service... What?")
         read   = anki_service.get_characteristic(const.READ_CHAR_UUID)  
         write  = anki_service.get_characteristic(const.WRITE_CHAR_UUID) 
+        if read is None or write is None:
+            raise RuntimeError("This vehicle does not have a read or write characteristic. If this occurs again, something is severly wrong with your vehicle.")
 
         await self._client.write_gatt_char(write,set_sdk_pkg(True,0x1))
         # NOTE: If someone knows what the flags mean, please contact us
@@ -518,7 +524,7 @@ class Vehicle(metaclass=AliasMeta):
     .. deprecated:: 1.0
         Use alias :func:`Vehicle.get_lane` instead
     """)
-    def get_lane(self, mode: _LaneType) -> Optional[_LaneType]:
+    def get_lane(self, mode: type[_Lane]) -> Optional[_Lane]:
         """Get the current lane given a specific lane type
 
         :param mode: :class:`BaseLane` 
@@ -681,7 +687,7 @@ class Vehicle(metaclass=AliasMeta):
         .. note::
             This will return :class:`None` if either scan or align is not completed
         """
-        if None in (self.map, self.map_position): 
+        if self.map is None or self.map_position is None: 
             # If scan or align not complete, we can't find the track piece
             return None
             pass
@@ -689,7 +695,7 @@ class Vehicle(metaclass=AliasMeta):
         pass
 
     @property
-    def map(self) -> tuple[TrackPiece]|None:
+    def map(self) -> tuple[TrackPiece, ...]|None:
         """
         The map the :class:`Vehicle` instance is using. 
         This is :class:`None` if the :class:`Vehicle` does not have a map supplied.

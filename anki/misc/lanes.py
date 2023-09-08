@@ -1,6 +1,6 @@
 from warnings import warn
 from enum import Enum
-from typing import TypeVar
+from typing import TypeVar, Self
 
 class BaseLane(float,Enum):
     """
@@ -22,7 +22,7 @@ class BaseLane(float,Enum):
         return cls.get_closest_lane(position)
 
     @classmethod
-    def get_closest_lane(cls, position : float) -> "BaseLane":
+    def get_closest_lane(cls, position : float) -> Self:
         """
         Returns the lane closest to the entered position.
 
@@ -126,4 +126,5 @@ class Lane4(BaseLane):
     RIGHT_2 = 60
     pass
 
-_LaneType = TypeVar('_LaneType',bound=BaseLane)
+_Lane = TypeVar('_Lane', bound=BaseLane)
+_LaneType = type[_Lane]

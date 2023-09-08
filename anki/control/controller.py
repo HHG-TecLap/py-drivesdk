@@ -8,9 +8,11 @@ from ..misc.const import *
 from .. import errors
 from .vehicle import Vehicle, interpret_local_name
 from ..misc.track_pieces import TrackPiece
-from .scanner import Scanner, _ScannerType
+from .scanner import Scanner, _Scanner
 
-from typing import Iterable, Optional
+from typing import Optional, TYPE_CHECKING
+if TYPE_CHECKING: 
+    from collections.abc import Collection
 
 def _is_anki(device: BLEDevice, advertisement: AdvertisementData):
     try:
@@ -194,8 +196,8 @@ class Controller(metaclass=AliasMeta):
     async def connect_many(
             self, 
             amount: int, 
-            vehicle_ids: Iterable[int|None]|None=None
-        ) -> tuple[Vehicle]:
+            vehicle_ids: Collection[int|None]|None=None
+        ) -> tuple[Vehicle, ...]:
         """Connect to <amount> non-charging Supercars
         
         :param amount: :class:`int`
@@ -233,7 +235,11 @@ class Controller(metaclass=AliasMeta):
         if vehicle_ids is None: vehicle_ids = [None]*amount
         if amount != len(vehicle_ids): raise ValueError("Amount of passed vehicle ids is different to amount of requested connections")
 
-        return tuple([await self.connect_one(vehicle_id) for vehicle_id in vehicle_ids]) # Done in series because the documentation said that would be more stable
+        return tuple([
+            await self.connect_one(vehicle_id) 
+            for vehicle_id in vehicle_ids]
+        ) 
+        # Done in series because the documentation said that would be more stable
         pass
 
     
@@ -242,7 +248,7 @@ class Controller(metaclass=AliasMeta):
             scan_vehicle: Vehicle|None=None, 
             /,
             align_pre_scan: bool=True,
-            scanner_class: _ScannerType=Scanner
+            scanner_class: type[_Scanner]=Scanner
         ) -> list[TrackPiece]:
         """Assembles a digital copy of the map and adds it to every connected vehicle.
         
@@ -299,6 +305,7 @@ class Controller(metaclass=AliasMeta):
         await asyncio.sleep(1)
         await scan_vehicle.stop()
 
+        tasks = []
         if not align_pre_scan: 
             # Only aligning during scan when not already aligned pre-scan. 
             # Without pre-align this is neccessary to ensure that the vehicles are where we think they are
@@ -306,8 +313,7 @@ class Controller(metaclass=AliasMeta):
             pass
         self.map = await scanner.scan()
 
-        if not align_pre_scan: # Wait until all alignments are completed
-            for task in tasks: await task
+        for task in tasks: await task
 
         for v in self.vehicles:
             v._map = self.map
@@ -369,8 +375,9 @@ class Controller(metaclass=AliasMeta):
 
 
     @property
-    def map_types(self) -> tuple[TrackPieceType]|None:
+    def map_types(self) -> tuple[TrackPieceType, ...]|None:
         if self.map is None: return None
-        return tuple([track_piece.type for track_piece in self.map]) # Converting to a tuple to prevent DAUs (that's German) thinking they can affect the map
+        return tuple(track_piece.type for track_piece in self.map) 
+        # Converting to a tuple to prevent DAUs (that's German) thinking they can affect the map
         pass
     pass

@@ -4,7 +4,10 @@ from dataclasses import dataclass, field
 
 @dataclass(frozen=True, slots=True)
 class TrackPiece():
-    """This class represents the different pieces of the track. It includes the type of the track piece and whether or not it turns clockwise.\n
+    """
+    This class represents the different pieces of the track. 
+    It includes the type of the track piece and whether or not it turns clockwise.
+    
     You should not be creating these manually.
     
     :param loc: :class:`int`
