@@ -494,8 +494,6 @@ class Vehicle(metaclass=AliasMeta):
             It will not execute.
         """
         raise DeprecationWarning("This function is deprecated and does not work due to a bug in the vehicle computer.")
-
-        await self.__send_package(setLightPkg(light))
         pass
     
     @deprecated_alias("setLightPattern",
@@ -513,8 +511,6 @@ class Vehicle(metaclass=AliasMeta):
             It will not execute.
         """
         raise DeprecationWarning("This function is deprecated and does not work due to a bug in the vehicle computer.")
-
-        await self.__send_package(lightPatternPkg(r,g,b))
         pass
     
     @deprecated_alias("getLane", 
