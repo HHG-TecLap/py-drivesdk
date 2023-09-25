@@ -17,7 +17,7 @@ def assemble_packet(
         or msgType_bytes in const.VehicleMsg.__dict__.values()
         ): 
         # Only allow for msgTypes specified in const.ControllerMsg or const.VehicleMsg
-        raise ValueError(f"msgType has to be a type specified in const.ControllerMsg or const.VehicleMsg (latter is discouraged). You entered {msgType_bytes}")
+        raise ValueError(f"msgType has to be a type specified in const.ControllerMsg or const.VehicleMsg (latter is discouraged). You entered {msgType_bytes!r}")
         pass
 
     try:
