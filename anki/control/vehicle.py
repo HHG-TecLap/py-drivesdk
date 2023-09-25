@@ -21,6 +21,7 @@ if TYPE_CHECKING:
     from .controller import Controller
     pass
 
+_Callback = Callable[[],None]
 
 def interpret_local_name(name: str|None):
     # Get the state of the vehicle from the local name
@@ -153,10 +154,10 @@ class Vehicle(metaclass=AliasMeta):
         self._position : Optional[int] = None
 
         self.on_track_piece_change : Callable = lambda: None # Set a dummy function by default
-        self._track_piece_future = asyncio.Future()
-        self._track_piece_watchers = []
-        self._pong_watchers = []
-        self._delocal_watchers = []
+        self._track_piece_future: asyncio.Future = asyncio.Future()
+        self._track_piece_watchers: list[_Callback] = []
+        self._pong_watchers: list[_Callback] = []
+        self._delocal_watchers: list[_Callback] = []
         self._controller = controller
         self._battery: BatteryState = battery
         pass
@@ -570,7 +571,7 @@ class Vehicle(metaclass=AliasMeta):
     .. deprecated:: 1.0
         Use :func:`Vehicle.track_piece_change` instead
     """)
-    def track_piece_change(self, func: Callable[[],None]):
+    def track_piece_change(self, func: _Callback):
         """
         A decorator marking a function to be executed when the supercar drives onto a new track piece
 
@@ -593,7 +594,7 @@ class Vehicle(metaclass=AliasMeta):
     .. deprecated:: 1.0
         Use :func:`Vehicle.remove_track_piece_watcher` instead
     """)
-    def remove_track_piece_watcher(self, func: Callable[[],None]):
+    def remove_track_piece_watcher(self, func: _Callback):
         """
         Remove a track piece event handler added by :func:`Vehicle.track_piece_change`
 
@@ -608,7 +609,7 @@ class Vehicle(metaclass=AliasMeta):
         self._track_piece_watchers.remove(func)
         pass
 
-    def delocalized(self, func: Callable[[],None]):
+    def delocalized(self, func: _Callback):
         """
         A decorator marking this function to be execute when the vehicle has delocalized*.
 
@@ -623,7 +624,7 @@ class Vehicle(metaclass=AliasMeta):
         self._delocal_watchers.append(func)
         pass
 
-    def remove_delocalized_watcher(self, func: Callable[[],None]):
+    def remove_delocalized_watcher(self, func: _Callback):
         """
         Remove a delocalization event handler that was added by :func:`Vehicle.delocalized`.
 
