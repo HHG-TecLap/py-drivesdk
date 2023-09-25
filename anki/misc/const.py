@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
+from typing import Self
 from warnings import warn
 
 SERVICE_UUID    = 'be15beef-6186-407e-8381-0bd89c4d8df4'
@@ -113,9 +114,9 @@ class TrackPieceType(Enum):
         return self.name
         pass
 
-    @staticmethod
-    def try_enum(value: int):
-        for enum in TrackPieceType:
+    @classmethod
+    def try_enum(cls, value: int) -> Self:
+        for enum in cls:
             if value in enum.value:
                 return enum
                 pass
