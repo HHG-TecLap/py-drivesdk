@@ -8,7 +8,7 @@ from ..misc.const import *
 from .. import errors
 from .vehicle import Vehicle, interpret_local_name
 from ..misc.track_pieces import TrackPiece
-from .scanner import Scanner, _Scanner
+from .scanner import BaseScanner, Scanner
 
 from typing import Optional, TYPE_CHECKING
 if TYPE_CHECKING: 
@@ -248,7 +248,7 @@ class Controller(metaclass=AliasMeta):
             scan_vehicle: Vehicle|None=None, 
             /,
             align_pre_scan: bool=True,
-            scanner_class: type[_Scanner]=Scanner
+            scanner_class: type[BaseScanner]=Scanner
         ) -> list[TrackPiece]:
         """Assembles a digital copy of the map and adds it to every connected vehicle.
         
