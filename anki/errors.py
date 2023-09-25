@@ -1,10 +1,16 @@
 # Warnings
 class MalformedPacketWarning(Warning):
-    """Received package did not conform to the Protocol. See https://anki.github.io/drive-sdk/docs/programming-guide"""
+    """
+    Received package did not conform to the Protocol. 
+    See https://anki.github.io/drive-sdk/docs/programming-guide
+    """
     pass
 
 class DuplicateScanWarning(Warning):
-    """The map has already been scanned, but scan has been called anyway. This is not dangerous, but unneccessary"""
+    """
+    The map has already been scanned, but scan has been called anyway. 
+    This is not dangerous, but unneccessary
+    """
     pass
 
 class TrackPieceDecodeWarning(Warning):
@@ -12,7 +18,7 @@ class TrackPieceDecodeWarning(Warning):
     pass
 
 # Exceptions
-class AnkiError(Exception): 
+class AnkiError(Exception):
     """Base class for all errors raised by this library"""
     pass
 
@@ -40,7 +46,8 @@ class DisconnectTimedoutError(DisconnectFailedError):
     """The disconnect attempt timed out"""
     pass
 
-# Aliases (it turns out these cannot be deprecated aliases, due to them being in a global scope)
+# Aliases (it turns out these cannot be deprecated aliases,
+# due to them being in a global scope)
 AnkiException = AnkiError
 VehicleNotFound = VehicleNotFoundError
 ConnectionFailedException = ConnectionFailedError
