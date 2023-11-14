@@ -138,7 +138,7 @@ class Vehicle(metaclass=AliasMeta):
             id: int, 
             device : BLEDevice, 
             client: bleak.BleakClient|None=None, 
-            controller: "Controller"|None=None,
+            controller: Optional["Controller"]=None, # Inconsistent, but fixes failing docs
             *,
             battery: BatteryState
         ):
@@ -617,7 +617,7 @@ class Vehicle(metaclass=AliasMeta):
             The listening function
 
         .. note::
-            * It is not guaranteed that the handler will be called when the vehicle is delocalized.
+            It is not guaranteed that the handler will be called when the vehicle is delocalized.
             Furthermore, it is not guaranteed that the handler will *not* be called when the vehicle is still localized.
             This method should only be used for informational purposes!
         """

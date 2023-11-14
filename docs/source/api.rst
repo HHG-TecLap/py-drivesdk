@@ -27,9 +27,9 @@ Custom Scanning
 Vehicle models
 **************
 
-VehicleState
+BatteryState
 ~~~~~~~~~~~~
-.. autoclass:: anki.control.vehicle.VehicleState
+.. autoclass:: anki.control.vehicle.BatteryState
     :members:
 
 Lights
