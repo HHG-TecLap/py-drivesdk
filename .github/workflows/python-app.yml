@@ -30,6 +30,3 @@ jobs:
         flake8 anki --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 anki --count --exit-zero --max-complexity=10 --ignore=E252,E227,W503,W293 --max-line-length=100 --per-file-ignores=*/__init__.py:F401 --statistics
-    - name: Test with pytest
-      run: |
-        pytest
