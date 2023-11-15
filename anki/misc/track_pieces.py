@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 @dataclass(frozen=True, slots=True)
 class TrackPiece():
     """
-    This class represents the different pieces of the track. 
+    This class represents the different pieces of the track.
     It includes the type of the track piece and whether or not it turns clockwise.
     
     You should not be creating these manually.
@@ -19,14 +19,14 @@ class TrackPiece():
     :param clockwise: :class:`bool`
         Whether or not this track piece turns in a clockwise direction
     """
-    loc : int
-    type : TrackPieceType
-    clockwise : bool = field(compare=False)
+    loc: int
+    type: TrackPieceType
+    clockwise: bool = field(compare=False)
 
     @staticmethod
     def from_raw(
-        loc: int, 
-        piece_val: int, 
+        loc: int,
+        piece_val: int,
         clockwise: int
     ) -> "TrackPiece":
         return TrackPiece(
