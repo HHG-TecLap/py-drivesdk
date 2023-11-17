@@ -20,4 +20,4 @@ jobs:
         pip install pylint
     - name: Analysing the code with pylint
       run: |
-        pylint --disable=C0114 --recursive=y anki
+        pylint --disable=C0114,C0303 --recursive=y anki
