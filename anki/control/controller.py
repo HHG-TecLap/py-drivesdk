@@ -12,9 +12,8 @@ from .vehicle import Vehicle, interpret_local_name
 from ..misc.track_pieces import TrackPiece
 from .scanner import BaseScanner, Scanner
 
-from typing import Optional, TYPE_CHECKING
-if TYPE_CHECKING:
-    from collections.abc import Collection
+from typing import Optional
+from collections.abc import Collection
 
 
 def _is_anki(device: BLEDevice, advertisement: AdvertisementData):
