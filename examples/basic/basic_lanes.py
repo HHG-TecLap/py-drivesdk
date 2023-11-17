@@ -9,22 +9,28 @@ There are two lane presets implemented in the library:
 Here, these are ordered left-to-right.
 """
 
-import anki, asyncio
+import asyncio
+import anki
+
 
 async def main():
-    controller = anki.Controller() # Create the Controller managing all connections to the vehicles
-    vehicle = await controller.connect_one() # Connect to one non-charging vehicle
-    
-    await vehicle.set_speed(300) # Accelerate to 300mm/s
+    # Create the Controller managing all connections to the vehicles
+    controller = anki.Controller()
+    # Connect to one non-charging vehicle
+    vehicle = await controller.connect_one()
+    # Accelerate to 300mm/s
+    await vehicle.set_speed(300)
 
-    for lane in anki.Lane4: # Looping through every one of the type 4 lanes
-        print("Moving to lane",lane)
-        await vehicle.change_lane(lane,150) # Changing to a new lane with a horizontal speed of 150mm/s
+    # Looping through all type 4 lanes
+    for lane in anki.Lane4:
+        print("Moving to lane", lane)
+        # Changing to a new lane with a horizontal speed of 150mm/s
+        await vehicle.change_lane(lane, 150)
         await asyncio.sleep(3)
-        pass
 
     await vehicle.stop()
-    await vehicle.disconnect() # Disconnecting from the vehicle after the demo script is complete
-    pass
+    # Disconnecting from the vehicle after the demo script is complete
+    await vehicle.disconnect()
 
-if __name__ == "__main__": asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())
