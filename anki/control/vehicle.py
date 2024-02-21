@@ -204,9 +204,12 @@ class Vehicle(metaclass=AliasMeta):
             self._current_track_piece = piece_obj
             pass
         elif msg_type == const.VehicleMsg.TRACK_PIECE_CHANGE:
+            if self._current_track_piece.type == TrackPieceType.FINISH:
+                self.map_position = 0
+            
             uphill_count, downhill_count = disassemble_track_change(payload)[8:10]
             """TODO: Find out what to do with these"""
-            print("Vehicle uphill/downhill:", uphill_count, downhill_count)
+            # print("Vehicle uphill/downhill:", uphill_count, downhill_count)
             if self._position is not None and self._map is not None:
                 # If there was a scan & align already
                 self._position += 1
