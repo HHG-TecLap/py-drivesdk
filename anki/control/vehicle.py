@@ -215,10 +215,14 @@ class Vehicle(metaclass=AliasMeta):
             uphill_count, downhill_count = disassemble_track_change(payload)[8:10]
             """TODO: Find out what to do with these"""
             # print("Vehicle uphill/downhill:", uphill_count, downhill_count)
-            if self._position is not None and self._map is not None:
-                # If there was a scan & align already
+            if self._position is not None:
+                # If vehicle is aligned
+                # This may happen during scan or because of a flying realign
+                # FIXME: Position index 0 does not exist on flying align o.0
                 self._position += 1
-                self._position %= len(self._map)
+                if self._map is not None:
+                    # If already scanned the map, ensure position is valid
+                    self._position %= len(self._map)
 
             self._track_piece_future.set_result(None)
             # Complete internal future when on new track piece.
