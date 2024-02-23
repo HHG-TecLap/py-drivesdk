@@ -28,6 +28,7 @@ async def _handle_delocalization_task(
 def recover_delocalization(v: Vehicle, recovery_speed: int|None=None):
     task: asyncio.Task|None = None
     last_callback = Reference(0.0)
+    @vehicle.delocalized
     def callback():
         nonlocal task
         last_callback.value = monotonic()
