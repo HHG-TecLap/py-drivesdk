@@ -205,7 +205,7 @@ class Vehicle(metaclass=AliasMeta):
             pass
         elif msg_type == const.VehicleMsg.TRACK_PIECE_CHANGE:
             if self._current_track_piece.type == TrackPieceType.FINISH:
-                self.map_position = 0
+                self._position = 0
             
             uphill_count, downhill_count = disassemble_track_change(payload)[8:10]
             """TODO: Find out what to do with these"""
