@@ -206,8 +206,10 @@ class Vehicle(metaclass=AliasMeta):
             self._current_track_piece = piece_obj
             pass
         elif msg_type == const.VehicleMsg.TRACK_PIECE_CHANGE:
-            # FIXME: 'NoneType' object has no attribute 'type'
-            if self._current_track_piece.type == TrackPieceType.FINISH:
+            if (
+                self._current_track_piece is not None 
+                and self._current_track_piece.type == TrackPieceType.FINISH
+            ):
                 self._position = 0
             
             uphill_count, downhill_count = disassemble_track_change(payload)[8:10]
