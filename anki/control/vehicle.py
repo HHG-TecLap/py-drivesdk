@@ -144,6 +144,7 @@ class Vehicle(metaclass=AliasMeta):
         "_track_piece_watchers",
         "_pong_watchers",
         "_delocal_watchers",
+        "_battery_watchers",
         "_controller",
         "_ping_task",
         "_battery"
@@ -174,6 +175,7 @@ class Vehicle(metaclass=AliasMeta):
         self._track_piece_watchers: list[_Callback] = []
         self._pong_watchers: list[_Callback] = []
         self._delocal_watchers: list[_Callback] = []
+        self._battery_watchers: list[_Callback] = []
         self._controller = controller
         self._battery: BatteryState = battery
         pass
@@ -204,6 +206,7 @@ class Vehicle(metaclass=AliasMeta):
             self._current_track_piece = piece_obj
             pass
         elif msg_type == const.VehicleMsg.TRACK_PIECE_CHANGE:
+            # FIXME: 'NoneType' object has no attribute 'type'
             if self._current_track_piece.type == TrackPieceType.FINISH:
                 self._position = 0
             
@@ -231,6 +234,8 @@ class Vehicle(metaclass=AliasMeta):
             pass
         elif msg_type == const.VehicleMsg.CHARGER_INFO:
             self._battery = BatteryState.from_charger_info(payload)
+            _call_all_soon(self._battery_watchers)
+            pass
         pass
 
     async def _auto_ping(self):
@@ -702,6 +707,27 @@ class Vehicle(metaclass=AliasMeta):
             The function passed is not an event handler
         """
         self._delocal_watchers.remove(func)
+        pass
+
+    def battery_change(self, func: _Callback):
+        """
+        Register a callback to execute on changes to the battery state.
+        
+        .. note::
+            It is not guaranteed that the battery state has actually changed
+            from the last callback.
+            Further note that this function is not called on startup.
+        
+        Raises
+        ------
+        :class:`ValueError`
+            The function passed is not an event handler
+        """
+        self._battery_watchers.append(func)
+        pass
+
+    def remove_battery_watcher(self, func: _Callback):
+        self._battery_watchers.remove(func)
         pass
 
     async def ping(self):
