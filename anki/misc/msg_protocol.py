@@ -3,9 +3,11 @@ from ..errors import MalformedPacketWarning
 
 
 def assemble_packet(
-        msgType: bytes|bytearray,
+        msgType: int|bytes|bytearray,
         payload: str|bytes|bytearray
 ) -> bytes:
+    if isinstance(msgType, int):
+        msgType = msgType.to_bytes()
     try:
         msgType_bytes = bytes(msgType)
     except TypeError as e:
@@ -14,8 +16,8 @@ def assemble_packet(
             Should be either bytes or bytearray, was {type(msgType)}"
         ) from e
     if not (
-        msgType_bytes in const.ControllerMsg.__dict__.values()
-        or msgType_bytes in const.VehicleMsg.__dict__.values()
+        msgType_bytes[0] in const.ControllerMsg.__dict__.values()
+        or msgType_bytes[0] in const.VehicleMsg.__dict__.values()
     ):
         # Only allow for msgTypes specified in const.ControllerMsg or const.VehicleMsg
         raise ValueError(
