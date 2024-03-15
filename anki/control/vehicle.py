@@ -739,9 +739,6 @@ class Vehicle(metaclass=AliasMeta):
 
     async def ping(self):
         """
-        .. warning::
-            Due to a bug in the firmware, supercars will never respond to pings!
-        
         Send a ping to the vehicle
         """
         await self.__send_package(ping_pkg())
@@ -749,9 +746,6 @@ class Vehicle(metaclass=AliasMeta):
 
     def pong(self, func):
         """
-        .. warning::
-            Due to a bug in the firmware, supercars will never respond to pings!
-        
         A decorator marking an function to be executed when the supercar responds to a ping
 
         :param func: :class:`function`
