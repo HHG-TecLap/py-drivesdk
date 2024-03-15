@@ -19,6 +19,7 @@ from ..misc.msgs import (
     set_speed_pkg,
     change_lane_pkg,
     turn_180_pkg,
+    ping_pkg
 )
 from ..misc.track_pieces import TrackPiece, TrackPieceType
 from ..misc import const
@@ -743,7 +744,7 @@ class Vehicle(metaclass=AliasMeta):
         
         Send a ping to the vehicle
         """
-        await self.__send_package(msg_protocol.const.ControllerMsg.PING)
+        await self.__send_package(ping_pkg())
         pass
 
     def pong(self, func):
