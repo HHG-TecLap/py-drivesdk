@@ -44,7 +44,6 @@ def interpret_local_name(name: str|None):
     vehicleName = nameBytes[8:].decode("utf-8")
 
     return BatteryState.from_int(vehicleState), version, vehicleName
-    pass
 
 
 def _call_all_soon(funcs, *args):
@@ -78,7 +77,6 @@ class BatteryState:
         on_charger = bool(state & (1 << const.VehicleBattery.ON_CHARGER))
 
         return cls(full, low, on_charger)
-        pass
 
     @classmethod
     def from_charger_info(cls, payload: bytes):
@@ -95,8 +93,6 @@ class BatteryState:
         """
         _, on_charger, charging, full = disassemble_charger_info(payload)
         return cls(full, None, on_charger, charging)
-        pass
-    pass
 
 
 class Lights(IntEnum):
@@ -159,7 +155,10 @@ class Vehicle:
             *,
             battery: BatteryState
     ):
-        self._client = client if client is not None else bleak.BleakClient(device)
+        if client is None:
+            self._client = bleak.BleakClient(device)
+        else:
+            self._client = client
 
         self._id: int = id
         self._current_track_piece: TrackPiece|None = None
@@ -178,7 +177,6 @@ class Vehicle:
         self._battery_watchers: list[_Callback] = []
         self._controller = controller
         self._battery: BatteryState = battery
-        pass
 
     def _notify_handler(self, handler, data: bytearray):
         """An internal handler function that gets called on a notify receive"""
@@ -201,10 +199,9 @@ class Vehicle:
                     errors.TrackPieceDecodeWarning
                 )
                 return
-                pass
 
             self._current_track_piece = piece_obj
-            pass
+
         elif msg_type == const.VehicleMsg.TRACK_PIECE_CHANGE:
             if (
                 self._current_track_piece is not None 
@@ -214,7 +211,6 @@ class Vehicle:
             
             uphill_count, downhill_count = disassemble_track_change(payload)[8:10]
             """TODO: Find out what to do with these"""
-            # print("Vehicle uphill/downhill:", uphill_count, downhill_count)
             if self._position is not None:
                 # If vehicle is aligned
                 # This may happen during scan or because of a flying realign
@@ -234,7 +230,6 @@ class Vehicle:
             pass
         elif msg_type == const.VehicleMsg.PONG:
             _call_all_soon(self._pong_watchers)
-            pass
         elif msg_type == const.VehicleMsg.DELOCALIZED:
             _call_all_soon(self._delocal_watchers)
             pass
@@ -247,12 +242,8 @@ class Vehicle:
     async def _auto_ping(self):
         # Automatically pings the supercars
         # and disconnects when they don't respond.
-
-        return
-        # NOTE:
-        # This just returns, because for some reason
-        # supercars don't want to respond to pings
-        # The code is left here to reimplement should we ever get ping to work
+        # TODO: Remove debug prints
+        # TODO: Replace future with event
         pong_reply_future = asyncio.Future()
         
         @self.pong
@@ -271,21 +262,16 @@ class Vehicle:
             print("Ping!")
             try:
                 await asyncio.wait_for(pong_reply_future, config["timeout"])
-                pass
             except asyncio.TimeoutError:
                 timeouts += 1
                 print("Ping failed")
-                pass
             else:
                 timeouts = 0
                 print("Ping succeeded")
-                pass
 
             if timeouts > config["max_timeouts"]:
                 warn("The vehicle did not sufficiently respond to pings. Disconnecting...")
                 await self.disconnect()
-            pass
-        pass
 
     async def __send_package(self, payload: bytes):
         """Send a payload to the supercar"""
@@ -297,8 +283,6 @@ class Vehicle:
             raise RuntimeError(
                 "A command was sent to a vehicle that is already disconnected"
             ) from e
-            pass
-        pass
 
     async def wait_for_track_change(self) -> Optional[TrackPiece]:
         """Waits until the current track piece changes.
@@ -312,7 +296,6 @@ class Vehicle:
         await self._track_piece_future
         # Wait on a new track piece (See _notify_handler)
         return self.current_track_piece
-        pass
 
     async def connect(self):
         """Connect to the Supercar
@@ -330,9 +313,8 @@ class Vehicle:
         try:
             connect_success = await self._client.connect()
             if not connect_success:
+                # Handle a failed connect the same way as a BleakError
                 raise BleakError
-            # Handle a failed connect the same way as a BleakError
-            pass
         # Translate a bunch of errors occuring on connection
         except BleakDBusError as e:
             raise errors.ConnectionDatabusError(
@@ -409,10 +391,8 @@ class Vehicle:
         if not self._is_connected and self._controller is not None:
             self._controller.vehicles.remove(self)
             self._ping_task.cancel("Vehicle disconnected")
-            pass
 
         return self._is_connected
-        pass
 
     async def set_speed(self, speed: int, acceleration: int = 500):
         """Set the speed of the Supercar in mm/s
@@ -423,15 +403,13 @@ class Vehicle:
             The acceleration in mm/s²
         """
         await self.__send_package(set_speed_pkg(speed, acceleration))
-        self._speed = speed
         # Update the internal speed as well
         # (this is technically an overestimate, but the error is marginal)
-        pass
+        self._speed = speed
 
     async def stop(self):
         """Stops the Supercar"""
         await self.set_speed(0, 600)
-        pass
     
     async def change_lane(
             self,
@@ -465,7 +443,6 @@ class Vehicle:
             # NOTE: Getting hop intent and tag to work would be awesome
             # but the vehicles are buggy as ever
         )
-        pass
     
     async def change_position(
             self,
@@ -496,7 +473,6 @@ class Vehicle:
             _hopIntent,
             _tag
         ))
-        pass
 
     async def turn(self, type: int = 3, trigger: int = 0):
         # type and trigger don't work correcty
@@ -510,7 +486,6 @@ class Vehicle:
                 UserWarning
             )
         await self.__send_package(turn_180_pkg(type, trigger))
-        pass
     
     async def set_lights(self, light: int):
         """Set the lights of the vehicle in accordance with a bitmask
@@ -522,7 +497,6 @@ class Vehicle:
         raise DeprecationWarning(
             "This function is deprecated and does not work due to a bug in the vehicle computer."
         )
-        pass
     
     async def set_light_pattern(self, r: int, g: int, b: int):
         """Set the engine light (the big one) at the top of the vehicle
@@ -534,7 +508,6 @@ class Vehicle:
         raise DeprecationWarning(
             "This function is deprecated and does not work due to a bug in the vehicle computer."
         )
-        pass
     
     def get_lane(self, mode: type[_Lane]) -> Optional[_Lane]:
         """Get the current lane given a specific lane type
@@ -553,7 +526,6 @@ class Vehicle:
             return None
         else:
             return mode.get_closest_lane(self._road_offset)
-        pass
 
     async def align(
             self,
@@ -567,18 +539,16 @@ class Vehicle:
             The speed the vehicle should travel at during alignment
         """
         await self.set_speed(speed)
+        # Waits until the previous track piece was FINISH (by default).
+        # This means the current position is START
         while self._current_track_piece is None\
                 or self._current_track_piece.type is not target_previous_track_piece_type:
-            # Waits until the previous track piece was FINISH (by default).
-            # This means the current position is START
             await self.wait_for_track_change()
-            pass
 
-        self._position = 0
         # Vehicle is now at START which is always 0
+        self._position = 0
 
         await self.stop()
-        pass
     
     def track_piece_change(self, func: _Callback):
         """
@@ -658,18 +628,18 @@ class Vehicle:
             The function passed is not an event handler
         """
         self._battery_watchers.append(func)
+        # FIXME: Function returns None, should func
         pass
 
     def remove_battery_watcher(self, func: _Callback):
+        # TODO: Add code comments
         self._battery_watchers.remove(func)
-        pass
 
     async def ping(self):
         """
         Send a ping to the vehicle
         """
         await self.__send_package(ping_pkg())
-        pass
 
     def pong(self, func):
         """
@@ -685,7 +655,6 @@ class Vehicle:
         """
         self._pong_watchers.append(func)
         return func
-        pass
 
     @property
     def is_connected(self) -> bool:
@@ -693,7 +662,6 @@ class Vehicle:
         `True` if the vehicle is currently connected
         """
         return self._is_connected
-        pass
 
     @property
     def current_track_piece(self) -> TrackPiece|None:
@@ -706,9 +674,7 @@ class Vehicle:
         if self.map is None or self.map_position is None:
             # If scan or align not complete, we can't find the track piece
             return None
-            pass
         return self.map[self.map_position]
-        pass
 
     @property
     def map(self) -> tuple[TrackPiece, ...]|None:
@@ -717,7 +683,6 @@ class Vehicle:
         This is :class:`None` if the :class:`Vehicle` does not have a map supplied.
         """
         return tuple(self._map) if self._map is not None else None
-        pass
 
     @property
     def map_position(self) -> int|None:
@@ -726,7 +691,6 @@ class Vehicle:
         This is :class:`None` if :func:`Vehicle.align` has not yet been called.
         """
         return self._position
-        pass
 
     @property
     def road_offset(self) -> float|None:
@@ -736,7 +700,6 @@ class Vehicle:
         (Such as when it hasn't moved much)
         """
         return self._road_offset
-        pass
 
     @property
     def speed(self) -> int:
@@ -746,7 +709,6 @@ class Vehicle:
         hasn't been called yet.
         """
         return self._speed
-        pass
 
     @property
     def current_lane3(self) -> Optional[Lane3]:
@@ -758,7 +720,6 @@ class Vehicle:
             Vehicle.get_lane(Lane3)
         """
         return self.get_lane(Lane3)
-        pass
 
     @property
     def current_lane4(self) -> Optional[Lane4]:
@@ -770,7 +731,6 @@ class Vehicle:
             Vehicle.get_lane(Lane4)
         """
         return self.get_lane(Lane4)
-        pass
 
     @property
     def id(self) -> int:
@@ -778,7 +738,6 @@ class Vehicle:
         The id of the :class:`Vehicle` instance. This is set during initialisation of the object.
         """
         return self._id
-        pass
 
     @property
     def battery_state(self) -> BatteryState:
@@ -786,5 +745,3 @@ class Vehicle:
         The state of the supercar's battery
         """
         return self._battery
-        pass
-    pass

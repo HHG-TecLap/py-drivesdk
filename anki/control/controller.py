@@ -21,8 +21,9 @@ def _is_anki(device: BLEDevice, advertisement: AdvertisementData):
         return False
         pass
     if state.on_charger:
+        # We don't want to connect to a charging vehicle, 
+        # so we'll just pretend it's not a vehicle
         return False
-    # We don't want to connect to a charging vehicle, so we'll just pretend it's not a vehicle
 
     return True
 
