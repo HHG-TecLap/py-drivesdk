@@ -1,5 +1,3 @@
-from warnings import warn
-
 import bleak
 import asyncio
 from bleak.backends.device import BLEDevice
@@ -334,23 +332,6 @@ class Controller:
 
     async def __aexit__(self, *args):
         await self.disconnect_all()
-        pass
-    
-    def handle_shutdown(self):
-        """Handles a shutdown neatly and disconnects the vehicles
-        
-        Raises
-        ------
-        :class:`DisconnectTimedoutException`
-            A disconnection attempt timed out
-        :class:`DisconnectFailedException`
-            A disconnection attempt failed for unspecific reasons
-        """
-        warn(
-            "This method does not really work and is therefore deprecated",
-            DeprecationWarning
-        )
-        asyncio.run(self.disconnect_all())
         pass
 
     @property
