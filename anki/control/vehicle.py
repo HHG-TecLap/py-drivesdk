@@ -1,4 +1,3 @@
-from ..misc.deprecated_alias import AliasMeta, deprecated_alias
 from warnings import warn
 from enum import IntEnum
 
@@ -107,7 +106,7 @@ class Lights(IntEnum):
     ENGINELIGHTS = 3
 
 
-class Vehicle(metaclass=AliasMeta):
+class Vehicle:
     """This class represents a supercar. With it you can control all functions of said supercar.
 
     
@@ -415,15 +414,6 @@ class Vehicle(metaclass=AliasMeta):
         return self._is_connected
         pass
 
-    @deprecated_alias(
-        "setSpeed",
-        doc="""
-        Alias to :func:`Vehicle.set_speed`
-        
-        .. deprecated:: 1.0
-            Use alias :func:`Vehicle.set_speed` instead
-        """
-    )
     async def set_speed(self, speed: int, acceleration: int = 500):
         """Set the speed of the Supercar in mm/s
 
@@ -443,15 +433,6 @@ class Vehicle(metaclass=AliasMeta):
         await self.set_speed(0, 600)
         pass
     
-    @deprecated_alias(
-        "changeLane",
-        doc="""
-        Alias to :func:`Vehicle.change_lane`
-
-        .. deprecated:: 1.0
-            Use alias :func:`Vehicle.change_lane` instead
-        """
-    )
     async def change_lane(
             self,
             lane: BaseLane,
@@ -486,15 +467,6 @@ class Vehicle(metaclass=AliasMeta):
         )
         pass
     
-    @deprecated_alias(
-        "changePosition",
-        doc="""
-        Alias to :func:`Vehicle.change_position`
-
-        .. deprecated:: 1.0
-            Use alias :func:`Vehicle.change_position` instead
-        """
-    )
     async def change_position(
             self,
             roadCenterOffset: float,
@@ -540,15 +512,6 @@ class Vehicle(metaclass=AliasMeta):
         await self.__send_package(turn_180_pkg(type, trigger))
         pass
     
-    @deprecated_alias(
-        "setLights",
-        doc="""
-        Alias to :func:`Vehicle.set_lights`
-
-        .. deprecated:: 1.0
-            Use alias :func:`Vehicle.set_lights` instead
-        """
-    )
     async def set_lights(self, light: int):
         """Set the lights of the vehicle in accordance with a bitmask
 
@@ -561,15 +524,6 @@ class Vehicle(metaclass=AliasMeta):
         )
         pass
     
-    @deprecated_alias(
-        "setLightPattern",
-        doc="""
-        Alias to :func:`Vehicle.set_light_pattern`
-
-        .. deprecated:: 1.0
-            Use alias :func:`Vehicle.set_light_pattern` instead
-        """
-    )
     async def set_light_pattern(self, r: int, g: int, b: int):
         """Set the engine light (the big one) at the top of the vehicle
 
@@ -582,15 +536,6 @@ class Vehicle(metaclass=AliasMeta):
         )
         pass
     
-    @deprecated_alias(
-        "getLane",
-        doc="""
-        Alias to :func:`Vehicle.get_lane`
-
-        .. deprecated:: 1.0
-            Use alias :func:`Vehicle.get_lane` instead
-        """
-    )
     def get_lane(self, mode: type[_Lane]) -> Optional[_Lane]:
         """Get the current lane given a specific lane type
 
@@ -635,15 +580,6 @@ class Vehicle(metaclass=AliasMeta):
         await self.stop()
         pass
     
-    @deprecated_alias(
-        "trackPieceChange",
-        doc="""
-        Alias to :func:`Vehicle.track_piece_change`
-
-        .. deprecated:: 1.0
-            Use :func:`Vehicle.track_piece_change` instead
-        """
-    )
     def track_piece_change(self, func: _Callback):
         """
         A decorator marking a function to be executed when the supercar
@@ -661,15 +597,6 @@ class Vehicle(metaclass=AliasMeta):
         return func
         pass
     
-    @deprecated_alias(
-        "removeTrackPieceWatcher",
-        doc="""
-        Alias to :func:`Vehicle.remove_track_piece_change`
-
-        .. deprecated:: 1.0
-            Use :func:`Vehicle.remove_track_piece_watcher` instead
-        """
-    )
     def remove_track_piece_watcher(self, func: _Callback):
         """
         Remove a track piece event handler added by :func:`Vehicle.track_piece_change`
