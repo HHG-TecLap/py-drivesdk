@@ -80,6 +80,12 @@ def light_pattern_pkg(r: int, g: int, b: int):
     )
     pass
 
+def ping_pkg():
+    return assemble_packet(
+        const.ControllerMsg.PING,
+        b""
+    )
+
 
 def disassemble_track_update(
         payload: bytes

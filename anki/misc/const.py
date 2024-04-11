@@ -32,29 +32,29 @@ SET_SDK: uint8_t enable_disable, uint8_t flags
 
 
 class ControllerMsg:
-    DISCONNECT = b"\x0d"
-    PING = b"\x16"
-    VERSION_REQ = b"\x18"
+    DISCONNECT = 0x0d
+    PING = 0x16
+    VERSION_REQ = 0x18
     
-    SET_LIGHTS = b"\x1d"
-    LIGHT_PATTERN = b"\x33"
+    SET_LIGHTS = 0x1d
+    LIGHT_PATTERN = 0x33
     
-    SET_SPEED = b"\x24"
-    CHANGE_LANE = b"\x25"
-    CANCEL_LANE_CHANGE = b"\x26"
-    TURN_180 = b"\x32"
+    SET_SPEED = 0x24
+    CHANGE_LANE = 0x25
+    CANCEL_LANE_CHANGE = 0x26
+    TURN_180 = 0x32
 
-    SET_SDK = b"\x90"
+    SET_SDK = 0x90
     pass
 
 
 class VehicleMsg:
-    PONG = b"\x17"
-    VERSION_RESP = b"\x19"
+    PONG = 0x17
+    VERSION_RESP = 0x19
     # Notify characteristic
-    TRACK_PIECE_UPDATE = 39
-    TRACK_PIECE_CHANGE = 41
-    CHARGER_INFO = 63
+    TRACK_PIECE_UPDATE = 0x27
+    TRACK_PIECE_CHANGE = 0x29
+    CHARGER_INFO = 0x3f
     DELOCALIZED = 0x2b
     pass
 

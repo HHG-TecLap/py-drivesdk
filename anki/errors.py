@@ -46,13 +46,3 @@ class DisconnectTimedoutError(DisconnectFailedError):
     """The disconnect attempt timed out"""
 
 
-# Aliases (it turns out these cannot be deprecated aliases,
-# due to them being in a global scope)
-AnkiException = AnkiError
-VehicleNotFound = VehicleNotFoundError
-ConnectionFailedException = ConnectionFailedError
-ConnectionDatabusException = ConnectionDatabusError
-ConnectionTimedoutException = ConnectionTimedoutError
-DisconnectFailedException = DisconnectFailedError
-DisconnectTimedoutException = DisconnectTimedoutError
-DisconnectedVehiclePackage = RuntimeError

@@ -1,4 +1,3 @@
-from ..misc.deprecated_alias import AliasMeta, deprecated_alias
 from warnings import warn
 from enum import IntEnum
 
@@ -19,6 +18,7 @@ from ..misc.msgs import (
     set_speed_pkg,
     change_lane_pkg,
     turn_180_pkg,
+    ping_pkg
 )
 from ..misc.track_pieces import TrackPiece, TrackPieceType
 from ..misc import const
@@ -44,7 +44,6 @@ def interpret_local_name(name: str|None):
     vehicleName = nameBytes[8:].decode("utf-8")
 
     return BatteryState.from_int(vehicleState), version, vehicleName
-    pass
 
 
 def _call_all_soon(funcs, *args):
@@ -78,7 +77,6 @@ class BatteryState:
         on_charger = bool(state & (1 << const.VehicleBattery.ON_CHARGER))
 
         return cls(full, low, on_charger)
-        pass
 
     @classmethod
     def from_charger_info(cls, payload: bytes):
@@ -95,8 +93,6 @@ class BatteryState:
         """
         _, on_charger, charging, full = disassemble_charger_info(payload)
         return cls(full, None, on_charger, charging)
-        pass
-    pass
 
 
 class Lights(IntEnum):
@@ -106,7 +102,7 @@ class Lights(IntEnum):
     ENGINELIGHTS = 3
 
 
-class Vehicle(metaclass=AliasMeta):
+class Vehicle:
     """This class represents a supercar. With it you can control all functions of said supercar.
 
     
@@ -144,6 +140,7 @@ class Vehicle(metaclass=AliasMeta):
         "_track_piece_watchers",
         "_pong_watchers",
         "_delocal_watchers",
+        "_battery_watchers",
         "_controller",
         "_ping_task",
         "_battery"
@@ -158,7 +155,10 @@ class Vehicle(metaclass=AliasMeta):
             *,
             battery: BatteryState
     ):
-        self._client = client if client is not None else bleak.BleakClient(device)
+        if client is None:
+            self._client = bleak.BleakClient(device)
+        else:
+            self._client = client
 
         self._id: int = id
         self._current_track_piece: TrackPiece|None = None
@@ -174,9 +174,9 @@ class Vehicle(metaclass=AliasMeta):
         self._track_piece_watchers: list[_Callback] = []
         self._pong_watchers: list[_Callback] = []
         self._delocal_watchers: list[_Callback] = []
+        self._battery_watchers: list[_Callback] = []
         self._controller = controller
         self._battery: BatteryState = battery
-        pass
 
     def _notify_handler(self, handler, data: bytearray):
         """An internal handler function that gets called on a notify receive"""
@@ -199,18 +199,26 @@ class Vehicle(metaclass=AliasMeta):
                     errors.TrackPieceDecodeWarning
                 )
                 return
-                pass
 
             self._current_track_piece = piece_obj
-            pass
+
         elif msg_type == const.VehicleMsg.TRACK_PIECE_CHANGE:
+            if (
+                self._current_track_piece is not None 
+                and self._current_track_piece.type == TrackPieceType.FINISH
+            ):
+                self._position = 0
+            
             uphill_count, downhill_count = disassemble_track_change(payload)[8:10]
             """TODO: Find out what to do with these"""
-            print("Vehicle uphill/downhill:", uphill_count, downhill_count)
-            if self._position is not None and self._map is not None:
-                # If there was a scan & align already
+            if self._position is not None:
+                # If vehicle is aligned
+                # This may happen during scan or because of a flying realign
+                # FIXME: Position index 0 does not exist on flying align o.0
                 self._position += 1
-                self._position %= len(self._map)
+                if self._map is not None:
+                    # If already scanned the map, ensure position is valid
+                    self._position %= len(self._map)
 
             self._track_piece_future.set_result(None)
             # Complete internal future when on new track piece.
@@ -222,23 +230,20 @@ class Vehicle(metaclass=AliasMeta):
             pass
         elif msg_type == const.VehicleMsg.PONG:
             _call_all_soon(self._pong_watchers)
-            pass
         elif msg_type == const.VehicleMsg.DELOCALIZED:
             _call_all_soon(self._delocal_watchers)
             pass
         elif msg_type == const.VehicleMsg.CHARGER_INFO:
             self._battery = BatteryState.from_charger_info(payload)
+            _call_all_soon(self._battery_watchers)
+            pass
         pass
 
     async def _auto_ping(self):
         # Automatically pings the supercars
         # and disconnects when they don't respond.
-
-        return
-        # NOTE:
-        # This just returns, because for some reason
-        # supercars don't want to respond to pings
-        # The code is left here to reimplement should we ever get ping to work
+        # TODO: Remove debug prints
+        # TODO: Replace future with event
         pong_reply_future = asyncio.Future()
         
         @self.pong
@@ -257,21 +262,16 @@ class Vehicle(metaclass=AliasMeta):
             print("Ping!")
             try:
                 await asyncio.wait_for(pong_reply_future, config["timeout"])
-                pass
             except asyncio.TimeoutError:
                 timeouts += 1
                 print("Ping failed")
-                pass
             else:
                 timeouts = 0
                 print("Ping succeeded")
-                pass
 
             if timeouts > config["max_timeouts"]:
                 warn("The vehicle did not sufficiently respond to pings. Disconnecting...")
                 await self.disconnect()
-            pass
-        pass
 
     async def __send_package(self, payload: bytes):
         """Send a payload to the supercar"""
@@ -283,8 +283,6 @@ class Vehicle(metaclass=AliasMeta):
             raise RuntimeError(
                 "A command was sent to a vehicle that is already disconnected"
             ) from e
-            pass
-        pass
 
     async def wait_for_track_change(self) -> Optional[TrackPiece]:
         """Waits until the current track piece changes.
@@ -298,7 +296,6 @@ class Vehicle(metaclass=AliasMeta):
         await self._track_piece_future
         # Wait on a new track piece (See _notify_handler)
         return self.current_track_piece
-        pass
 
     async def connect(self):
         """Connect to the Supercar
@@ -316,9 +313,8 @@ class Vehicle(metaclass=AliasMeta):
         try:
             connect_success = await self._client.connect()
             if not connect_success:
+                # Handle a failed connect the same way as a BleakError
                 raise BleakError
-            # Handle a failed connect the same way as a BleakError
-            pass
         # Translate a bunch of errors occuring on connection
         except BleakDBusError as e:
             raise errors.ConnectionDatabusError(
@@ -395,20 +391,9 @@ class Vehicle(metaclass=AliasMeta):
         if not self._is_connected and self._controller is not None:
             self._controller.vehicles.remove(self)
             self._ping_task.cancel("Vehicle disconnected")
-            pass
 
         return self._is_connected
-        pass
 
-    @deprecated_alias(
-        "setSpeed",
-        doc="""
-        Alias to :func:`Vehicle.set_speed`
-        
-        .. deprecated:: 1.0
-            Use alias :func:`Vehicle.set_speed` instead
-        """
-    )
     async def set_speed(self, speed: int, acceleration: int = 500):
         """Set the speed of the Supercar in mm/s
 
@@ -418,25 +403,14 @@ class Vehicle(metaclass=AliasMeta):
             The acceleration in mm/s²
         """
         await self.__send_package(set_speed_pkg(speed, acceleration))
-        self._speed = speed
         # Update the internal speed as well
         # (this is technically an overestimate, but the error is marginal)
-        pass
+        self._speed = speed
 
     async def stop(self):
         """Stops the Supercar"""
         await self.set_speed(0, 600)
-        pass
     
-    @deprecated_alias(
-        "changeLane",
-        doc="""
-        Alias to :func:`Vehicle.change_lane`
-
-        .. deprecated:: 1.0
-            Use alias :func:`Vehicle.change_lane` instead
-        """
-    )
     async def change_lane(
             self,
             lane: BaseLane,
@@ -469,17 +443,7 @@ class Vehicle(metaclass=AliasMeta):
             # NOTE: Getting hop intent and tag to work would be awesome
             # but the vehicles are buggy as ever
         )
-        pass
     
-    @deprecated_alias(
-        "changePosition",
-        doc="""
-        Alias to :func:`Vehicle.change_position`
-
-        .. deprecated:: 1.0
-            Use alias :func:`Vehicle.change_position` instead
-        """
-    )
     async def change_position(
             self,
             roadCenterOffset: float,
@@ -509,7 +473,6 @@ class Vehicle(metaclass=AliasMeta):
             _hopIntent,
             _tag
         ))
-        pass
 
     async def turn(self, type: int = 3, trigger: int = 0):
         # type and trigger don't work correcty
@@ -523,17 +486,7 @@ class Vehicle(metaclass=AliasMeta):
                 UserWarning
             )
         await self.__send_package(turn_180_pkg(type, trigger))
-        pass
     
-    @deprecated_alias(
-        "setLights",
-        doc="""
-        Alias to :func:`Vehicle.set_lights`
-
-        .. deprecated:: 1.0
-            Use alias :func:`Vehicle.set_lights` instead
-        """
-    )
     async def set_lights(self, light: int):
         """Set the lights of the vehicle in accordance with a bitmask
 
@@ -544,17 +497,7 @@ class Vehicle(metaclass=AliasMeta):
         raise DeprecationWarning(
             "This function is deprecated and does not work due to a bug in the vehicle computer."
         )
-        pass
     
-    @deprecated_alias(
-        "setLightPattern",
-        doc="""
-        Alias to :func:`Vehicle.set_light_pattern`
-
-        .. deprecated:: 1.0
-            Use alias :func:`Vehicle.set_light_pattern` instead
-        """
-    )
     async def set_light_pattern(self, r: int, g: int, b: int):
         """Set the engine light (the big one) at the top of the vehicle
 
@@ -565,17 +508,7 @@ class Vehicle(metaclass=AliasMeta):
         raise DeprecationWarning(
             "This function is deprecated and does not work due to a bug in the vehicle computer."
         )
-        pass
     
-    @deprecated_alias(
-        "getLane",
-        doc="""
-        Alias to :func:`Vehicle.get_lane`
-
-        .. deprecated:: 1.0
-            Use alias :func:`Vehicle.get_lane` instead
-        """
-    )
     def get_lane(self, mode: type[_Lane]) -> Optional[_Lane]:
         """Get the current lane given a specific lane type
 
@@ -593,7 +526,6 @@ class Vehicle(metaclass=AliasMeta):
             return None
         else:
             return mode.get_closest_lane(self._road_offset)
-        pass
 
     async def align(
             self,
@@ -607,28 +539,17 @@ class Vehicle(metaclass=AliasMeta):
             The speed the vehicle should travel at during alignment
         """
         await self.set_speed(speed)
+        # Waits until the previous track piece was FINISH (by default).
+        # This means the current position is START
         while self._current_track_piece is None\
                 or self._current_track_piece.type is not target_previous_track_piece_type:
-            # Waits until the previous track piece was FINISH (by default).
-            # This means the current position is START
             await self.wait_for_track_change()
-            pass
 
-        self._position = 0
         # Vehicle is now at START which is always 0
+        self._position = 0
 
         await self.stop()
-        pass
     
-    @deprecated_alias(
-        "trackPieceChange",
-        doc="""
-        Alias to :func:`Vehicle.track_piece_change`
-
-        .. deprecated:: 1.0
-            Use :func:`Vehicle.track_piece_change` instead
-        """
-    )
     def track_piece_change(self, func: _Callback):
         """
         A decorator marking a function to be executed when the supercar
@@ -646,15 +567,6 @@ class Vehicle(metaclass=AliasMeta):
         return func
         pass
     
-    @deprecated_alias(
-        "removeTrackPieceWatcher",
-        doc="""
-        Alias to :func:`Vehicle.remove_track_piece_change`
-
-        .. deprecated:: 1.0
-            Use :func:`Vehicle.remove_track_piece_watcher` instead
-        """
-    )
     def remove_track_piece_watcher(self, func: _Callback):
         """
         Remove a track piece event handler added by :func:`Vehicle.track_piece_change`
@@ -701,21 +613,36 @@ class Vehicle(metaclass=AliasMeta):
         self._delocal_watchers.remove(func)
         pass
 
+    def battery_change(self, func: _Callback):
+        """
+        Register a callback to execute on changes to the battery state.
+        
+        .. note::
+            It is not guaranteed that the battery state has actually changed
+            from the last callback.
+            Further note that this function is not called on startup.
+        
+        Raises
+        ------
+        :class:`ValueError`
+            The function passed is not an event handler
+        """
+        self._battery_watchers.append(func)
+        # FIXME: Function returns None, should func
+        pass
+
+    def remove_battery_watcher(self, func: _Callback):
+        # TODO: Add code comments
+        self._battery_watchers.remove(func)
+
     async def ping(self):
         """
-        .. warning::
-            Due to a bug in the firmware, supercars will never respond to pings!
-        
         Send a ping to the vehicle
         """
-        await self.__send_package(msg_protocol.const.ControllerMsg.PING)
-        pass
+        await self.__send_package(ping_pkg())
 
     def pong(self, func):
         """
-        .. warning::
-            Due to a bug in the firmware, supercars will never respond to pings!
-        
         A decorator marking an function to be executed when the supercar responds to a ping
 
         :param func: :class:`function`
@@ -728,7 +655,6 @@ class Vehicle(metaclass=AliasMeta):
         """
         self._pong_watchers.append(func)
         return func
-        pass
 
     @property
     def is_connected(self) -> bool:
@@ -736,7 +662,6 @@ class Vehicle(metaclass=AliasMeta):
         `True` if the vehicle is currently connected
         """
         return self._is_connected
-        pass
 
     @property
     def current_track_piece(self) -> TrackPiece|None:
@@ -749,9 +674,7 @@ class Vehicle(metaclass=AliasMeta):
         if self.map is None or self.map_position is None:
             # If scan or align not complete, we can't find the track piece
             return None
-            pass
         return self.map[self.map_position]
-        pass
 
     @property
     def map(self) -> tuple[TrackPiece, ...]|None:
@@ -760,7 +683,6 @@ class Vehicle(metaclass=AliasMeta):
         This is :class:`None` if the :class:`Vehicle` does not have a map supplied.
         """
         return tuple(self._map) if self._map is not None else None
-        pass
 
     @property
     def map_position(self) -> int|None:
@@ -769,7 +691,6 @@ class Vehicle(metaclass=AliasMeta):
         This is :class:`None` if :func:`Vehicle.align` has not yet been called.
         """
         return self._position
-        pass
 
     @property
     def road_offset(self) -> float|None:
@@ -779,7 +700,6 @@ class Vehicle(metaclass=AliasMeta):
         (Such as when it hasn't moved much)
         """
         return self._road_offset
-        pass
 
     @property
     def speed(self) -> int:
@@ -789,7 +709,6 @@ class Vehicle(metaclass=AliasMeta):
         hasn't been called yet.
         """
         return self._speed
-        pass
 
     @property
     def current_lane3(self) -> Optional[Lane3]:
@@ -801,7 +720,6 @@ class Vehicle(metaclass=AliasMeta):
             Vehicle.get_lane(Lane3)
         """
         return self.get_lane(Lane3)
-        pass
 
     @property
     def current_lane4(self) -> Optional[Lane4]:
@@ -813,7 +731,6 @@ class Vehicle(metaclass=AliasMeta):
             Vehicle.get_lane(Lane4)
         """
         return self.get_lane(Lane4)
-        pass
 
     @property
     def id(self) -> int:
@@ -821,7 +738,6 @@ class Vehicle(metaclass=AliasMeta):
         The id of the :class:`Vehicle` instance. This is set during initialisation of the object.
         """
         return self._id
-        pass
 
     @property
     def battery_state(self) -> BatteryState:
@@ -829,5 +745,3 @@ class Vehicle(metaclass=AliasMeta):
         The state of the supercar's battery
         """
         return self._battery
-        pass
-    pass

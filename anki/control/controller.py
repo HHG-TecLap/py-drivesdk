@@ -1,6 +1,3 @@
-from warnings import warn
-from ..misc.deprecated_alias import AliasMeta, deprecated_alias
-
 import bleak
 import asyncio
 from bleak.backends.device import BLEDevice
@@ -24,13 +21,14 @@ def _is_anki(device: BLEDevice, advertisement: AdvertisementData):
         return False
         pass
     if state.on_charger:
+        # We don't want to connect to a charging vehicle, 
+        # so we'll just pretend it's not a vehicle
         return False
-    # We don't want to connect to a charging vehicle, so we'll just pretend it's not a vehicle
 
     return True
 
 
-class Controller(metaclass=AliasMeta):
+class Controller:
     """
     This object controls all vehicle connections.
     With it you can connect to any number of vehicles and disconnect cleanly.
@@ -92,15 +90,6 @@ class Controller(metaclass=AliasMeta):
         return vehicle
         pass
 
-    @deprecated_alias(
-        "connectOne",
-        doc="""
-        Alias to :func:`Controller.connect_one`
-
-        .. deprecated:: 1.0
-            Use the alias :func:`Controller.connect_one` instead.
-        """
-    )
     async def connect_one(
             self,
             vehicle_id: Optional[int]=None
@@ -142,15 +131,6 @@ class Controller(metaclass=AliasMeta):
         return vehicle
         pass
 
-    @deprecated_alias(
-        "connectSpecific",
-        doc="""
-        Alias to :func:`Controller.connect_specific`
-
-        .. deprecated:: 1.0
-            Use alias :func:`Controller.connect_specific` instead
-        """
-    )
     async def connect_specific(
             self,
             address: str,
@@ -191,15 +171,6 @@ class Controller(metaclass=AliasMeta):
         return vehicle
         pass
     
-    @deprecated_alias(
-        "connectMany",
-        doc="""
-        Alias to :func:`Controller.connect_many`
-
-        .. deprecated:: 1.0
-            Use alias :func:`Controller.connect_many` instead
-        """
-    )
     async def connect_many(
             self,
             amount: int,
@@ -342,15 +313,6 @@ class Controller(metaclass=AliasMeta):
         return self.map
         pass
 
-    @deprecated_alias(
-        "disconnectAll",
-        doc="""
-        Alias to :func:`Controller.disconnect_all`
-
-        .. deprecated:: 1.0
-            Use alias :func:`Controller.disconnect_all` instead
-        """
-    )
     async def disconnect_all(self):
         """Disconnects from all the connected supercars
         
@@ -371,32 +333,6 @@ class Controller(metaclass=AliasMeta):
 
     async def __aexit__(self, *args):
         await self.disconnect_all()
-        pass
-    
-    @deprecated_alias(
-        "handleShutdown",
-        doc="""
-        Alias to :func:`Controller.handle_shutdown`
-
-        .. deprecated:: 1.0
-            Use alias :func:`Controller.handle_shutdown` instead
-        """
-    )
-    def handle_shutdown(self):
-        """Handles a shutdown neatly and disconnects the vehicles
-        
-        Raises
-        ------
-        :class:`DisconnectTimedoutException`
-            A disconnection attempt timed out
-        :class:`DisconnectFailedException`
-            A disconnection attempt failed for unspecific reasons
-        """
-        warn(
-            "This method does not really work and is therefore deprecated",
-            DeprecationWarning
-        )
-        asyncio.run(self.disconnect_all())
         pass
 
     @property
