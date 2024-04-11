@@ -68,6 +68,10 @@ def recover_delocalization(vehicle: Vehicle, recovery_speed: int|None=None):
         nonlocal task
         last_callback.value = monotonic()
         if task is None or task.done():
-            task = asyncio.create_task(_handle_delocalization_task(vehicle, last_callback, recovery_speed))
+            task = asyncio.create_task(_handle_delocalization_task(
+                vehicle,
+                last_callback,
+                recovery_speed
+            ))
         logging.warning("Vehicle has delocalized. Attempting automatic reovery")
     return callback

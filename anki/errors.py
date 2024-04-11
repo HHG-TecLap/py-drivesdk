@@ -44,5 +44,3 @@ class DisconnectFailedError(AnkiError):
 
 class DisconnectTimedoutError(DisconnectFailedError):
     """The disconnect attempt timed out"""
-
-
