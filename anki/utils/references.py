@@ -12,6 +12,18 @@ def _generate_ref_comp(comp_type: str):
     return comp
 
 class Reference(Generic[T]):
+    """
+    Store a value as a reference type.
+    This is intended to be used for types like 
+    :class:`int` or :class:`float` that are passed by value.
+
+    Two references can be compared using common operators like `==` or `>`
+    if and only if the types they implement can be compared like that.
+    The references will then compare their own type.
+
+    .. note::
+        Use the `is` operator to check if two reference objects are identical.
+    """
     __slots__ = ("value", )
 
     def __init__(self, value: T, /):
